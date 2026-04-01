@@ -645,10 +645,11 @@ function createGroupFromUI() {
   if (window._createGroup) window._createGroup(name);
 }
 
-// joinGroupFromUI — handles three input formats:
-//   1. Full invite URL containing ?group=ID  → join by Firestore document ID
-//   2. Short join code (4–8 uppercase alphanumeric chars) → query by joinCode field
-//   3. Raw Firestore document ID            → join directly by ID
+// joinGroupFromUI — handles three input formats, then routes through
+// _checkAndJoinGroup so existing members skip the username modal.
+//   1. Full invite URL with ?group=ID  → extract ID, check membership
+//   2. Short code (4–8 alphanumeric)   → resolve via joinCode field, then check
+//   3. Raw Firestore document ID       → check membership directly
 function joinGroupFromUI() {
   if (!window.currentUser) {
     showToast('⚠️ Not signed in', 'Sign in with Google first', 'streak');
@@ -657,21 +658,65 @@ function joinGroupFromUI() {
   var raw = (document.getElementById('grp-code-input').value || '').trim();
   if (!raw) { showToast('⚠️ Empty field', 'Enter a join code or invite link', 'streak'); return; }
 
-  // 1. Try URL — extract ?group= param
+  // 1. URL with ?group= param
   try {
     var url   = new URL(raw);
     var param = url.searchParams.get('group');
-    if (param) { window._joinGroup && window._joinGroup(param); return; }
+    if (param) { window._checkAndJoinGroup && window._checkAndJoinGroup(param); return; }
   } catch(e) { /* not a URL — continue */ }
 
-  // 2. Short code: 4–8 chars, only letters and digits → treat as joinCode
+  // 2. Short join code (4–8 letters/digits)
   if (/^[A-Za-z0-9]{4,8}$/.test(raw)) {
-    window._joinByCode && window._joinByCode(raw);
+    window._resolveCodeAndJoin && window._resolveCodeAndJoin(raw);
     return;
   }
 
-  // 3. Fallback: treat as a raw Firestore document ID
-  window._joinGroup && window._joinGroup(raw);
+  // 3. Fallback: raw Firestore document ID
+  window._checkAndJoinGroup && window._checkAndJoinGroup(raw);
+}
+
+// showUsernameModal — shown to new members before they join a group.
+// Called by _checkAndJoinGroup when the user isn't already a member.
+function showUsernameModal(groupId) {
+  var modal = document.getElementById('d-modal');
+  modal.querySelector('.modal').innerHTML =
+    '<button class="modal-close" onclick="closeModal()">✕</button>' +
+    '<div class="modal-title">👥 Join Group</div>' +
+    '<div class="modal-sub">Pick a username for this group — it\'s only visible to members here.</div>' +
+    '<label class="form-label">Your Username</label>' +
+    '<input class="form-input" id="grp-username-input" maxlength="20" ' +
+      'placeholder="e.g. SpeedRunner42" autocomplete="off"/>' +
+    '<div id="grp-username-error" style="color:var(--rose);font-size:.75rem;' +
+      'margin-top:-8px;margin-bottom:8px;display:none"></div>' +
+    '<div class="modal-actions">' +
+      '<button class="btn-secondary" onclick="closeModal()">Cancel</button>' +
+      '<button class="btn-primary" onclick="submitUsernameAndJoin(\'' + groupId + '\')">Join →</button>' +
+    '</div>';
+  modal.classList.add('show');
+  // Autofocus after the modal animation
+  setTimeout(function() {
+    var inp = document.getElementById('grp-username-input');
+    if (inp) inp.focus();
+  }, 80);
+}
+
+// submitUsernameAndJoin — validates the username input and calls _joinGroupWithUsername.
+function submitUsernameAndJoin(groupId) {
+  var input  = document.getElementById('grp-username-input');
+  var errEl  = document.getElementById('grp-username-error');
+  var username = input ? input.value.trim() : '';
+
+  if (!username) {
+    if (errEl) { errEl.textContent = 'Username is required'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (username.length > 20) {
+    if (errEl) { errEl.textContent = 'Max 20 characters'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  closeModal();
+  if (window._joinGroupWithUsername) window._joinGroupWithUsername(groupId, username);
 }
 
 // leaveGroupUI — called by the "Leave Group" button

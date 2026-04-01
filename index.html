@@ -868,27 +868,79 @@
     });
   };
 
-  // ── GROUP: JOIN BY SHORT CODE ─────────────────────────────────────────────
-  // Queries the groups collection for a document where joinCode == code.
-  window._joinByCode = function(code) {
+  // ── GROUP: CHECK MEMBERSHIP THEN JOIN ────────────────────────────────────
+  // If the user is already a member just subscribe (no modal).
+  // If they are new, show the username modal so they pick a group-specific name.
+  window._checkAndJoinGroup = function(groupId) {
+    getDoc(doc(db, 'groups', groupId)).then(function(snap) {
+      if (!snap.exists()) {
+        showToast('⚠️ Not Found', 'No group with that ID', 'streak');
+        return;
+      }
+      var members = snap.data().members || [];
+      if (members.indexOf(window.currentUser.uid) !== -1) {
+        // Already a member — go straight to the group
+        subscribeToGroupFull(groupId);
+      } else {
+        // New member — ask for a group-specific username first
+        if (window.showUsernameModal) showUsernameModal(groupId);
+      }
+    }).catch(function(e) {
+      console.error('checkAndJoinGroup error', e);
+      showToast('⚠️ Error', e.message, 'streak');
+    });
+  };
+
+  // ── GROUP: RESOLVE CODE → CHECK → JOIN ───────────────────────────────────
+  // Used when the user pastes a short join code (not a URL or doc ID).
+  window._resolveCodeAndJoin = function(code) {
     var q = query(collection(db, 'groups'), where('joinCode', '==', code.toUpperCase()));
-    return getDocs(q).then(function(snap) {
+    getDocs(q).then(function(snap) {
       if (snap.empty) {
         showToast('⚠️ Code not found', 'Check the code and try again', 'streak');
         return;
       }
-      var groupDoc = snap.docs[0];
-      // Reuse the full join flow so members array is updated consistently
-      return updateDoc(doc(db, 'groups', groupDoc.id), {
-        members: arrayUnion(window.currentUser.uid)
-      }).then(function() {
-        showToast('👥 Joined!', groupDoc.data().name, 'level-up');
-        subscribeToGroupFull(groupDoc.id);
-      });
+      window._checkAndJoinGroup(snap.docs[0].id);
     }).catch(function(e) {
-      console.error('joinByCode error', e);
+      console.error('resolveCodeAndJoin error', e);
       showToast('⚠️ Error', e.message, 'streak');
     });
+  };
+
+  // ── GROUP: JOIN WITH USERNAME ─────────────────────────────────────────────
+  // Called after the username modal is submitted.
+  // 1. Adds uid to group.members array (arrayUnion — no duplicates).
+  // 2. Saves group-specific username to groups/{groupId}/members/{uid}.
+  // 3. Starts the real-time listener.
+  window._joinGroupWithUsername = function(groupId, username) {
+    var uid      = window.currentUser.uid;
+    var groupRef = doc(db, 'groups', groupId);
+    getDoc(groupRef).then(function(snap) {
+      if (!snap.exists()) {
+        showToast('⚠️ Not Found', 'No group with that ID', 'streak');
+        return;
+      }
+      return updateDoc(groupRef, { members: arrayUnion(uid) })
+        .then(function() {
+          return setDoc(doc(db, 'groups', groupId, 'members', uid), {
+            userId:   uid,
+            username: username,
+            joinedAt: new Date().toISOString()
+          });
+        })
+        .then(function() {
+          showToast('👥 Joined!', snap.data().name + ' · ' + username, 'level-up');
+          subscribeToGroupFull(groupId);
+        });
+    }).catch(function(e) {
+      console.error('joinGroupWithUsername error', e);
+      showToast('⚠️ Error', e.message, 'streak');
+    });
+  };
+
+  // ── GROUP: JOIN BY SHORT CODE (legacy — kept for backward compat) ─────────
+  window._joinByCode = function(code) {
+    window._resolveCodeAndJoin(code);
   };
 
   // ── GROUP: LEAVE ──────────────────────────────────────────────────────────
@@ -903,11 +955,28 @@
   };
 
   // ── GROUP: REAL-TIME LISTENER ─────────────────────────────────────────────
-  // Subscribes to both the group document AND the habits subcollection.
-  // Fires renderGroupPage / renderGroupMembers / renderGroupHabits whenever
-  // anything in Firestore changes — all users in the group see updates instantly.
+  // Three onSnapshot listeners run in parallel:
+  //   1. Group document       — name, members array, joinCode
+  //   2. members subcollection — group-specific usernames (real-time)
+  //   3. habits subcollection  — shared quests + results
+  //
+  // _membersData  = full profiles fetched from users/{uid}
+  // _membersCache = group-specific usernames from groups/{id}/members/{uid}
+  // mergeAndRender() combines both so group usernames override display names.
   function subscribeToGroupFull(groupId) {
-    // 1. Listen to the group document (name, members array)
+    var _membersData  = []; // profiles from user docs (avatar, XP, level, …)
+    var _membersCache = {}; // uid → { username, joinedAt } from members subcollection
+
+    function mergeAndRender() {
+      var merged = _membersData.map(function(m) {
+        var gc = _membersCache[m.uid];
+        // Group-specific username wins over Firebase Auth display name
+        return gc ? Object.assign({}, m, { name: gc.username }) : m;
+      });
+      if (window.renderGroupMembers) renderGroupMembers(merged);
+    }
+
+    // 1. Group document — members array + group metadata
     onSnapshot(doc(db, 'groups', groupId), function(groupSnap) {
       if (!groupSnap.exists()) {
         window.activeGroup = null;
@@ -915,37 +984,43 @@
         return;
       }
 
-      // Store group data globally so script.js can read it
       window.activeGroup = { id: groupId, ...groupSnap.data() };
-
       if (window.renderGroupPage) renderGroupPage();
 
-      // Load each member's player profile from their user doc
-      var members = groupSnap.data().members || [];
+      // Fetch each member's global user profile for avatar/XP/level/streak
+      var memberUids = groupSnap.data().members || [];
       Promise.all(
-        members.map(function(uid) { return getDoc(doc(db, 'users', uid)); })
+        memberUids.map(function(uid) { return getDoc(doc(db, 'users', uid)); })
       ).then(function(docs) {
-        var membersData = docs
+        _membersData = docs
           .filter(function(d) { return d.exists(); })
           .map(function(d) {
             var p = d.data().player || {};
             return {
-              uid:    d.id,
-              name:   p.name    || 'Anonymous',
-              avatar: p.avatar  || '🧙',
-              level:  p.level   || 1,
-              totalXP: p.totalXP || 0,
-              streak: p.streak  || 0,
-              isMe:   d.id === window.currentUser.uid
+              uid:     d.id,
+              name:    p.name     || 'Anonymous',
+              avatar:  p.avatar   || '🧙',
+              level:   p.level    || 1,
+              totalXP: p.totalXP  || 0,
+              streak:  p.streak   || 0,
+              isMe:    d.id === window.currentUser.uid
             };
           })
-          .sort(function(a, b) { return b.totalXP - a.totalXP; }); // rank by XP
-
-        if (window.renderGroupMembers) renderGroupMembers(membersData);
+          .sort(function(a, b) { return b.totalXP - a.totalXP; });
+        mergeAndRender();
       });
     });
 
-    // 2. Listen to the habits subcollection — fires whenever any member adds/completes a habit
+    // 2. Members subcollection — group-specific usernames, updates in real-time
+    //    Fires for every new join and any future username change.
+    onSnapshot(collection(db, 'groups', groupId, 'members'), function(snap) {
+      snap.docs.forEach(function(d) {
+        _membersCache[d.id] = d.data(); // { userId, username, joinedAt }
+      });
+      mergeAndRender(); // instantly re-render with updated names for all viewers
+    });
+
+    // 3. Habits subcollection — shared quests + per-member results
     onSnapshot(collection(db, 'groups', groupId, 'habits'), function(snap) {
       var habits = snap.docs.map(function(d) { return { id: d.id, ...d.data() }; });
       if (window.renderGroupHabits) renderGroupHabits(habits);
@@ -1055,11 +1130,12 @@
         if (snap.exists() && window._setState) window._setState(snap.data());
       });
 
-      // Auto-join group if the page was opened with ?group=GROUP_ID
+      // Auto-join group if the page was opened with ?group=GROUP_ID.
+      // _checkAndJoinGroup will skip the modal if the user is already a member.
       if (window._pendingGroupId) {
         var gid = window._pendingGroupId;
         window._pendingGroupId = null;
-        window._joinGroup(gid);
+        if (window._checkAndJoinGroup) window._checkAndJoinGroup(gid);
       }
 
     } else {

@@ -39,6 +39,15 @@ service cloud.firestore {
       allow delete: if request.auth != null
         && request.auth.uid == resource.data.ownerId;
 
+      // ── Members subcollection ────────────────────────────────────────────
+      // Stores group-specific usernames: { userId, username, joinedAt }.
+      // Any signed-in user can read (to display the leaderboard).
+      // Only the owner of that document can write (a user sets their own username).
+      match /members/{memberId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == memberId;
+      }
+
       // ── Habits subcollection ─────────────────────────────────────────────
       // Any group member can read, add, or update habits (including submitting
       // results via the results.{uid} field). Only the habit's creator or the
