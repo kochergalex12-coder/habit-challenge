@@ -109,7 +109,6 @@ function goPage(page, btn) {
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
   document.getElementById('topbar-title').innerHTML = PAGE_TITLES[page] || page;
-  document.getElementById('topbar-add-btn').style.display = page === 'quests' ? 'flex' : 'none';
   if (page === 'challenges')   renderChallenges();
   if (page === 'leaderboard')  renderLeaderboard();
   if (page === 'achievements') renderAchievements();
@@ -619,7 +618,6 @@ goPage = function(page, btn) {
   _origGoPage(page, btn);
   if (page === 'worldmap') {
     document.getElementById('topbar-title').innerHTML = '🗺️ <span style="color:var(--teal)">World Map</span>';
-    document.getElementById('topbar-add-btn').style.display = 'none';
   }
   if (page === 'group') renderGroupPage();
 };
