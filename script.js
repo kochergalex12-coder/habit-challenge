@@ -1,6 +1,6 @@
 /* ════ STATE ════ */
 let state = {
-  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null },
+  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[] },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all'
 };
 
@@ -72,6 +72,7 @@ const PAGE_TITLES = {
   achievements: '<span style="color:var(--teal)">Achievements</span>',
   subscription: '<span style="color:var(--teal)">Go Pro</span>',
   group:        '👥 Group <span style="color:var(--teal)">Challenge</span>',
+  profile:      '👤 My <span style="color:var(--teal)">Profile</span>',
 };
 
 /* ════ PERSISTENCE ════ */
@@ -86,6 +87,9 @@ function load() {
     if (r) { const s = JSON.parse(r); state = { ...state, ...s }; }
   } catch(e) {}
   if (!state.habits.length) state.habits = DEFAULT_HABITS;
+  // Init join date once — used on profile page for "Days Active"
+  if (!state.player.joinDate) { state.player.joinDate = new Date().toISOString(); save(); }
+  if (!state.player.xpLog)    { state.player.xpLog = []; }
   checkDayReset();
 }
 
@@ -239,6 +243,11 @@ function grantXP(amount, e) {
   }
   state.player.xp += amount;
   state.player.totalXP += amount;
+  // Log to current month for the profile XP chart
+  var _ym = new Date().toISOString().slice(0, 7);
+  if (!state.player.xpLog) state.player.xpLog = [];
+  var _logE = state.player.xpLog.find(function(e) { return e.ym === _ym; });
+  if (_logE) { _logE.xp += amount; } else { state.player.xpLog.push({ ym: _ym, xp: amount }); }
   while (state.player.xp >= state.player.xpToNext) {
     state.player.xp -= state.player.xpToNext;
     state.player.level++;
@@ -619,7 +628,8 @@ goPage = function(page, btn) {
   if (page === 'worldmap') {
     document.getElementById('topbar-title').innerHTML = '🗺️ <span style="color:var(--teal)">World Map</span>';
   }
-  if (page === 'group') renderGroupPage();
+  if (page === 'group')   renderGroupPage();
+  if (page === 'profile') renderProfilePage();
 };
 
 /* ════ GROUP CHALLENGE ════ */
@@ -1110,6 +1120,87 @@ function checkGroupInviteUrl() {
 
 // Run URL check immediately on load
 checkGroupInviteUrl();
+
+/* ════ PROFILE PAGE ════ */
+
+function renderProfilePage() {
+  var p   = state.player;
+  var cls = getClass(p.level);
+  var pct = Math.min(100, (p.xp / p.xpToNext) * 100);
+
+  document.getElementById('pf-avatar').textContent    = p.avatar;
+  document.getElementById('pf-name').textContent      = p.name;
+  document.getElementById('pf-class').textContent     = cls.prefix + ' ' + cls.name;
+  document.getElementById('pf-level').textContent     = p.level;
+  document.getElementById('pf-streak').textContent    = p.streak;
+  document.getElementById('pf-completed').textContent = p.totalCompleted;
+  document.getElementById('pf-total-xp').textContent  = (p.totalXP || 0).toLocaleString();
+  document.getElementById('pf-xp-label').textContent  = (p.xp || 0) + ' / ' + (p.xpToNext || 100);
+  document.getElementById('pf-xp-bar').style.width    = pct + '%';
+  document.getElementById('pf-xp-sub').textContent    = ((p.xpToNext || 100) - (p.xp || 0)) + ' XP to next level';
+
+  // Days active since first launch
+  var days = 0;
+  if (p.joinDate) {
+    days = Math.max(0, Math.floor((Date.now() - new Date(p.joinDate).getTime()) / 86400000));
+  }
+  document.getElementById('pf-days').textContent = days || 1;
+
+  // Joined date label
+  var joinedEl = document.getElementById('pf-joined');
+  joinedEl.textContent = p.joinDate
+    ? 'Joined ' + new Date(p.joinDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '';
+
+  renderXPChart();
+}
+
+function renderXPChart() {
+  var el = document.getElementById('pf-chart');
+  if (!el) return;
+
+  var log = (state.player.xpLog || []).slice();
+
+  if (!log.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted);font-size:.82rem">' +
+      'Complete quests to build your XP history</div>';
+    return;
+  }
+
+  // Build a continuous month range from first logged month to today
+  var allMonths = [];
+  var first = log.reduce(function(min, e) { return e.ym < min ? e.ym : min; }, log[0].ym);
+  var cursor = new Date(first + '-02'); // offset 2 days to avoid timezone edge
+  var now    = new Date();
+  while (cursor <= now) {
+    var ym    = cursor.toISOString().slice(0, 7);
+    var entry = log.find(function(e) { return e.ym === ym; });
+    allMonths.push({ ym: ym, xp: entry ? entry.xp : 0 });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  // Keep last 12 months maximum
+  if (allMonths.length > 12) allMonths = allMonths.slice(allMonths.length - 12);
+
+  var maxXP = Math.max.apply(null, allMonths.map(function(m) { return m.xp; }));
+  if (maxXP === 0) maxXP = 1;
+
+  var CHART_H = 110; // pixel height of bar area
+
+  function fmtMonth(ym) {
+    return new Date(ym + '-02').toLocaleDateString('en-US', { month: 'short' });
+  }
+
+  el.innerHTML = allMonths.map(function(m) {
+    var barH  = Math.round((m.xp / maxXP) * CHART_H);
+    var isPeak = m.xp === maxXP && m.xp > 0;
+    return '<div class="pf-bar-col">' +
+      '<div class="pf-bar-val">' + (m.xp > 0 ? m.xp : '') + '</div>' +
+      '<div class="pf-bar ' + (isPeak ? 'pf-bar-peak' : '') + '" style="height:' + barH + 'px"></div>' +
+      '<div class="pf-bar-lbl">' + fmtMonth(m.ym) + '</div>' +
+    '</div>';
+  }).join('');
+}
 
 /* ════ BOOT ════ */
 load();

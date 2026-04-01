@@ -17,9 +17,10 @@
       <span class="sb-logo-sub">Turn Discipline Into Dopamine</span>
     </div>
 
-    <div class="sb-player">
+    <!-- Clicking the player panel navigates to the profile page -->
+    <div class="sb-player sb-player-clickable" onclick="goPage('profile',document.getElementById('nav-profile'))" title="View your profile">
       <div class="sb-avatar-row">
-        <div class="sb-avatar" id="sb-avatar" title="Click to change">🧙</div>
+        <div class="sb-avatar" id="sb-avatar">🧙</div>
         <div class="sb-player-info">
           <div class="sb-player-name" id="sb-name">Novice Hero</div>
           <div class="sb-player-class" id="sb-class">⚔️ Discipline Apprentice</div>
@@ -43,6 +44,7 @@
       <button class="sb-nav-item" onclick="goPage('worldmap',this)" id="nav-worldmap"><span class="sb-nav-icon">🗺️</span> World Map <span class="sb-nav-badge" style="background:var(--teal)">NEW</span></button>
       <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
       <div class="sb-section-label">Account</div>
+      <button class="sb-nav-item" onclick="goPage('profile',this)" id="nav-profile"><span class="sb-nav-icon">👤</span> My Profile</button>
       <button class="sb-nav-item" onclick="goPage('subscription',this)"><span class="sb-nav-icon">👑</span> Go Pro <span class="sb-nav-badge">NEW</span></button>
     </div>
 
@@ -333,6 +335,65 @@
 
           </div>
         </div>
+      </div>
+
+      <!-- PROFILE PAGE -->
+      <div class="page" id="page-profile">
+
+        <!-- Hero card: avatar + name + class + joined date -->
+        <div class="profile-hero">
+          <div class="profile-avatar" id="pf-avatar">🧙</div>
+          <div>
+            <div class="profile-name" id="pf-name">Novice Hero</div>
+            <div class="profile-class" id="pf-class">⚔️ Discipline Apprentice</div>
+            <div class="profile-joined" id="pf-joined"></div>
+          </div>
+        </div>
+
+        <!-- Stat cards row -->
+        <div class="profile-stats-grid">
+          <div class="profile-stat-card">
+            <div class="pf-stat-val" id="pf-level" style="color:var(--violet)">1</div>
+            <div class="pf-stat-lbl">Level</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="pf-stat-val" id="pf-streak" style="color:var(--rose)">0</div>
+            <div class="pf-stat-lbl">🔥 Streak</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="pf-stat-val" id="pf-completed" style="color:var(--teal)">0</div>
+            <div class="pf-stat-lbl">Quests Done</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="pf-stat-val" id="pf-days" style="color:var(--green)">0</div>
+            <div class="pf-stat-lbl">Days Active</div>
+          </div>
+          <div class="profile-stat-card">
+            <div class="pf-stat-val" id="pf-total-xp" style="color:var(--gold)">0</div>
+            <div class="pf-stat-lbl">Total XP</div>
+          </div>
+        </div>
+
+        <!-- XP progress bar -->
+        <div class="profile-xp-card">
+          <div class="profile-xp-hdr">
+            <span>⚡ Experience Progress</span>
+            <span id="pf-xp-label" style="font-family:var(--ff-mono);font-size:.78rem">0 / 100</span>
+          </div>
+          <div class="profile-xp-track">
+            <div class="profile-xp-fill" id="pf-xp-bar" style="width:0%"></div>
+          </div>
+          <div class="profile-xp-sub" id="pf-xp-sub">100 XP to next level</div>
+        </div>
+
+        <!-- Monthly XP bar chart -->
+        <div class="profile-chart-card">
+          <div class="profile-chart-hdr">📊 XP Gained per Month
+            <span class="profile-chart-sub">Peak month highlighted</span>
+          </div>
+          <div id="pf-chart"></div>
+        </div>
+
       </div>
 
       <!-- WORLD MAP PAGE -->

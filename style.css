@@ -928,6 +928,74 @@ html, body {
   .grp-invite-text { max-width: 160px; }
 }
 
+/* ══ PROFILE PAGE ══ */
+.sb-player-clickable { cursor: pointer; transition: background var(--t); border-radius: 10px; }
+.sb-player-clickable:hover { background: rgba(255,255,255,.05); }
+
+.profile-hero {
+  display: flex; align-items: center; gap: 20px;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r);
+  padding: 24px 28px; box-shadow: var(--sh); margin-bottom: 18px;
+  position: relative; overflow: hidden;
+}
+.profile-hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--violet));
+}
+.profile-avatar {
+  font-size: 3.2rem; width: 70px; height: 70px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); border: 2px solid var(--border2); border-radius: 50%;
+}
+.profile-name  { font-family: var(--ff-title); font-size: 1.6rem; font-weight: 900; color: var(--ink); line-height: 1.1; }
+.profile-class { font-size: .82rem; color: var(--muted); margin-top: 5px; font-weight: 600; }
+.profile-joined { font-family: var(--ff-mono); font-size: .62rem; color: var(--muted); margin-top: 5px; }
+
+.profile-stats-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 14px;
+}
+.profile-stat-card {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r);
+  padding: 18px 10px; text-align: center; box-shadow: var(--sh);
+  transition: transform var(--t);
+}
+.profile-stat-card:hover { transform: translateY(-2px); }
+.pf-stat-val { font-family: var(--ff-title); font-size: 1.9rem; font-weight: 900; line-height: 1; color: var(--gold); }
+.pf-stat-lbl { font-family: var(--ff-mono); font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-top: 7px; }
+
+.profile-xp-card {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r);
+  padding: 20px 24px; box-shadow: var(--sh); margin-bottom: 14px;
+}
+.profile-xp-hdr { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; font-weight: 700; margin-bottom: 10px; }
+.profile-xp-track { height: 10px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+.profile-xp-fill  { height: 100%; background: linear-gradient(90deg, var(--teal), var(--violet)); border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+.profile-xp-sub   { font-family: var(--ff-mono); font-size: .62rem; color: var(--muted); margin-top: 7px; }
+
+.profile-chart-card {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r);
+  padding: 22px 24px; box-shadow: var(--sh);
+}
+.profile-chart-hdr { font-family: var(--ff-title); font-size: 1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: baseline; gap: 10px; }
+.profile-chart-sub { font-family: var(--ff-mono); font-size: .6rem; color: var(--muted); font-weight: 400; }
+
+#pf-chart { display: flex; align-items: flex-end; gap: 5px; height: 150px; }
+.pf-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.pf-bar-val { font-family: var(--ff-mono); font-size: .5rem; color: var(--muted); min-height: 14px; margin-bottom: 3px; }
+.pf-bar {
+  width: 100%; border-radius: 4px 4px 0 0; min-height: 3px;
+  background: var(--teal-bg); border: 1.5px solid var(--teal-br);
+  transition: height .45s cubic-bezier(.4,0,.2,1);
+}
+.pf-bar.pf-bar-peak {
+  background: linear-gradient(180deg, var(--violet) 0%, var(--teal) 100%);
+  border-color: var(--violet-br); box-shadow: 0 0 14px rgba(109,61,189,.3);
+}
+.pf-bar-lbl { font-family: var(--ff-mono); font-size: .56rem; color: var(--muted); margin-top: 5px; }
+
+@media (max-width: 900px)  { .profile-stats-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px)  { .profile-stats-grid { grid-template-columns: repeat(2, 1fr); } .profile-hero { padding: 16px; gap: 14px; } .profile-name { font-size: 1.3rem; } }
+
 /* ══ GROUP CHALLENGE — RESULT INPUT ══ */
 .grp-result-row {
   display: flex; align-items: center; gap: 6px; margin: 8px 0 4px;
