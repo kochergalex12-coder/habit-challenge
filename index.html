@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HabitQuest Desktop</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-logo" onclick="goPage('quests')">
+      HabitQuest
+      <span class="sb-logo-sub">Turn Discipline Into Dopamine</span>
+    </div>
+
+    <div class="sb-player">
+      <div class="sb-avatar-row">
+        <div class="sb-avatar" id="sb-avatar" title="Click to change">🧙</div>
+        <div class="sb-player-info">
+          <div class="sb-player-name" id="sb-name">Novice Hero</div>
+          <div class="sb-player-class" id="sb-class">⚔️ Discipline Apprentice</div>
+        </div>
+      </div>
+      <div class="sb-xp-bar-label">
+        <span>XP</span>
+        <span id="sb-xp-label">0 / 100</span>
+      </div>
+      <div class="sb-xp-track"><div class="sb-xp-fill" id="sb-xp-bar" style="width:0%"></div></div>
+      <div class="sb-level-badge">👑 Level <span id="sb-level">1</span></div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-section-label">Navigation</div>
+      <button class="sb-nav-item active" onclick="goPage('quests',this)"><span class="sb-nav-icon">⚔️</span> Quests</button>
+      <button class="sb-nav-item" onclick="goPage('challenges',this)"><span class="sb-nav-icon">⚡</span> Challenges</button>
+      <button class="sb-nav-item" onclick="goPage('leaderboard',this)"><span class="sb-nav-icon">🏆</span> Leaderboard</button>
+      <button class="sb-nav-item" onclick="goPage('achievements',this)"><span class="sb-nav-icon">🎖</span> Achievements</button>
+      <div class="sb-section-label">Explore</div>
+      <button class="sb-nav-item" onclick="goPage('worldmap',this)" id="nav-worldmap"><span class="sb-nav-icon">🗺️</span> World Map <span class="sb-nav-badge" style="background:var(--teal)">NEW</span></button>
+      <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
+      <div class="sb-section-label">Account</div>
+      <button class="sb-nav-item" onclick="goPage('subscription',this)"><span class="sb-nav-icon">👑</span> Go Pro <span class="sb-nav-badge">NEW</span></button>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-stats-mini">
+        <div class="sb-stat-mini"><div class="sb-stat-mini-val" style="color:var(--gold);" id="sb-total-xp">0</div><div class="sb-stat-mini-lbl">Total XP</div></div>
+        <div class="sb-stat-mini"><div class="sb-stat-mini-val" style="color:var(--rose);" id="sb-streak">0</div><div class="sb-stat-mini-lbl">Streak</div></div>
+        <div class="sb-stat-mini"><div class="sb-stat-mini-val" style="color:var(--teal);" id="sb-done-count">0</div><div class="sb-stat-mini-lbl">Done</div></div>
+      </div>
+      <button class="sb-pro-btn" onclick="goPage('subscription',document.querySelector('[onclick*=subscription]'))">👑 Upgrade to Pro</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- TOPBAR -->
+    <div id="topbar">
+      <div class="topbar-title" id="topbar-title">My <span>Quests</span></div>
+      <div class="topbar-right">
+        <div class="tb-badge tb-streak">🔥 <span id="tb-streak">0</span> days</div>
+        <div class="tb-badge tb-xp">⚡ <span id="tb-xp">0</span> XP</div>
+        <button class="tb-add-btn" id="topbar-add-btn" onclick="openModal()">+ New Quest</button>
+        <button class="tb-add-btn" id="auth-btn" onclick="window.signInWithGoogle()" style="background:linear-gradient(135deg,#4285f4,#34a853)">🔑 Sign In</button>
+        <button class="tb-add-btn" id="signout-btn" onclick="window.signOutUser()" style="display:none;background:var(--rose-bg);color:var(--rose);border:1.5px solid var(--rose-br);box-shadow:none">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content">
+
+      <!-- QUESTS PAGE -->
+      <div class="page active" id="page-quests">
+        <div class="page-grid">
+          <div>
+            <div class="week-strip" id="d-week-strip"></div>
+            <div class="stats-row">
+              <div class="stat-card" style="--s-c1:#c9820a;--s-c2:#c4374a"><div class="stat-val" id="d-total-xp">0</div><div class="stat-lbl">Total XP</div></div>
+              <div class="stat-card" style="--s-c1:#c4374a;--s-c2:#6d3dbd"><div class="stat-val" id="d-streak">0</div><div class="stat-lbl">Best Streak</div></div>
+              <div class="stat-card" style="--s-c1:#0d8a7f;--s-c2:#1a8a5a"><div class="stat-val" id="d-completed">0</div><div class="stat-lbl">Quests Done</div></div>
+              <div class="stat-card" style="--s-c1:#1a8a5a;--s-c2:#0d8a7f"><div class="stat-val" id="d-today">0%</div><div class="stat-lbl">Today</div></div>
+            </div>
+            <div class="sec-hdr">
+              <div class="sec-title">Active <span>Quests</span></div>
+              <button class="sec-action" onclick="openModal()">+ Add Quest</button>
+            </div>
+            <div class="cat-pills" id="d-cat-pills">
+              <div class="cat-pill active" data-cat="all" onclick="filterCat(this)">All</div>
+              <div class="cat-pill" data-cat="health" onclick="filterCat(this)">💪 Health</div>
+              <div class="cat-pill" data-cat="mind" onclick="filterCat(this)">🧠 Mind</div>
+              <div class="cat-pill" data-cat="skill" onclick="filterCat(this)">🎯 Skills</div>
+              <div class="cat-pill" data-cat="social" onclick="filterCat(this)">🤝 Social</div>
+              <div class="cat-pill" data-cat="creative" onclick="filterCat(this)">🎨 Creative</div>
+            </div>
+            <div class="habits-grid" id="d-habits-grid"></div>
+          </div>
+          <div class="right-col">
+            <div class="char-panel">
+              <div class="char-panel-avatar" id="d-avatar" title="Click to change">🧙</div>
+              <div class="char-panel-name" id="d-name">Novice Hero</div>
+              <div class="char-panel-class" id="d-class">⚔️ Discipline Apprentice</div>
+              <div class="cp-xp-label"><span>Experience</span><span id="d-xp-label">0 / 100</span></div>
+              <div class="cp-xp-track"><div class="cp-xp-fill" id="d-xp-bar" style="width:0%"></div></div>
+              <div class="cp-level">
+                <div class="level-ring">
+                  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border2)" stroke-width="4"/>
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="url(#lvlG)" stroke-width="4" stroke-dasharray="163.4" id="d-level-arc" stroke-dashoffset="163.4" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+                    <defs><linearGradient id="lvlG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#c9820a"/><stop offset="100%" stop-color="#c4374a"/></linearGradient></defs>
+                  </svg>
+                  <div class="level-num" id="d-level">1</div>
+                </div>
+                <div class="level-lbl">Level</div>
+              </div>
+              <div class="cp-stats">
+                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--rose)" id="d-cp-streak">0</div><div class="cp-stat-lbl">Streak</div></div>
+                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--teal)" id="d-cp-quests">0</div><div class="cp-stat-lbl">Quests</div></div>
+                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--green)" id="d-cp-today">0</div><div class="cp-stat-lbl">Today</div></div>
+              </div>
+            </div>
+            <div class="mini-lb">
+              <div class="mini-lb-hdr">🏆 Top Rankings</div>
+              <div id="d-mini-lb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHALLENGES PAGE -->
+      <div class="page" id="page-challenges">
+        <div class="sec-hdr"><div class="sec-title">⚡ Active <span>Challenges</span></div></div>
+        <div class="challenges-grid" id="d-challenges-grid"></div>
+      </div>
+
+      <!-- LEADERBOARD PAGE -->
+      <div class="page" id="page-leaderboard">
+        <div class="sec-hdr"><div class="sec-title">🏆 World <span>Leaderboard</span></div></div>
+        <div class="lb-table" id="d-lb"></div>
+      </div>
+
+      <!-- ACHIEVEMENTS PAGE -->
+      <div class="page" id="page-achievements">
+        <div class="ach-top-bar">
+          <div><div class="ach-top-title">🎖 Achievements</div><div class="ach-top-sub">Earn badges by completing quests and reaching milestones</div></div>
+          <div class="ach-count-row">
+            <div class="ach-count"><div class="ach-count-val" id="d-ach-unlocked">0</div><div class="ach-count-lbl">Unlocked</div></div>
+            <div class="ach-count"><div class="ach-count-val" style="color:var(--rose)" id="d-ach-locked">12</div><div class="ach-count-lbl">Locked</div></div>
+          </div>
+        </div>
+        <div class="ach-grid" id="d-ach-grid"></div>
+      </div>
+
+      <!-- SUBSCRIPTION PAGE -->
+      <div class="page" id="page-subscription">
+        <div class="sub-layout">
+          <div class="plans-col">
+            <div class="sub-hero">
+              <span class="sub-crown">👑</span>
+              <h2>Unlock Your Full Potential</h2>
+              <p>Go Pro for unlimited quests, advanced analytics, all epic challenges, and priority support.</p>
+            </div>
+            <div class="plans-grid-d">
+              <div class="plan-card" data-plan="free">
+                <div class="plan-name-d">Free</div>
+                <div class="plan-price-d"><span class="plan-amt">$0</span><span class="plan-per">/forever</span></div>
+                <div class="plan-desc-d">Great for getting started.</div>
+                <ul class="plan-feats">
+                  <li><span class="fy">✓</span> Up to 6 quests</li>
+                  <li><span class="fy">✓</span> Basic streak tracking</li>
+                  <li><span class="fy">✓</span> Leaderboard access</li>
+                  <li><span class="fn">✗</span> Unlimited quests</li>
+                  <li><span class="fn">✗</span> Advanced analytics</li>
+                </ul>
+                <button class="plan-btn-d" disabled style="opacity:.5;cursor:default">Current Plan</button>
+              </div>
+              <div class="plan-card popular" data-plan="pro">
+                <div class="plan-badge-d">⭐ Most Popular</div>
+                <div class="plan-name-d">Pro</div>
+                <div class="plan-price-d"><span class="plan-amt">$7.99</span><span class="plan-per">/month</span></div>
+                <div class="plan-desc-d">For serious habit builders.</div>
+                <ul class="plan-feats">
+                  <li><span class="fy">✓</span> <strong>Unlimited</strong> quests</li>
+                  <li><span class="fy">✓</span> Advanced analytics</li>
+                  <li><span class="fy">✓</span> All epic challenges</li>
+                  <li><span class="fy">✓</span> Custom categories</li>
+                  <li><span class="fy">✓</span> Priority support</li>
+                </ul>
+                <button class="plan-btn-d primary" onclick="selectDesktopPlan('Pro Monthly','$7.99/mo')">Choose Pro →</button>
+              </div>
+              <div class="plan-card" data-plan="annual">
+                <div class="plan-name-d">Annual</div>
+                <div class="plan-price-d"><span class="plan-amt">$59</span><span class="plan-per">/year</span></div>
+                <div class="plan-desc-d">Save 37% — best value.</div>
+                <ul class="plan-feats">
+                  <li><span class="fy">✓</span> Everything in Pro</li>
+                  <li><span class="fy">✓</span> 37% savings</li>
+                  <li><span class="fy">✓</span> Yearly progress report</li>
+                  <li><span class="fy">✓</span> Exclusive annual badge</li>
+                  <li><span class="fy">✓</span> VIP Discord access</li>
+                </ul>
+                <button class="plan-btn-d" onclick="selectDesktopPlan('Pro Annual','$59.99/yr')">Choose Annual →</button>
+              </div>
+            </div>
+          </div>
+          <div class="pay-col">
+            <div class="pay-card" id="d-pay-form">
+              <h3>Complete Your Order</h3>
+              <p class="pay-sub">Secure payment — cancel anytime</p>
+              <div class="pay-selected">
+                <div>
+                  <div class="ps-name" id="d-plan-name">👑 Pro Monthly</div>
+                  <div style="font-size:.7rem;color:var(--muted);margin-top:2px">Select a plan to get started</div>
+                </div>
+                <div>
+                  <div class="ps-price" id="d-plan-price">$7.99/mo</div>
+                  <div class="ps-change" onclick="document.querySelector('.plans-grid-d').scrollIntoView({behavior:'smooth'})">Change plan</div>
+                </div>
+              </div>
+              <label class="pf-label">Full Name</label>
+              <input class="pf-input" type="text" id="d-pay-name" placeholder="Jane Doe" autocomplete="name"/>
+              <label class="pf-label">Email Address</label>
+              <input class="pf-input" type="email" id="d-pay-email" placeholder="jane@example.com" autocomplete="email"/>
+              <label class="pf-label">Card Number</label>
+              <input class="pf-input" type="text" id="d-pay-card" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number"/>
+              <div class="pf-row">
+                <div><label class="pf-label">Expiry</label><input class="pf-input" id="d-pay-exp" type="text" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)"/></div>
+                <div><label class="pf-label">CVC</label><input class="pf-input" id="d-pay-cvc" type="text" placeholder="•••" maxlength="4"/></div>
+              </div>
+              <div class="pay-secure">🔒 Your payment is encrypted and secure</div>
+              <button class="btn-pay" onclick="desktopPayment()">🔒 Subscribe Now</button>
+              <p class="pay-terms">By subscribing you agree to our <a>Terms</a> and <a>Privacy Policy</a>. Cancel anytime.</p>
+              <div class="trust-row">
+                <div class="trust-item">🔒 SSL</div>
+                <div class="trust-item">↩️ Cancel anytime</div>
+                <div class="trust-item">💳 All cards</div>
+              </div>
+            </div>
+            <div class="pay-card" id="d-pay-success" style="display:none">
+              <div class="pay-success-d">
+                <div class="suc-icon">🎉</div>
+                <h3>Welcome to Pro!</h3>
+                <p>Your subscription is active. Enjoy unlimited quests and all Pro features! ⚔️</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROUP CHALLENGE PAGE -->
+      <div class="page" id="page-group">
+
+        <!-- Shown when user is not signed in -->
+        <div id="grp-signin-prompt" style="display:none">
+          <div class="empty-state" style="padding:60px 20px">
+            <div class="empty-icon">🔑</div>
+            <p style="margin-bottom:16px">Sign in with Google to create or join a group challenge</p>
+            <button class="tb-add-btn" onclick="window.signInWithGoogle()" style="background:linear-gradient(135deg,#4285f4,#34a853);margin:0 auto">🔑 Sign In with Google</button>
+          </div>
+        </div>
+
+        <!-- Shown when signed in but not in a group -->
+        <div id="grp-setup">
+          <div class="grp-hero">
+            <div class="grp-hero-icon">👥</div>
+            <div class="grp-hero-title">Group Challenge</div>
+            <div class="grp-hero-sub">Create a group or join one — complete habits together in real-time</div>
+          </div>
+          <div class="grp-setup-cards">
+            <div class="grp-setup-card">
+              <div class="grp-setup-icon">✨</div>
+              <div class="grp-setup-title">Create a Group</div>
+              <div class="grp-setup-desc">Choose a name — a shareable code is generated automatically.</div>
+              <input id="grp-name-input" class="form-input" placeholder="e.g. Morning Warriors" maxlength="40" style="margin-bottom:8px"/>
+              <button class="btn-primary" onclick="createGroupFromUI()">Create Group →</button>
+            </div>
+            <div class="grp-setup-card">
+              <div class="grp-setup-icon">🔗</div>
+              <div class="grp-setup-title">Join a Group</div>
+              <div class="grp-setup-desc">Enter a 6-character join code, a full invite link, or a group ID.</div>
+              <input id="grp-code-input" class="form-input" placeholder="Join code (e.g. AB12CD) or invite link…" style="margin-bottom:8px"/>
+              <button class="btn-primary" onclick="joinGroupFromUI()">Join Group →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shown when inside an active group -->
+        <div id="grp-active" style="display:none">
+
+          <!-- Group header bar -->
+          <div class="grp-info-bar">
+            <div>
+              <div class="grp-active-title" id="grp-name">My Group</div>
+              <div class="grp-active-sub"><span id="grp-members-count">0 members</span></div>
+            </div>
+            <div class="grp-info-actions">
+              <!-- Short join code — easiest thing to share verbally or in chat -->
+              <div class="grp-code-box">
+                <span class="grp-code-label">Code</span>
+                <span id="grp-join-code" class="grp-code-badge">——</span>
+                <button class="sec-action" onclick="copyJoinCode()">🔑 Copy Code</button>
+              </div>
+              <div class="grp-invite-box">
+                <span id="grp-invite-link" class="grp-invite-text"></span>
+                <button class="sec-action" onclick="copyInviteLink()">📋 Copy Link</button>
+              </div>
+              <button class="btn-secondary" style="font-size:.78rem;padding:8px 14px" onclick="leaveGroupUI()">Leave Group</button>
+            </div>
+          </div>
+
+          <!-- Shared habits + members side by side -->
+          <div class="page-grid" style="margin-top:20px">
+
+            <!-- Left: shared habits -->
+            <div>
+              <div class="sec-hdr">
+                <div class="sec-title">⚔️ Shared <span>Quests</span></div>
+                <button class="sec-action" onclick="addGroupHabit()">+ Share Quest</button>
+              </div>
+              <div id="grp-habits-grid" class="habits-grid"></div>
+            </div>
+
+            <!-- Right: live group leaderboard (ranked by result totals, then XP) -->
+            <div>
+              <div class="mini-lb">
+                <div class="mini-lb-hdr">🏆 Group Leaderboard</div>
+                <div id="grp-members-list"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- WORLD MAP PAGE -->
+      <div class="page" id="page-worldmap">
+        <div class="wm-header">
+          <div class="wm-header-title">🗺️ Your World</div>
+          <div class="wm-header-sub">Each room represents a habit category. Enter a room to interact with your habits and log results.</div>
+        </div>
+
+        <div id="wm-map-grid">
+          <div class="wm-grid">
+            <!-- BEDROOM -->
+            <div class="wm-room wm-r-bedroom featured" onclick="wmEnterRoom('bedroom')">
+              <div class="wm-room-bg"></div><div class="wm-room-floor"></div>
+              <div class="wm-enter-overlay"><div class="wm-enter-pill">Enter Room →</div></div>
+              <div class="wm-room-inner">
+                <div class="wm-room-top">
+                  <div><div class="wm-room-title">Bedroom</div><div class="wm-room-sub">Daily Habits</div></div>
+                  <div class="wm-room-emoji">🛏️</div>
+                </div>
+                <div>
+                  <div class="wm-hotspots">
+                    <div class="wm-hs wm-hs-gold"><div class="wm-hs-d"></div>Meditation</div>
+                    <div class="wm-hs wm-hs-gold"><div class="wm-hs-d"></div>Journaling</div>
+                    <div class="wm-hs wm-hs-teal"><div class="wm-hs-d"></div>Sleep 8h</div>
+                    <div class="wm-hs wm-hs-gold"><div class="wm-hs-d"></div>Hydration</div>
+                  </div>
+                  <div class="wm-prog-row">
+                    <div class="wm-prog-track"><div class="wm-prog-fill" style="width:75%;background:linear-gradient(90deg,#c9820a,#c4374a)"></div></div>
+                    <div class="wm-prog-val" style="color:#c9820a">3/4</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- GYM -->
+            <div class="wm-room wm-r-gym" onclick="wmEnterRoom('gym')">
+              <div class="wm-room-bg"></div><div class="wm-room-floor"></div>
+              <div class="wm-enter-overlay"><div class="wm-enter-pill">Enter →</div></div>
+              <div class="wm-room-inner">
+                <div class="wm-room-top">
+                  <div><div class="wm-room-title">Gym</div><div class="wm-room-sub">Health</div></div>
+                  <div class="wm-room-emoji">🏋️</div>
+                </div>
+                <div>
+                  <div class="wm-hotspots">
+                    <div class="wm-hs wm-hs-teal"><div class="wm-hs-d"></div>Workout</div>
+                    <div class="wm-hs wm-hs-teal"><div class="wm-hs-d"></div>10k Steps</div>
+                  </div>
+                  <div class="wm-prog-row">
+                    <div class="wm-prog-track"><div class="wm-prog-fill" style="width:50%;background:linear-gradient(90deg,#0d8a7f,#1a8a5a)"></div></div>
+                    <div class="wm-prog-val" style="color:#0d8a7f">1/2</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- STUDY -->
+            <div class="wm-room wm-r-study" onclick="wmEnterRoom('study')">
+              <div class="wm-room-bg"></div><div class="wm-room-floor"></div>
+              <div class="wm-enter-overlay"><div class="wm-enter-pill">Enter →</div></div>
+              <div class="wm-room-inner">
+                <div class="wm-room-top">
+                  <div><div class="wm-room-title">Study</div><div class="wm-room-sub">Learning</div></div>
+                  <div class="wm-room-emoji">📚</div>
+                </div>
+                <div>
+                  <div class="wm-hotspots">
+                    <div class="wm-hs wm-hs-blue"><div class="wm-hs-d"></div>Read 30m</div>
+                    <div class="wm-hs wm-hs-blue"><div class="wm-hs-d"></div>Code</div>
+                  </div>
+                  <div class="wm-prog-row">
+                    <div class="wm-prog-track"><div class="wm-prog-fill" style="width:100%;background:linear-gradient(90deg,#3c64dc,#6d3dbd)"></div></div>
+                    <div class="wm-prog-val" style="color:#5b8de8">2/2 ✓</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- ARENA -->
+            <div class="wm-room wm-r-arena" onclick="wmEnterRoom('arena')">
+              <div class="wm-room-bg"></div><div class="wm-room-floor"></div>
+              <div class="wm-enter-overlay"><div class="wm-enter-pill">Enter →</div></div>
+              <div class="wm-room-inner">
+                <div class="wm-room-top">
+                  <div><div class="wm-room-title">Arena</div><div class="wm-room-sub">Challenges</div></div>
+                  <div class="wm-room-emoji">⚔️</div>
+                </div>
+                <div>
+                  <div class="wm-hotspots">
+                    <div class="wm-hs wm-hs-rose"><div class="wm-hs-d"></div>7-Day Sprint</div>
+                  </div>
+                  <div class="wm-prog-row">
+                    <div class="wm-prog-track"><div class="wm-prog-fill" style="width:40%;background:linear-gradient(90deg,#c4374a,#c47028)"></div></div>
+                    <div class="wm-prog-val" style="color:#c4374a">Day 3</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- HALL -->
+            <div class="wm-room wm-r-hall wide" onclick="wmEnterRoom('hall')">
+              <div class="wm-room-bg"></div><div class="wm-room-floor"></div>
+              <div class="wm-enter-overlay"><div class="wm-enter-pill">Enter →</div></div>
+              <div class="wm-room-inner">
+                <div class="wm-room-top">
+                  <div><div class="wm-room-title">Hall of Fame</div><div class="wm-room-sub">Achievements · Leaderboard</div></div>
+                  <div class="wm-room-emoji">🏆</div>
+                </div>
+                <div>
+                  <div class="wm-hotspots">
+                    <div class="wm-hs wm-hs-violet"><div class="wm-hs-d"></div>#4 World</div>
+                    <div class="wm-hs wm-hs-violet"><div class="wm-hs-d"></div>8 Badges</div>
+                  </div>
+                  <div class="wm-prog-row">
+                    <div class="wm-prog-track"><div class="wm-prog-fill" style="width:88%;background:linear-gradient(90deg,#6d3dbd,#8b5cbf)"></div></div>
+                    <div class="wm-prog-val" style="color:#8b5cbf">88%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room Scene -->
+        <div id="wm-scene-wrap">
+          <button class="wm-scene-back" onclick="wmGoBack()">← World Map</button>
+          <div class="wm-scene-title-bar">
+            <div class="wm-scene-name" id="wm-scene-name">GYM</div>
+            <div class="wm-scene-sub" id="wm-scene-sub">Click equipment to log</div>
+          </div>
+          <div id="wm-svg-area">
+            <svg id="room-svg-inner" viewBox="0 0 1200 650" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="wm-wallBack" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#2e1e0a"/><stop offset="100%" stop-color="#1a1208"/></linearGradient>
+                <linearGradient id="wm-wallLeft" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2a1c08"/><stop offset="100%" stop-color="#1c1208"/></linearGradient>
+                <linearGradient id="wm-floor" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3a2810"/><stop offset="100%" stop-color="#241808"/></linearGradient>
+                <linearGradient id="wm-rug" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6b3a1f"/><stop offset="100%" stop-color="#4a2810"/></linearGradient>
+                <linearGradient id="wm-lamp" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#ffcc44" stop-opacity=".85"/><stop offset="100%" stop-color="#ff8820" stop-opacity="0"/></linearGradient>
+                <linearGradient id="wm-blanket" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3a4a7a"/><stop offset="100%" stop-color="#283468"/></linearGradient>
+                <linearGradient id="wm-monitor" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#1a3a6a"/><stop offset="100%" stop-color="#0a1a40"/></linearGradient>
+                <linearGradient id="wm-water" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#0d8a7f" stop-opacity=".6"/><stop offset="100%" stop-color="#1a8a5a" stop-opacity=".35"/></linearGradient>
+                <linearGradient id="wm-led" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ff4488"/><stop offset="33%" stop-color="#ff8820"/><stop offset="66%" stop-color="#44aaff"/><stop offset="100%" stop-color="#aa44ff"/></linearGradient>
+                <filter id="wm-glow-gold"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="wm-glow-teal"><feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="wm-shadow"><feDropShadow dx="3" dy="6" stdDeviation="6" flood-color="#000" flood-opacity=".5"/></filter>
+              </defs>
+              <polygon points="100,60 1100,60 1100,480 100,480" fill="url(#wm-wallBack)"/>
+              <polygon points="0,140 100,60 100,480 0,530" fill="url(#wm-wallLeft)"/>
+              <polygon points="0,530 100,480 1100,480 1200,530 1200,650 0,650" fill="url(#wm-floor)"/>
+              <g opacity=".15" stroke="#6b4020" stroke-width="1" fill="none">
+                <line x1="0" y1="570" x2="1200" y2="570"/><line x1="0" y1="610" x2="1200" y2="610"/><line x1="0" y1="650" x2="1200" y2="650"/>
+                <line x1="180" y1="480" x2="130" y2="650"/><line x1="360" y1="480" x2="310" y2="650"/><line x1="540" y1="480" x2="495" y2="650"/><line x1="720" y1="480" x2="680" y2="650"/><line x1="900" y1="480" x2="862" y2="650"/><line x1="1080" y1="480" x2="1045" y2="650"/>
+              </g>
+              <rect x="100" y="65" width="1000" height="4" rx="2" fill="url(#wm-led)" opacity=".75"><animate attributeName="opacity" values=".75;1;.75" dur="3s" repeatCount="indefinite"/></rect>
+              <rect x="130" y="78" width="190" height="230" rx="3" fill="#1a2a3a" stroke="#4a3010" stroke-width="2.5"/>
+              <rect x="133" y="81" width="184" height="224" fill="rgba(255,200,120,.12)"/>
+              <line x1="225" y1="81" x2="225" y2="305" stroke="#3a2010" stroke-width="2"/>
+              <line x1="133" y1="193" x2="317" y2="193" stroke="#3a2010" stroke-width="2"/>
+              <path d="M130,72 Q140,150 130,230 Q120,160 112,230 L112,72 Z" fill="#4a3018" opacity=".85"/>
+              <path d="M320,72 Q310,150 320,230 Q330,160 338,230 L338,72 Z" fill="#4a3018" opacity=".85"/>
+              <ellipse cx="600" cy="580" rx="320" ry="68" fill="url(#wm-rug)" opacity=".85"/>
+              <ellipse cx="600" cy="580" rx="295" ry="60" fill="none" stroke="#8a5028" stroke-width="1.5" opacity=".3"/>
+              <g filter="url(#wm-shadow)">
+                <rect x="390" y="80" width="100" height="140" rx="2" fill="#0a0808" stroke="#3a2010" stroke-width="1.5"/>
+                <rect x="392" y="82" width="96" height="136" fill="#1a0810"/>
+                <circle cx="440" cy="148" r="32" fill="none" stroke="#ff4488" stroke-width="1.2" opacity=".8"/>
+                <circle cx="440" cy="148" r="18" fill="none" stroke="#ff8820" stroke-width=".8" opacity=".7"/>
+                <text x="440" y="197" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#ff4488" font-weight="800" letter-spacing="2">VIBES</text>
+              </g>
+              <g filter="url(#wm-shadow)">
+                <rect x="520" y="75" width="120" height="170" rx="2" fill="#0a0808" stroke="#3a2010" stroke-width="1.5"/>
+                <rect x="522" y="77" width="116" height="166" fill="#080a14"/>
+                <text x="582" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#c9820a" font-weight="900">RISE</text>
+                <text x="582" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="8" fill="#a06010" letter-spacing="2">&amp; GRIND</text>
+                <line x1="535" y1="162" x2="629" y2="162" stroke="#c9820a" stroke-width=".8" opacity=".5"/>
+              </g>
+              <g filter="url(#wm-shadow)" transform="translate(790,290)">
+                <rect x="0" y="0" width="310" height="150" rx="8" fill="#3a2010"/>
+                <rect x="5" y="5" width="300" height="140" rx="6" fill="#4a2a14"/>
+                <rect x="-15" y="125" width="340" height="180" rx="4" fill="#3c2a14"/>
+                <path d="M-12,165 Q80,145 165,152 Q255,145 325,162 L325,290 Q255,298 165,294 Q80,302 -12,290 Z" fill="url(#wm-blanket)" opacity=".92"/>
+                <rect x="18" y="130" width="115" height="70" rx="8" fill="#e8d8c0"/>
+                <rect x="22" y="134" width="107" height="62" rx="6" fill="#f0e4cc"/>
+                <rect x="148" y="128" width="100" height="66" rx="8" fill="#d4c8b0"/>
+              </g>
+              <g filter="url(#wm-shadow)" transform="translate(770,390)">
+                <rect x="0" y="0" width="80" height="100" rx="3" fill="#2a1a08"/>
+                <rect x="4" y="4" width="72" height="42" rx="2" fill="#3a2410"/>
+                <g transform="translate(10,-72)">
+                  <rect x="15" y="70" width="32" height="5" rx="2" fill="#2a2010"/>
+                  <rect x="22" y="26" width="6" height="44" rx="2" fill="#3a3020"/>
+                  <path d="M8,26 Q25,10 44,26 Z" fill="#c8a020"/>
+                  <ellipse cx="26" cy="26" rx="18" ry="6" fill="#e8c040"/>
+                  <ellipse cx="26" cy="38" rx="48" ry="40" fill="url(#wm-lamp)" opacity=".55"><animate attributeName="opacity" values=".55;.75;.55" dur="4s" repeatCount="indefinite"/></ellipse>
+                </g>
+              </g>
+              <path d="M580,610 Q615,595 660,603 Q688,610 686,622 Q660,630 620,632 Q582,630 580,610 Z" fill="#3a3040" opacity=".8"/>
+              <path d="M695,596 Q725,588 755,595 Q772,601 770,612 Q750,617 720,619 Q693,615 695,596 Z" fill="#2a3a28" opacity=".8"/>
+              <g transform="translate(420,570)">
+                <path d="M8,0 Q0,0 0,45 Q0,68 38,68 Q76,68 76,45 Q76,0 68,0 Z" fill="#2a3a5a"/>
+                <rect x="11" y="30" width="54" height="27" rx="2" fill="#243460" stroke="#3a4a70" stroke-width="1"/>
+                <rect x="30" y="0" width="16" height="16" rx="4" fill="#1a2840"/>
+              </g>
+              <!-- TREADMILL -->
+              <g class="wm-hotspot" onclick="wmOpenLog('treadmill')" transform="translate(100,170)">
+                <ellipse class="wm-hs-glow-el" cx="110" cy="165" rx="115" ry="22" fill="rgba(201,130,10,.22)" filter="url(#wm-glow-gold)"/>
+                <g class="wm-hs-body">
+                  <rect x="22" y="90" width="178" height="72" rx="6" fill="#1a1a20" stroke="#2a2a30" stroke-width="1.5"/>
+                  <rect x="29" y="95" width="164" height="62" rx="4" fill="#0f0f14"/>
+                  <line x1="29" y1="126" x2="193" y2="126" stroke="#2a2a35" stroke-width="1.2" stroke-dasharray="10 7"><animate attributeName="stroke-dashoffset" values="0;-34" dur=".8s" repeatCount="indefinite"/></line>
+                  <line x1="29" y1="111" x2="193" y2="111" stroke="#2a2a35" stroke-width=".8" stroke-dasharray="7 10" opacity=".5"><animate attributeName="stroke-dashoffset" values="0;-34" dur=".8s" repeatCount="indefinite"/></line>
+                  <rect x="14" y="42" width="11" height="52" rx="3" fill="#1a1a28" stroke="#2a2a3a" stroke-width="1"/>
+                  <rect x="193" y="42" width="11" height="52" rx="3" fill="#1a1a28" stroke="#2a2a3a" stroke-width="1"/>
+                  <rect x="14" y="38" width="190" height="10" rx="5" fill="#1a1a28" stroke="#2a2a3a" stroke-width="1"/>
+                  <rect x="72" y="14" width="74" height="36" rx="4" fill="#0a0a14" stroke="#2a2a3a" stroke-width="1"/>
+                  <rect x="75" y="17" width="68" height="30" rx="2" fill="#05080f"/>
+                  <text x="109" y="30" text-anchor="middle" font-family="monospace" font-size="9" fill="#c9820a">5.2 KM</text>
+                  <text x="109" y="41" text-anchor="middle" font-family="monospace" font-size="6" fill="#0d8a7f">24:18 MIN</text>
+                  <rect x="28" y="162" width="24" height="11" rx="2" fill="#0f0f14"/>
+                  <rect x="166" y="162" width="24" height="11" rx="2" fill="#0f0f14"/>
+                </g>
+                <text class="wm-eq-tip" x="110" y="6" text-anchor="middle" font-size="11" font-weight="800">🏃 Morning Run</text>
+              </g>
+              <!-- YOGA MAT -->
+              <g class="wm-hotspot" onclick="wmOpenLog('yoga')" transform="translate(290,470)">
+                <ellipse class="wm-hs-glow-el" cx="135" cy="62" rx="142" ry="28" fill="rgba(26,138,90,.2)" filter="url(#wm-glow-teal)"/>
+                <g class="wm-hs-body">
+                  <ellipse cx="135" cy="56" rx="128" ry="26" fill="#2a5a3a" opacity=".9"/>
+                  <ellipse cx="135" cy="54" rx="118" ry="22" fill="#3a7a4a" opacity=".78"/>
+                  <ellipse cx="135" cy="54" rx="98" ry="17" fill="none" stroke="rgba(100,200,120,.25)" stroke-width="1.2"/>
+                  <ellipse cx="135" cy="54" rx="64" ry="11" fill="rgba(100,200,150,.1)"><animate attributeName="rx" values="64;78;64" dur="4s" repeatCount="indefinite"/><animate attributeName="ry" values="11;15;11" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".1;.2;.1" dur="4s" repeatCount="indefinite"/></ellipse>
+                  <g transform="translate(268,10)">
+                    <rect x="0" y="0" width="16" height="46" rx="4" fill="#1a3a48" stroke="#2a5a6a" stroke-width="1.2"/>
+                    <rect x="3" y="2" width="10" height="22" rx="2" fill="#0d8a7f" opacity=".3"/>
+                  </g>
+                  <path d="M-24,22 Q-8,-4 12,4 Q28,12 44,4" fill="none" stroke="#e8d0a0" stroke-width="11" stroke-linecap="round" opacity=".75"/>
+                </g>
+                <text class="wm-eq-tip" x="135" y="-6" text-anchor="middle" font-size="11" font-weight="800">🧘 Meditation</text>
+              </g>
+              <!-- BOOKSTACK -->
+              <g class="wm-hotspot" onclick="wmOpenLog('books')" transform="translate(820,198)">
+                <ellipse class="wm-hs-glow-el" cx="45" cy="55" rx="58" ry="16" fill="rgba(201,130,10,.25)" filter="url(#wm-glow-gold)"/>
+                <g class="wm-hs-body">
+                  <rect x="8" y="22" width="68" height="12" rx="1.5" fill="#8a2040" transform="rotate(-2 8 22)"/>
+                  <rect x="6" y="12" width="63" height="11" rx="1.5" fill="#204880" transform="rotate(1.5 6 12)"/>
+                  <rect x="10" y="2" width="70" height="11" rx="1.5" fill="#2a6820" transform="rotate(-.5 10 2)"/>
+                  <rect x="4" y="-7" width="58" height="11" rx="1.5" fill="#6a3010" transform="rotate(3 4 -7)"/>
+                  <rect x="65" y="-12" width="4" height="18" rx="1" fill="#c9820a"/>
+                  <rect x="20" y="0" width="15" height="11" rx="1" fill="#ffee80" transform="rotate(-1.5 20 0)"/>
+                </g>
+                <text class="wm-eq-tip" x="45" y="-18" text-anchor="middle" font-size="11" font-weight="800">📚 Read 30 Pages</text>
+              </g>
+              <!-- WATER COOLER -->
+              <g class="wm-hotspot" onclick="wmOpenLog('water')" transform="translate(100,320)">
+                <ellipse class="wm-hs-glow-el" cx="50" cy="158" rx="55" ry="16" fill="rgba(13,138,127,.3)" filter="url(#wm-glow-teal)"/>
+                <g class="wm-hs-body">
+                  <rect x="16" y="62" width="68" height="102" rx="6" fill="#1a2a28" stroke="#2a4a44" stroke-width="1.5"/>
+                  <rect x="23" y="11" width="54" height="56" rx="5" fill="#0a2028" stroke="#2a5a5a" stroke-width="1.2"/>
+                  <rect x="25" y="28" width="50" height="38" rx="3" fill="url(#wm-water)"/>
+                  <circle cx="38" cy="50" r="2.5" fill="rgba(13,138,127,.5)"><animate attributeName="cy" values="50;35;22" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.6;0" dur="2.5s" repeatCount="indefinite"/></circle>
+                  <circle cx="56" cy="54" r="1.8" fill="rgba(13,138,127,.4)"><animate attributeName="cy" values="54;42;28" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.5;0" dur="3.2s" repeatCount="indefinite"/></circle>
+                  <circle cx="35" cy="101" r="7" fill="#c4374a" stroke="#ff4040" stroke-width="1.2"/>
+                  <circle cx="65" cy="101" r="7" fill="#1a8a5a" stroke="#2aaa6a" stroke-width="1.2"/>
+                  <rect x="20" y="116" width="60" height="7" rx="1.5" fill="#2a3a38"/>
+                  <path d="M36,114 L40,128 L60,128 L64,114 Z" fill="#f0f0f0" opacity=".85"/>
+                  <rect x="18" y="164" width="16" height="8" rx="1.5" fill="#151f1e"/>
+                  <rect x="66" y="164" width="16" height="8" rx="1.5" fill="#151f1e"/>
+                </g>
+                <text class="wm-eq-tip" x="50" y="-2" text-anchor="middle" font-size="11" font-weight="800">💧 Drink 2L Water</text>
+              </g>
+              <!-- COMPUTER -->
+              <g class="wm-hotspot" onclick="wmOpenLog('computer')" transform="translate(870,100)">
+                <ellipse class="wm-hs-glow-el" cx="120" cy="208" rx="105" ry="22" fill="rgba(91,155,245,.2)" filter="url(#wm-glow-teal)"/>
+                <g class="wm-hs-body">
+                  <rect x="50" y="60" width="160" height="98" rx="6" fill="#0f0f1a" stroke="#2a2a3a" stroke-width="1.5"/>
+                  <rect x="54" y="64" width="152" height="86" rx="4" fill="url(#wm-monitor)"><animate attributeName="opacity" values="1;.9;1" dur="3s" repeatCount="indefinite"/></rect>
+                  <rect x="60" y="70" width="34" height="3" rx="1" fill="#5b9bf5" opacity=".8"/>
+                  <rect x="68" y="76" width="50" height="3" rx="1" fill="#0d8a7f" opacity=".7"/>
+                  <rect x="68" y="82" width="38" height="3" rx="1" fill="#8b5cbf" opacity=".6"/>
+                  <rect x="60" y="88" width="56" height="3" rx="1" fill="#5b9bf5" opacity=".5"/>
+                  <rect x="68" y="94" width="28" height="3" rx="1" fill="#c9820a" opacity=".6"/>
+                  <rect x="60" y="100" width="44" height="3" rx="1" fill="#0d8a7f" opacity=".5"/>
+                  <rect x="60" y="106" width="2" height="7" rx="1" fill="#e8e8e8" opacity=".8"><animate attributeName="opacity" values=".8;0;.8" dur="1s" repeatCount="indefinite"/></rect>
+                  <rect x="96" y="158" width="56" height="9" rx="2" fill="#1a1a2a"/>
+                  <rect x="114" y="140" width="16" height="20" rx="2" fill="#1a1a2a"/>
+                  <rect x="58" y="170" width="136" height="36" rx="4" fill="#151520" stroke="#202030" stroke-width="1"/>
+                  <g fill="#252535">
+                    <rect x="65" y="175" width="7" height="5" rx="1"/><rect x="75" y="175" width="7" height="5" rx="1"/><rect x="85" y="175" width="7" height="5" rx="1"/><rect x="95" y="175" width="7" height="5" rx="1"/><rect x="105" y="175" width="7" height="5" rx="1"/><rect x="115" y="175" width="7" height="5" rx="1"/><rect x="125" y="175" width="7" height="5" rx="1"/><rect x="135" y="175" width="7" height="5" rx="1"/><rect x="145" y="175" width="7" height="5" rx="1"/><rect x="155" y="175" width="18" height="5" rx="1"/>
+                    <rect x="65" y="183" width="10" height="5" rx="1"/><rect x="78" y="183" width="7" height="5" rx="1"/><rect x="88" y="183" width="7" height="5" rx="1"/><rect x="98" y="183" width="7" height="5" rx="1"/><rect x="108" y="183" width="7" height="5" rx="1"/><rect x="118" y="183" width="7" height="5" rx="1"/><rect x="128" y="183" width="7" height="5" rx="1"/><rect x="138" y="183" width="7" height="5" rx="1"/><rect x="148" y="183" width="25" height="5" rx="1"/>
+                    <rect x="65" y="191" width="80" height="5" rx="1"/><rect x="148" y="191" width="25" height="5" rx="1"/>
+                  </g>
+                  <rect x="204" y="176" width="26" height="35" rx="10" fill="#151520" stroke="#202030" stroke-width="1.2"/>
+                  <line x1="217" y1="176" x2="217" y2="196" stroke="#202030" stroke-width="1.2"/>
+                  <rect x="15" y="152" width="26" height="28" rx="3" fill="#1a1a1a"/>
+                  <path d="M41,162 Q50,162 50,170 Q50,178 41,178" fill="none" stroke="#1a1a1a" stroke-width="4" stroke-linecap="round"/>
+                  <rect x="16" y="153" width="24" height="12" rx="2" fill="#0d8a7f" opacity=".35"/>
+                </g>
+                <text class="wm-eq-tip" x="120" y="48" text-anchor="middle" font-size="11" font-weight="800">💻 Code Session</text>
+              </g>
+              <!-- SAFE -->
+              <g class="wm-hotspot" onclick="wmOpenLog('safe')" transform="translate(300,270)">
+                <ellipse class="wm-hs-glow-el" cx="58" cy="100" rx="68" ry="18" fill="rgba(196,55,74,.25)" filter="url(#wm-glow-gold)"/>
+                <g class="wm-hs-body">
+                  <rect x="8" y="8" width="96" height="110" rx="5" fill="#222" stroke="#333" stroke-width="1.5"/>
+                  <rect x="11" y="11" width="90" height="104" rx="3" fill="#181818"/>
+                  <rect x="8" y="8" width="52" height="110" rx="5" fill="#1e1e1e" stroke="#333" stroke-width="1.5" transform-origin="8 63" style="transform:rotate(-18deg)"/>
+                  <circle cx="46" cy="60" r="14" fill="#252525" stroke="#383838" stroke-width="1.5"/>
+                  <circle cx="46" cy="60" r="8" fill="#181818"/>
+                  <line x1="46" y1="52" x2="46" y2="60" stroke="#c9820a" stroke-width="1.5" stroke-linecap="round"/>
+                  <rect x="64" y="22" width="30" height="55" rx="5" fill="#1a1a2a" stroke="#2a2a3a" stroke-width="1"/>
+                  <rect x="67" y="26" width="24" height="45" rx="3" fill="#0a0a14"/>
+                  <rect x="67" y="26" width="24" height="45" rx="3" fill="rgba(91,155,245,.22)"><animate attributeName="opacity" values=".22;.45;.22" dur="2s" repeatCount="indefinite"/></rect>
+                  <circle cx="72" cy="34" r="2.5" fill="#c4374a" opacity=".8"/>
+                  <circle cx="78" cy="34" r="2.5" fill="#1a8a5a" opacity=".8"/>
+                </g>
+                <text class="wm-eq-tip" x="58" y="-4" text-anchor="middle" font-size="11" font-weight="800">📵 No Social Media</text>
+              </g>
+              <ellipse cx="850" cy="370" rx="160" ry="80" fill="rgba(255,180,60,.05)" pointer-events="none"/>
+              <polygon points="133,81 317,81 680,590 350,590" fill="rgba(255,200,80,.04)" pointer-events="none"/>
+            </svg>
+          </div>
+
+          <!-- Log panel -->
+          <div class="wm-log-panel" id="wm-log-panel">
+            <div class="wm-log-handle" onclick="wmCloseLog()"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <span style="font-size:1.8rem" id="wm-log-icon">🏃</span>
+              <div><div class="wm-log-name" id="wm-log-name">Morning Run</div><div class="wm-log-sub" id="wm-log-sub">Log your session</div></div>
+            </div>
+            <div class="wm-log-fields" id="wm-log-fields"></div>
+            <div id="wm-log-history"></div>
+            <div class="wm-log-btns">
+              <button class="wm-btn-cancel" onclick="wmCloseLog()">Cancel</button>
+              <button class="wm-btn-save" id="wm-save-btn" onclick="wmSaveLog()">⚡ Save & Earn XP</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page-worldmap -->
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="d-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Create Quest</div>
+    <div class="modal-sub">Turn a habit into a mission and earn XP for every completion</div>
+    <label class="form-label">Quest Name</label>
+    <input class="form-input" id="d-h-name" placeholder="e.g. Morning Run" maxlength="50"/>
+    <label class="form-label">Description</label>
+    <textarea class="form-textarea" id="d-h-desc" placeholder="Describe your quest..."></textarea>
+    <label class="form-label">Icon</label>
+    <div class="icon-grid" id="d-icon-grid"></div>
+    <label class="form-label">Color</label>
+    <div class="color-grid" id="d-color-grid"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="form-label">Category</label>
+        <select class="form-select" id="d-h-cat">
+          <option value="health">💪 Health</option><option value="mind">🧠 Mind</option>
+          <option value="skill">🎯 Skills</option><option value="social">🤝 Social</option>
+          <option value="creative">🎨 Creative</option>
+        </select>
+      </div>
+      <div><label class="form-label">Difficulty</label>
+        <select class="form-select" id="d-h-diff">
+          <option value="easy">⚡ Easy (10 XP)</option><option value="medium" selected>⚔️ Medium (25 XP)</option>
+          <option value="hard">🔥 Hard (50 XP)</option><option value="epic">💎 Epic (100 XP)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="addHabit()">⚔️ Create Quest</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- Main app — runs first, all functions become global before Firebase loads -->
+<script src="script.js"></script>
+
+<!-- Firebase — deferred module, runs after script.js -->
+<script type="module">
+  import { initializeApp, getApps, getApp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, getDoc, getDocs, query, where, onSnapshot, setDoc, updateDoc, arrayUnion, arrayRemove }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCiIXvWrG4WoSuwSjzXdD34kL3zOSu-YDk",
+    authDomain:        "habit-challenge-164d9.firebaseapp.com",
+    projectId:         "habit-challenge-164d9",
+    storageBucket:     "habit-challenge-164d9.firebasestorage.app",
+    messagingSenderId: "27543176172",
+    appId:             "1:27543176172:web:554ea86adeda974df136c9",
+    measurementId:     "G-G2DJL2G8LQ"
+  };
+
+  // Prevent duplicate initialization if this module ever runs twice
+  const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+
+  window._db   = db;
+  window._auth = auth;
+
+  // Handle redirect sign-in result on page reload.
+  // If the user was bounced to Google via signInWithRedirect, this resolves
+  // on the way back and onAuthStateChanged fires automatically.
+  getRedirectResult(auth).then(function(result) {
+    if (result && result.user && window.showToast) {
+      showToast('👋 Welcome back!', result.user.displayName || result.user.email, 'level-up');
+    }
+  }).catch(function(e) {
+    if (e.code && e.code !== 'auth/no-auth-event') {
+      console.warn('Redirect sign-in result error:', e.code);
+    }
+  });
+
+  // ── AUTH ──────────────────────────────────────────────────────────────────
+  // Uses .then()/.catch() so signInWithPopup is called synchronously within
+  // the user-gesture context — prevents popup blockers.
+  window.signInWithGoogle = function() {
+    var btn = document.getElementById('auth-btn');
+    btn.disabled    = true;
+    btn.textContent = '⏳ Signing in…';
+
+    var provider = new GoogleAuthProvider();
+
+    signInWithPopup(auth, provider)
+      .then(function() {
+        // onAuthStateChanged handles the UI update — nothing to do here
+      })
+      .catch(function(e) {
+        if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-cancelled-by-user') {
+          // Popup was blocked by the browser — fall back to full-page redirect
+          btn.textContent = '⏳ Redirecting…';
+          return signInWithRedirect(auth, new GoogleAuthProvider());
+        }
+
+        // Any other error — restore the button
+        btn.disabled    = false;
+        btn.textContent = '🔑 Sign In';
+        btn.onclick     = function() { window.signInWithGoogle(); };
+
+        if (e.code === 'auth/popup-closed-by-user') return; // user dismissed — no noise
+
+        if (e.code === 'auth/unauthorized-domain') {
+          var domain = window.location.hostname;
+          if (window.showToast) {
+            showToast(
+              '⚠️ Domain not authorised',
+              'Add "' + domain + '" in Firebase Console → Auth → Settings → Authorised domains',
+              'streak'
+            );
+          }
+          console.error('auth/unauthorized-domain — add this domain to Firebase:', domain);
+          return;
+        }
+
+        console.error('Sign-in error:', e.code, e.message);
+        if (window.showToast) showToast('⚠️ Sign-in failed', e.code, 'streak');
+      });
+  };
+
+  // signOutUser — cleans up the Firestore listener then signs out.
+  // onAuthStateChanged fires afterwards and resets the UI automatically.
+  window.signOutUser = function() {
+    if (window._userUnsub) { window._userUnsub(); window._userUnsub = null; }
+    signOut(auth).catch(function(e) { console.error('Sign-out error', e); });
+  };
+
+  // ── FIRESTORE SAVE ────────────────────────────────────────────────────────
+  window._fbSave = function(state) {
+    if (!window.currentUser) return;
+    setDoc(
+      doc(db, 'users', window.currentUser.uid),
+      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, updatedAt: new Date().toISOString() },
+      { merge: true }
+    ).catch(function(e) { console.error('Firestore save error', e); });
+  };
+
+  // ── GROUP FUNCTIONS ───────────────────────────────────────────────────────
+
+  // Generates a 6-character uppercase join code from unambiguous characters.
+  // Avoids 0/O and 1/I/L which look similar in most fonts.
+  function generateJoinCode() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var code = '';
+    for (var i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  }
+
+  // ── GROUP: CREATE ─────────────────────────────────────────────────────────
+  window._createGroup = function(name) {
+    var joinCode = generateJoinCode();
+    return addDoc(collection(db, 'groups'), {
+      name:      name,
+      ownerId:   window.currentUser.uid,
+      members:   [window.currentUser.uid],
+      joinCode:  joinCode,
+      createdAt: new Date().toISOString()
+    }).then(function(ref) {
+      showToast('👥 Group Created!', 'Code: ' + joinCode, 'level-up');
+      subscribeToGroupFull(ref.id);
+    }).catch(function(e) {
+      console.error('createGroup error', e);
+      showToast('⚠️ Error', e.message, 'streak');
+    });
+  };
+
+  // ── GROUP: JOIN BY DOCUMENT ID ────────────────────────────────────────────
+  window._joinGroup = function(groupId) {
+    var ref = doc(db, 'groups', groupId);
+    return getDoc(ref).then(function(snap) {
+      if (!snap.exists()) {
+        showToast('⚠️ Not Found', 'No group with that ID', 'streak');
+        return;
+      }
+      return updateDoc(ref, { members: arrayUnion(window.currentUser.uid) }).then(function() {
+        showToast('👥 Joined!', snap.data().name, 'level-up');
+        subscribeToGroupFull(groupId);
+      });
+    }).catch(function(e) {
+      console.error('joinGroup error', e);
+      showToast('⚠️ Error', e.message, 'streak');
+    });
+  };
+
+  // ── GROUP: JOIN BY SHORT CODE ─────────────────────────────────────────────
+  // Queries the groups collection for a document where joinCode == code.
+  window._joinByCode = function(code) {
+    var q = query(collection(db, 'groups'), where('joinCode', '==', code.toUpperCase()));
+    return getDocs(q).then(function(snap) {
+      if (snap.empty) {
+        showToast('⚠️ Code not found', 'Check the code and try again', 'streak');
+        return;
+      }
+      var groupDoc = snap.docs[0];
+      // Reuse the full join flow so members array is updated consistently
+      return updateDoc(doc(db, 'groups', groupDoc.id), {
+        members: arrayUnion(window.currentUser.uid)
+      }).then(function() {
+        showToast('👥 Joined!', groupDoc.data().name, 'level-up');
+        subscribeToGroupFull(groupDoc.id);
+      });
+    }).catch(function(e) {
+      console.error('joinByCode error', e);
+      showToast('⚠️ Error', e.message, 'streak');
+    });
+  };
+
+  // ── GROUP: LEAVE ──────────────────────────────────────────────────────────
+  window._leaveGroup = function(groupId) {
+    return updateDoc(doc(db, 'groups', groupId), {
+      members: arrayRemove(window.currentUser.uid)
+    }).then(function() {
+      window.activeGroup = null;
+      if (window.renderGroupPage) renderGroupPage();
+      showToast('👋 Left Group', 'You have left the group', 'streak');
+    });
+  };
+
+  // ── GROUP: REAL-TIME LISTENER ─────────────────────────────────────────────
+  // Subscribes to both the group document AND the habits subcollection.
+  // Fires renderGroupPage / renderGroupMembers / renderGroupHabits whenever
+  // anything in Firestore changes — all users in the group see updates instantly.
+  function subscribeToGroupFull(groupId) {
+    // 1. Listen to the group document (name, members array)
+    onSnapshot(doc(db, 'groups', groupId), function(groupSnap) {
+      if (!groupSnap.exists()) {
+        window.activeGroup = null;
+        if (window.renderGroupPage) renderGroupPage();
+        return;
+      }
+
+      // Store group data globally so script.js can read it
+      window.activeGroup = { id: groupId, ...groupSnap.data() };
+
+      if (window.renderGroupPage) renderGroupPage();
+
+      // Load each member's player profile from their user doc
+      var members = groupSnap.data().members || [];
+      Promise.all(
+        members.map(function(uid) { return getDoc(doc(db, 'users', uid)); })
+      ).then(function(docs) {
+        var membersData = docs
+          .filter(function(d) { return d.exists(); })
+          .map(function(d) {
+            var p = d.data().player || {};
+            return {
+              uid:    d.id,
+              name:   p.name    || 'Anonymous',
+              avatar: p.avatar  || '🧙',
+              level:  p.level   || 1,
+              totalXP: p.totalXP || 0,
+              streak: p.streak  || 0,
+              isMe:   d.id === window.currentUser.uid
+            };
+          })
+          .sort(function(a, b) { return b.totalXP - a.totalXP; }); // rank by XP
+
+        if (window.renderGroupMembers) renderGroupMembers(membersData);
+      });
+    });
+
+    // 2. Listen to the habits subcollection — fires whenever any member adds/completes a habit
+    onSnapshot(collection(db, 'groups', groupId, 'habits'), function(snap) {
+      var habits = snap.docs.map(function(d) { return { id: d.id, ...d.data() }; });
+      if (window.renderGroupHabits) renderGroupHabits(habits);
+    });
+  }
+
+  // Expose so script.js can call it directly (e.g. subscribeToGroupHabits wrapper)
+  window._subscribeToGroupFull = subscribeToGroupFull;
+
+  // ── GROUP: COMPLETE HABIT ─────────────────────────────────────────────────
+  // Adds current user's UID to completedToday array in Firestore.
+  // The onSnapshot above will fire and re-render for ALL group members immediately.
+  window._completeGroupHabit = function(groupId, habitId, e) {
+    var ref = doc(db, 'groups', groupId, 'habits', habitId);
+    updateDoc(ref, {
+      completedToday: arrayUnion(window.currentUser.uid)
+    }).then(function() {
+      // Grant XP to this user locally
+      if (window.grantXP) grantXP(25, e);
+      if (window.renderAll) renderAll();
+      if (window.save) save();
+      showToast('⚔️ Group Quest!', 'Completed! +25 XP', 'xp-gain');
+    }).catch(function(e) { console.error('completeGroupHabit', e); });
+  };
+
+  // ── GROUP: ADD HABIT TO GROUP ─────────────────────────────────────────────
+  // Copies a personal habit into the group's habits subcollection.
+  window._addHabitToGroup = function(groupId, habit) {
+    return addDoc(collection(db, 'groups', groupId, 'habits'), {
+      name:           habit.name,
+      desc:           habit.desc  || '',
+      icon:           habit.icon  || '⚔️',
+      color:          habit.color || '#0d8a7f',
+      diff:           habit.diff  || 'medium',
+      cat:            habit.cat   || 'health',
+      unit:           '',          // unit to track (km, pages, minutes…) — editable later
+      goal:           0,           // optional numeric target
+      results:        {},          // map of uid → { displayName, value, updatedAt }
+      addedBy:        window.currentUser.uid,
+      completedToday: [],          // tracks which member UIDs completed it today
+      createdAt:      new Date().toISOString()
+    }).then(function() {
+      showToast('⚔️ Quest Shared!', '"' + habit.name + '" added to the group', 'xp-gain');
+    });
+  };
+
+  // ── GROUP: UPDATE HABIT ───────────────────────────────────────────────────
+  // Saves edits (name, desc, diff, unit, goal) made via the Edit Challenge modal.
+  window._updateGroupHabit = function(groupId, habitId, updates) {
+    return updateDoc(doc(db, 'groups', groupId, 'habits', habitId), updates)
+      .then(function() {
+        if (window.showToast) showToast('✅ Saved!', 'Challenge updated', 'xp-gain');
+      })
+      .catch(function(e) {
+        console.error('updateGroupHabit error', e);
+        if (window.showToast) showToast('⚠️ Error', e.message, 'streak');
+      });
+  };
+
+  // ── GROUP: SUBMIT RESULT ──────────────────────────────────────────────────
+  // Stores a member's numeric result inside the habit document as results.{uid}.
+  // The habits onSnapshot fires automatically, updating the leaderboard for all members.
+  window._submitResult = function(groupId, habitId, value, displayName) {
+    if (!window.currentUser) return;
+    var uid = window.currentUser.uid;
+    var ref = doc(db, 'groups', groupId, 'habits', habitId);
+    var data = {};
+    // Dot-notation key writes a single nested field without overwriting other results
+    data['results.' + uid] = {
+      displayName: displayName || window.currentUser.displayName || 'Anonymous',
+      value:       Number(value),
+      updatedAt:   new Date().toISOString()
+    };
+    return updateDoc(ref, data)
+      .then(function() {
+        if (window.showToast) showToast('📊 Result saved!', String(value), 'xp-gain');
+      })
+      .catch(function(e) {
+        console.error('submitResult error', e);
+        if (window.showToast) showToast('⚠️ Error', e.message, 'streak');
+      });
+  };
+
+  // ── AUTH STATE ────────────────────────────────────────────────────────────
+  // Single listener — handles button UI, Firestore subscription, group auto-join.
+  onAuthStateChanged(auth, function(user) {
+    var signInBtn  = document.getElementById('auth-btn');
+    var signOutBtn = document.getElementById('signout-btn');
+    if (!signInBtn) return;
+
+    if (user) {
+      window.currentUser = user;
+
+      // Show user name on sign-in button; show the Sign Out button
+      signInBtn.disabled    = false;
+      signInBtn.textContent = '👤 ' + (user.displayName || user.email || 'User').split(' ')[0];
+      signInBtn.style.background = 'var(--teal-bg)';
+      signInBtn.style.color      = 'var(--teal)';
+      signInBtn.style.border     = '1.5px solid var(--teal-br)';
+      signInBtn.style.boxShadow  = 'none';
+      signInBtn.onclick = null; // name label — clicking does nothing
+      signOutBtn.style.display = '';
+
+      // Real-time listener for this user's personal state (habits, XP, etc.)
+      if (window._userUnsub) window._userUnsub();
+      window._userUnsub = onSnapshot(doc(db, 'users', user.uid), function(snap) {
+        if (snap.exists() && window._setState) window._setState(snap.data());
+      });
+
+      // Auto-join group if the page was opened with ?group=GROUP_ID
+      if (window._pendingGroupId) {
+        var gid = window._pendingGroupId;
+        window._pendingGroupId = null;
+        window._joinGroup(gid);
+      }
+
+    } else {
+      window.currentUser = null;
+      window.activeGroup = null;
+
+      // Restore sign-in button; hide Sign Out button
+      signInBtn.disabled    = false;
+      signInBtn.textContent = '🔑 Sign In';
+      signInBtn.style.background = 'linear-gradient(135deg,#4285f4,#34a853)';
+      signInBtn.style.color      = '#fff';
+      signInBtn.style.border     = 'none';
+      signInBtn.style.boxShadow  = '';
+      signInBtn.onclick = function() { window.signInWithGoogle(); };
+      signOutBtn.style.display = 'none';
+
+      // Clean up Firestore listener
+      if (window._userUnsub) { window._userUnsub(); window._userUnsub = null; }
+
+      // Update group page if it's visible
+      if (window.renderGroupPage) renderGroupPage();
+    }
+  });
+</script>
+</body>
+</html>

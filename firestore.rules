@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Users ──────────────────────────────────────────────────────────────
+    // Each user can only read and write their own document.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Groups ─────────────────────────────────────────────────────────────
+    match /groups/{groupId} {
+
+      // Any signed-in user can read a group (to look up name before joining).
+      allow read: if request.auth != null;
+
+      // Any signed-in user can create a group (they must be the owner and first member).
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.members.hasAll([request.auth.uid]);
+
+      // A member may only update the members array (join).
+      // The group owner may update any field (e.g. rename, add joinCode).
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.ownerId
+        ||
+        (
+          // Only the members field is changing
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+          // New array is a strict superset (no removal)
+          && request.resource.data.members.hasAll(resource.data.members)
+          // Exactly one new member was added — and it is the caller
+          && request.resource.data.members.size() == resource.data.members.size() + 1
+          && request.resource.data.members.hasAll([request.auth.uid])
+        )
+      );
+
+      // Only the owner can delete a group.
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.ownerId;
+
+      // ── Habits subcollection ─────────────────────────────────────────────
+      // Any group member can read, add, or update habits (including submitting
+      // results via the results.{uid} field). Only the habit's creator or the
+      // group owner can delete a habit.
+      match /habits/{habitId} {
+        allow read: if request.auth != null;
+
+        allow create: if request.auth != null
+          && resource == null  // document doesn't exist yet
+          || request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.members;
+
+        allow update: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.members;
+
+        allow delete: if request.auth != null && (
+          request.auth.uid == resource.data.addedBy
+          || request.auth.uid == get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId
+        );
+      }
+    }
+  }
+}
