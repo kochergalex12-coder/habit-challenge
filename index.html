@@ -474,8 +474,8 @@
             <div class="social-add-card-icon">👤</div>
             <div class="social-add-card-title">Add by Username</div>
             <div class="social-add-card-body">
-              <input class="social-input" id="soc-username-input" placeholder="Enter username" autocomplete="off" spellcheck="false"/>
-              <button class="social-btn social-btn-primary" onclick="console.log('Add by username:', document.getElementById('soc-username-input').value)">Add Friend</button>
+              <input class="social-input" id="soc-username-input" placeholder="Enter username" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') addByUsername()"/>
+              <button class="social-btn social-btn-primary" onclick="addByUsername()">Add Friend</button>
             </div>
           </div>
 
@@ -484,8 +484,8 @@
             <div class="social-add-card-icon">🔗</div>
             <div class="social-add-card-title">Add by Friend Code</div>
             <div class="social-add-card-body">
-              <input class="social-input" id="soc-code-input" placeholder="e.g. HQ-48291" autocomplete="off" spellcheck="false"/>
-              <button class="social-btn social-btn-primary" onclick="console.log('Add by code:', document.getElementById('soc-code-input').value)">Add by Code</button>
+              <input class="social-input" id="soc-code-input" placeholder="e.g. HQ-48291" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') addByCode()"/>
+              <button class="social-btn social-btn-primary" onclick="addByCode()">Add by Code</button>
               <div class="social-input-hint">Each user has a unique friend code. Ask your friend to share theirs.</div>
             </div>
           </div>
@@ -502,6 +502,8 @@
           </div>
 
         </div>
+
+        <div id="soc-status" style="display:none;font-size:.84rem;font-weight:600;margin:-10px 0 16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;"></div>
 
         <div class="social-divider"></div>
 
@@ -1279,6 +1281,34 @@
         console.error('submitResult error', e);
         if (window.showToast) showToast('⚠️ Error', e.message, 'streak');
       });
+  };
+
+  // ── FRIENDS ───────────────────────────────────────────────────────────────
+
+  // Search users collection by player.name (case-sensitive exact match)
+  window._findUserByName = function(name) {
+    return getDocs(query(collection(db, 'users'), where('player.name', '==', name)));
+  };
+
+  // Search users collection by player.friendCode
+  window._findUserByCode = function(code) {
+    return getDocs(query(collection(db, 'users'), where('player.friendCode', '==', code)));
+  };
+
+  // Add a friend UID to the current user's friends array in Firestore
+  window._addFriendById = function(friendUid) {
+    if (!window.currentUser) return Promise.reject('Not signed in');
+    return setDoc(
+      doc(db, 'users', window.currentUser.uid),
+      { player: { friends: arrayUnion(friendUid) } },
+      { merge: true }
+    );
+  };
+
+  // Fetch a list of user docs by UID array
+  window._loadFriendProfiles = function(uids) {
+    if (!uids || !uids.length) return Promise.resolve([]);
+    return Promise.all(uids.map(function(uid) { return getDoc(doc(db, 'users', uid)); }));
   };
 
   // ── AUTH STATE ────────────────────────────────────────────────────────────

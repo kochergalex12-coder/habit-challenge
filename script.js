@@ -1,6 +1,6 @@
 /* ════ STATE ════ */
 let state = {
-  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false },
+  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[] },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all'
 };
 
@@ -1389,13 +1389,6 @@ function submitOnboarding() {
 
 /* ════ SOCIAL PAGE ════ */
 
-var MOCK_FRIENDS = [
-  { name:'AlexXP',       avatar:'🦸', level:42, streak:34, online:true  },
-  { name:'MashaMind',    avatar:'🧙', level:38, streak:21, online:false },
-  { name:'NightCoder',   avatar:'🦊', level:29, streak:8,  online:true  },
-  { name:'FitnessQueen', avatar:'💪', level:26, streak:12, online:false },
-];
-
 function getFriendCode() {
   if (!state.player.friendCode) {
     state.player.friendCode = 'HQ-' + Math.floor(10000 + Math.random() * 90000);
@@ -1405,27 +1398,94 @@ function getFriendCode() {
 }
 
 function renderSocialPage() {
-  var list = document.getElementById('soc-friends-list');
+  var list    = document.getElementById('soc-friends-list');
   var countEl = document.getElementById('soc-friends-count');
   if (!list) return;
-  countEl.textContent = MOCK_FRIENDS.length;
-  if (!MOCK_FRIENDS.length) {
+
+  var friends = state.player.friends || [];
+  countEl.textContent = friends.length;
+
+  if (!friends.length) {
     list.innerHTML = '<div class="soc-empty"><div class="soc-empty-icon">👥</div>No friends yet.<br>Add someone using the methods above!</div>';
     return;
   }
-  list.innerHTML = MOCK_FRIENDS.map(function(f) {
-    var avHtml = f.avatar.startsWith('http')
-      ? '<img src="' + f.avatar + '">'
-      : f.avatar;
-    return '<div class="soc-friend-row">' +
-      '<div class="soc-friend-av">' + avHtml + '</div>' +
-      '<div class="soc-friend-info">' +
-        '<div class="soc-friend-name">' + f.name + '</div>' +
-        '<div class="soc-friend-meta">Lv.' + f.level + ' &nbsp;·&nbsp; 🔥 ' + f.streak + ' day streak</div>' +
-      '</div>' +
-      '<div class="soc-friend-status' + (f.online ? ' online' : '') + '" title="' + (f.online ? 'Online' : 'Offline') + '"></div>' +
-    '</div>';
-  }).join('');
+
+  list.innerHTML = '<div class="soc-loading">Loading friends…</div>';
+
+  if (!window._loadFriendProfiles) return;
+  window._loadFriendProfiles(friends).then(function(snaps) {
+    var rows = snaps.map(function(snap) {
+      if (!snap.exists()) return '';
+      var p  = snap.data().player || {};
+      var av = p.avatar || '🧙';
+      var avHtml = av.startsWith('http')
+        ? '<img src="' + av + '">'
+        : av;
+      return '<div class="soc-friend-row">' +
+        '<div class="soc-friend-av">' + avHtml + '</div>' +
+        '<div class="soc-friend-info">' +
+          '<div class="soc-friend-name">' + (p.name || 'Unknown') + '</div>' +
+          '<div class="soc-friend-meta">Lv.' + (p.level || 1) + ' &nbsp;·&nbsp; 🔥 ' + (p.streak || 0) + ' day streak</div>' +
+        '</div>' +
+        '<div class="soc-friend-status" title="Offline"></div>' +
+      '</div>';
+    }).join('');
+    list.innerHTML = rows || '<div class="soc-empty"><div class="soc-empty-icon">👥</div>No friends yet.</div>';
+    countEl.textContent = snaps.filter(function(s) { return s.exists(); }).length;
+  });
+}
+
+function _socSetStatus(msg, isError) {
+  var el = document.getElementById('soc-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? 'var(--rose)' : 'var(--teal)';
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function addByUsername() {
+  if (!window.currentUser) { _socSetStatus('Sign in first to add friends.', true); return; }
+  var name = (document.getElementById('soc-username-input').value || '').trim();
+  if (!name) { _socSetStatus('Enter a username.', true); return; }
+  if (name === state.player.name) { _socSetStatus("That's you!", true); return; }
+  _socSetStatus('Searching…', false);
+  window._findUserByName(name).then(function(snap) {
+    if (snap.empty) { _socSetStatus('User "' + name + '" not found.', true); return; }
+    var friendUid = snap.docs[0].id;
+    var friends   = state.player.friends || [];
+    if (friends.indexOf(friendUid) !== -1) { _socSetStatus(name + ' is already your friend!', true); return; }
+    return window._addFriendById(friendUid).then(function() {
+      if (!state.player.friends) state.player.friends = [];
+      state.player.friends.push(friendUid);
+      save();
+      _socSetStatus('✅ ' + name + ' added!', false);
+      document.getElementById('soc-username-input').value = '';
+      renderSocialPage();
+    });
+  }).catch(function(e) { _socSetStatus('Error: ' + e.message, true); });
+}
+
+function addByCode() {
+  if (!window.currentUser) { _socSetStatus('Sign in first to add friends.', true); return; }
+  var code = (document.getElementById('soc-code-input').value || '').trim().toUpperCase();
+  if (!code) { _socSetStatus('Enter a friend code.', true); return; }
+  if (code === getFriendCode()) { _socSetStatus("That's your own code!", true); return; }
+  _socSetStatus('Searching…', false);
+  window._findUserByCode(code).then(function(snap) {
+    if (snap.empty) { _socSetStatus('Code "' + code + '" not found.', true); return; }
+    var friendUid = snap.docs[0].id;
+    var friends   = state.player.friends || [];
+    if (friends.indexOf(friendUid) !== -1) { _socSetStatus('Already friends!', true); return; }
+    var friendName = (snap.docs[0].data().player || {}).name || code;
+    return window._addFriendById(friendUid).then(function() {
+      if (!state.player.friends) state.player.friends = [];
+      state.player.friends.push(friendUid);
+      save();
+      _socSetStatus('✅ ' + friendName + ' added!', false);
+      document.getElementById('soc-code-input').value = '';
+      renderSocialPage();
+    });
+  }).catch(function(e) { _socSetStatus('Error: ' + e.message, true); });
 }
 
 function showMyQR() {
