@@ -144,7 +144,7 @@ function renderAll() {
   const total = state.habits.length;
 
   // Sidebar
-  document.getElementById('sb-avatar').textContent    = p.avatar;
+  renderAvatarEl(document.getElementById('sb-avatar'), p.avatar);
   document.getElementById('sb-name').textContent      = p.name;
   document.getElementById('sb-class').textContent     = `${cls.prefix} ${cls.name}`;
   document.getElementById('sb-xp-bar').style.width    = pct + '%';
@@ -159,7 +159,7 @@ function renderAll() {
   document.getElementById('tb-streak').textContent  = p.streak;
 
   // Char panel
-  document.getElementById('d-avatar').textContent   = p.avatar;
+  renderAvatarEl(document.getElementById('d-avatar'), p.avatar);
   document.getElementById('d-name').textContent     = p.name;
   document.getElementById('d-class').textContent    = `${cls.prefix} ${cls.name}`;
   document.getElementById('d-xp-bar').style.width   = pct + '%';
@@ -310,7 +310,7 @@ function renderMiniLB() {
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
     return `<div class="mini-lb-row ${r.me ? 'me' : ''}">
       <div class="mini-rank ${rc}">${medal}</div>
-      <div class="mini-avatar">${r.avatar}</div>
+      ${avatarHtml(r.avatar)}
       <div><div class="mini-name">${r.me ? 'YOU' : r.name}</div><div style="font-family:var(--ff-mono);font-size:.6rem;color:var(--muted)">Lv. ${r.level}</div></div>
       <div class="mini-xp">${r.xp.toLocaleString()}</div>
     </div>`;
@@ -358,7 +358,7 @@ function renderLeaderboard() {
       const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
       return `<div class="lb-row ${r.me ? 'me' : ''}">
         <div class="lb-rank ${rc}">${medal}</div>
-        <div class="lb-av">${r.avatar}</div>
+        <div class="lb-av">${r.avatar && r.avatar.startsWith('http') ? '<img src="'+r.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">' : r.avatar}</div>
         <div>
           <div class="lb-name">${r.name}${r.me ? ' <span style="color:var(--teal);font-size:.65rem;font-family:var(--ff-mono)">YOU</span>' : ''}</div>
           <div class="lb-lv">Lv. ${r.level}</div>
@@ -430,17 +430,112 @@ function showToast(title, msg, type = 'xp-gain') {
 }
 
 /* ════ AVATAR ════ */
-const AVATARS = ['🧙','🦸','⚔️','🦊','🐉','🧝','🔮','🦅','🐺','🌟'];
-let aidx = 0;
-[document.getElementById('sb-avatar'), document.getElementById('d-avatar')].forEach(el => {
-  el.addEventListener('click', () => {
-    aidx = (aidx + 1) % AVATARS.length;
-    state.player.avatar = AVATARS[aidx];
-    document.getElementById('sb-avatar').textContent = state.player.avatar;
-    document.getElementById('d-avatar').textContent  = state.player.avatar;
-    save();
+const DICEBEAR_AVATARS = [
+  // Heroes
+  { id:'h1', cat:'heroes', url:'https://api.dicebear.com/9.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4' },
+  { id:'h2', cat:'heroes', url:'https://api.dicebear.com/9.x/adventurer/svg?seed=Aneka&backgroundColor=ffd5dc' },
+  { id:'h3', cat:'heroes', url:'https://api.dicebear.com/9.x/adventurer/svg?seed=Warrior&backgroundColor=c0aede' },
+  { id:'h4', cat:'heroes', url:'https://api.dicebear.com/9.x/adventurer/svg?seed=Shadow&backgroundColor=d1d4f9' },
+  { id:'h5', cat:'heroes', url:'https://api.dicebear.com/9.x/adventurer/svg?seed=Dragon&backgroundColor=ffdfbf' },
+  { id:'h6', cat:'heroes', url:'https://api.dicebear.com/9.x/adventurer/svg?seed=Storm&backgroundColor=b6e3f4' },
+  // Robots
+  { id:'r1', cat:'robots', url:'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Cleo' },
+  { id:'r2', cat:'robots', url:'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Orion' },
+  { id:'r3', cat:'robots', url:'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Pixel' },
+  { id:'r4', cat:'robots', url:'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Nova' },
+  { id:'r5', cat:'robots', url:'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Apex' },
+  { id:'r6', cat:'robots', url:'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Zeta' },
+  // Pixel
+  { id:'p1', cat:'pixel', url:'https://api.dicebear.com/9.x/pixel-art/svg?seed=Nala' },
+  { id:'p2', cat:'pixel', url:'https://api.dicebear.com/9.x/pixel-art/svg?seed=Ryker' },
+  { id:'p3', cat:'pixel', url:'https://api.dicebear.com/9.x/pixel-art/svg?seed=Luna' },
+  { id:'p4', cat:'pixel', url:'https://api.dicebear.com/9.x/pixel-art/svg?seed=Blaze' },
+  { id:'p5', cat:'pixel', url:'https://api.dicebear.com/9.x/pixel-art/svg?seed=Ghost' },
+  { id:'p6', cat:'pixel', url:'https://api.dicebear.com/9.x/pixel-art/svg?seed=Titan' },
+  // Faces
+  { id:'f1', cat:'faces', url:'https://api.dicebear.com/9.x/lorelei/svg?seed=Alex&backgroundColor=b6e3f4' },
+  { id:'f2', cat:'faces', url:'https://api.dicebear.com/9.x/lorelei/svg?seed=Sam&backgroundColor=ffd5dc' },
+  { id:'f3', cat:'faces', url:'https://api.dicebear.com/9.x/lorelei/svg?seed=Jordan&backgroundColor=c0aede' },
+  { id:'f4', cat:'faces', url:'https://api.dicebear.com/9.x/lorelei/svg?seed=Morgan&backgroundColor=ffdfbf' },
+  { id:'f5', cat:'faces', url:'https://api.dicebear.com/9.x/lorelei/svg?seed=Casey&backgroundColor=d1d4f9' },
+  { id:'f6', cat:'faces', url:'https://api.dicebear.com/9.x/lorelei/svg?seed=Robin&backgroundColor=b6e3f4' },
+  // Fun
+  { id:'u1', cat:'fun', url:'https://api.dicebear.com/9.x/thumbs/svg?seed=Champion' },
+  { id:'u2', cat:'fun', url:'https://api.dicebear.com/9.x/thumbs/svg?seed=Quest' },
+  { id:'u3', cat:'fun', url:'https://api.dicebear.com/9.x/thumbs/svg?seed=Spirit' },
+  { id:'u4', cat:'fun', url:'https://api.dicebear.com/9.x/thumbs/svg?seed=Vortex' },
+  { id:'u5', cat:'fun', url:'https://api.dicebear.com/9.x/thumbs/svg?seed=Rocket' },
+  { id:'u6', cat:'fun', url:'https://api.dicebear.com/9.x/thumbs/svg?seed=Blaze' },
+];
+
+// Renders avatar (emoji string OR DiceBear URL) into a DOM element.
+function renderAvatarEl(el, avatar) {
+  if (!el) return;
+  if (avatar && avatar.startsWith('http')) {
+    el.innerHTML = '<img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block">';
+  } else {
+    el.innerHTML = avatar || '🧙';
+  }
+}
+
+// Returns avatar HTML string for use in innerHTML templates.
+function avatarHtml(avatar, extraCls) {
+  var cls = 'mini-avatar' + (extraCls ? ' ' + extraCls : '');
+  if (avatar && avatar.startsWith('http')) {
+    return '<div class="' + cls + '"><img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"></div>';
+  }
+  return '<div class="' + cls + '">' + (avatar || '🧙') + '</div>';
+}
+
+function openAvatarPicker() {
+  var modal = document.getElementById('d-modal');
+  modal.style.display = 'flex';
+  var catDefs = [
+    { id:'all', label:'All' }, { id:'heroes', label:'Heroes' },
+    { id:'robots', label:'Robots' }, { id:'pixel', label:'Pixel' },
+    { id:'faces', label:'Faces' }, { id:'fun', label:'Fun' },
+  ];
+  var tabsHtml = catDefs.map(function(c) {
+    return '<button class="ap-tab' + (c.id === 'all' ? ' active' : '') + '" onclick="filterAvatarCat(\'' + c.id + '\')">' + c.label + '</button>';
+  }).join('');
+  var gridHtml = DICEBEAR_AVATARS.map(function(av) {
+    var sel = state.player.avatar === av.url;
+    return '<div class="ap-item' + (sel ? ' selected' : '') + '" data-cat="' + av.cat + '" onclick="selectAvatar(\'' + av.url + '\')">' +
+      '<img src="' + av.url + '" loading="lazy" alt="avatar">' +
+    '</div>';
+  }).join('');
+  modal.innerHTML =
+    '<div class="ap-modal">' +
+      '<div class="ap-header">' +
+        '<div class="ap-title">Choose Your Avatar</div>' +
+        '<button class="ap-close" onclick="document.getElementById(\'d-modal\').style.display=\'none\'">✕</button>' +
+      '</div>' +
+      '<div class="ap-tabs">' + tabsHtml + '</div>' +
+      '<div class="ap-grid" id="ap-grid">' + gridHtml + '</div>' +
+    '</div>';
+}
+
+function filterAvatarCat(cat) {
+  document.querySelectorAll('.ap-tab').forEach(function(t) { t.classList.remove('active'); });
+  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.ap-item').forEach(function(item) {
+    item.style.display = (cat === 'all' || item.dataset.cat === cat) ? 'flex' : 'none';
   });
-});
+}
+
+function selectAvatar(url) {
+  state.player.avatar = url;
+  renderAll();
+  var pfAv = document.getElementById('pf-avatar');
+  if (pfAv) renderAvatarEl(pfAv, url);
+  save();
+  document.getElementById('d-modal').style.display = 'none';
+  showToast('Avatar updated! 🎨');
+}
+
+// Make sidebar + quest panel avatars open the picker too
+document.getElementById('sb-avatar').addEventListener('click', openAvatarPicker);
+document.getElementById('d-avatar').addEventListener('click', openAvatarPicker);
 
 /* ════ SUBSCRIPTION ════ */
 function selectDesktopPlan(name, price) {
@@ -870,7 +965,7 @@ function renderGroupLeaderboard() {
 
     return '<div class="mini-lb-row ' + (m.isMe ? 'me' : '') + '">' +
       '<div class="mini-rank ' + rc + '">' + medal + '</div>' +
-      '<div class="mini-avatar">' + m.avatar + '</div>' +
+      avatarHtml(m.avatar) +
       '<div style="flex:1;min-width:0">' +
         '<div class="mini-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
           m.name + (m.isMe ? ' <span class="grp-you-badge">YOU</span>' : '') +
@@ -1140,7 +1235,7 @@ function renderProfilePage() {
   var cls = getClass(p.level);
   var pct = Math.min(100, (p.xp / p.xpToNext) * 100);
 
-  document.getElementById('pf-avatar').textContent    = p.avatar;
+  renderAvatarEl(document.getElementById('pf-avatar'), p.avatar);
   document.getElementById('pf-name').textContent      = p.name;
   document.getElementById('pf-class').textContent     = cls.prefix + ' ' + cls.name;
   document.getElementById('pf-level').textContent     = p.level;
