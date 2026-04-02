@@ -1315,21 +1315,22 @@ var _obSelectedAvatar = DICEBEAR_AVATARS[0].url; // default to first avatar
 
 function initObAvatarGrid() {
   var catDefs = [
-    { id:'all', label:'All' }, { id:'heroes', label:'Heroes' },
-    { id:'robots', label:'Robots' }, { id:'pixel', label:'Pixel' },
-    { id:'faces', label:'Faces' }, { id:'fun', label:'Fun' },
+    { id:'heroes', label:'Heroes' }, { id:'robots', label:'Robots' },
+    { id:'pixel', label:'Pixel' }, { id:'faces', label:'Faces' },
+    { id:'fun', label:'Fun' }, { id:'all', label:'All' },
   ];
   var tabsEl = document.getElementById('ob-av-tabs');
   var gridEl = document.getElementById('ob-av-grid');
   if (!tabsEl || !gridEl) return;
 
   tabsEl.innerHTML = catDefs.map(function(c) {
-    return '<button class="ob-av-tab' + (c.id === 'all' ? ' active' : '') + '" onclick="obFilterCat(\'' + c.id + '\')">' + c.label + '</button>';
+    return '<button class="ob-av-tab' + (c.id === 'heroes' ? ' active' : '') + '" onclick="obFilterCat(\'' + c.id + '\')">' + c.label + '</button>';
   }).join('');
 
   gridEl.innerHTML = DICEBEAR_AVATARS.map(function(av) {
     var sel = av.url === _obSelectedAvatar;
-    return '<div class="ob-av-item' + (sel ? ' selected' : '') + '" data-cat="' + av.cat + '" onclick="obSelectAvatar(\'' + av.url + '\')">' +
+    var hidden = av.cat !== 'heroes' ? ' style="display:none"' : '';
+    return '<div class="ob-av-item' + (sel ? ' selected' : '') + '" data-cat="' + av.cat + '"' + hidden + ' onclick="obSelectAvatar(\'' + av.url + '\')">' +
       '<img src="' + av.url + '" loading="lazy" alt="avatar">' +
     '</div>';
   }).join('');
