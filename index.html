@@ -904,15 +904,7 @@
   import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey:            "%%FIREBASE_API_KEY%%",
-    authDomain:        "habit-challenge-164d9.firebaseapp.com",
-    projectId:         "habit-challenge-164d9",
-    storageBucket:     "habit-challenge-164d9.firebasestorage.app",
-    messagingSenderId: "27543176172",
-    appId:             "1:27543176172:web:554ea86adeda974df136c9",
-    measurementId:     "G-G2DJL2G8LQ"
-  };
+  const firebaseConfig = %%FIREBASE_CONFIG%%;
 
   // Prevent duplicate initialization if this module ever runs twice
   const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
