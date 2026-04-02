@@ -1380,22 +1380,24 @@
         if (snap.exists() && window._setState) window._setState(snap.data());
       });
 
-      // Ensure friend code is generated and saved to Firestore on every sign-in.
+      // Ensure friend code is generated and saved — only update that one field,
+      // never overwrite the whole state (which would erase XP/quests on a fresh browser).
       if (window.getFriendCode) {
-        window.getFriendCode();
-        if (window.save) window.save();
+        var _fc = window.getFriendCode();
+        updateDoc(doc(db, 'users', user.uid), { 'player.friendCode': _fc })
+          .catch(function() {
+            // Doc doesn't exist yet (brand new user) — create it with just the code
+            setDoc(doc(db, 'users', user.uid), { player: { friendCode: _fc } }, { merge: true });
+          });
       }
 
-      // Sync mutual friendships: find anyone who has us in their friends and add them back.
+      // Sync mutual friendships using updateDoc (dotted path) so we never overwrite other fields.
       getDocs(query(collection(db, 'users'), where('player.friends', 'array-contains', user.uid)))
         .then(function(snap) {
           snap.docs.forEach(function(d) {
             if (d.id === user.uid) return;
-            // Add them to our friends in Firestore (no-op if already there)
-            setDoc(doc(db, 'users', user.uid),
-              { player: { friends: arrayUnion(d.id) } },
-              { merge: true }
-            );
+            updateDoc(doc(db, 'users', user.uid), { 'player.friends': arrayUnion(d.id) })
+              .catch(function() {});
           });
         })
         .catch(function() {});
