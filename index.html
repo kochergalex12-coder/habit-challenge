@@ -966,8 +966,12 @@
   };
 
   // ── FIRESTORE SAVE ────────────────────────────────────────────────────────
+  // Only write to Firestore after we've confirmed the user's data has loaded from Firestore.
+  // This prevents local empty-state from overwriting saved data on page refresh.
+  window._firestoreReady = false;
+
   window._fbSave = function(state) {
-    if (!window.currentUser) return;
+    if (!window.currentUser || !window._firestoreReady) return;
     setDoc(
       doc(db, 'users', window.currentUser.uid),
       { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, updatedAt: new Date().toISOString() },
@@ -1384,6 +1388,8 @@
       // Real-time listener for this user's personal state (habits, XP, etc.)
       if (window._userUnsub) window._userUnsub();
       window._userUnsub = onSnapshot(doc(db, 'users', user.uid), function(snap) {
+        // Mark Firestore as loaded — safe to write from now on
+        window._firestoreReady = true;
         if (snap.exists() && window._setState) window._setState(snap.data());
       });
 
@@ -1431,7 +1437,8 @@
       signInBtn.onclick = function() { window.signInWithGoogle(); };
       signOutBtn.style.display = 'none';
 
-      // Clean up Firestore listener
+      // Clean up Firestore listener and reset ready flag
+      window._firestoreReady = false;
       if (window._userUnsub) { window._userUnsub(); window._userUnsub = null; }
 
       // Update group page if it's visible
