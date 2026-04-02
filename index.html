@@ -73,6 +73,7 @@
       <button class="sb-nav-item" onclick="goPage('challenges',this)"><span class="sb-nav-icon">⚡</span> Your Challenges</button>
       <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
       <button class="sb-nav-item" onclick="goPage('achievements',this)"><span class="sb-nav-icon">🎖</span> Achievements</button>
+      <button class="sb-nav-item" onclick="goPage('calendar',this)" id="nav-calendar"><span class="sb-nav-icon">📅</span> Calendar</button>
 
       <!-- ── SOCIAL ── -->
       <div class="sb-section-divider"></div>
@@ -112,6 +113,7 @@
     <!-- TOPBAR -->
     <div id="topbar">
       <div class="topbar-title" id="topbar-title">My <span>Quests</span></div>
+      <div class="tb-week-cal" id="tb-week-cal" onclick="goPage('calendar', document.getElementById('nav-calendar'))" title="Open calendar"></div>
       <div class="topbar-right">
         <div class="tb-badge tb-streak">🔥 <span id="tb-streak">0</span> days</div>
         <div class="tb-badge tb-xp">⚡ <span id="tb-xp">0</span> XP</div>
@@ -125,64 +127,25 @@
 
       <!-- QUESTS PAGE -->
       <div class="page active" id="page-quests">
-        <div class="page-grid">
-          <div>
-            <div class="week-strip" id="d-week-strip"></div>
-            <div class="stats-row">
-              <div class="stat-card" style="--s-c1:#c9820a;--s-c2:#c4374a"><div class="stat-val" id="d-total-xp">0</div><div class="stat-lbl">Total XP</div></div>
-              <div class="stat-card" style="--s-c1:#c4374a;--s-c2:#6d3dbd"><div class="stat-val" id="d-streak">0</div><div class="stat-lbl">Best Streak</div></div>
-              <div class="stat-card" style="--s-c1:#0d8a7f;--s-c2:#1a8a5a"><div class="stat-val" id="d-completed">0</div><div class="stat-lbl">Quests Done</div></div>
-              <div class="stat-card" style="--s-c1:#1a8a5a;--s-c2:#0d8a7f"><div class="stat-val" id="d-today">0%</div><div class="stat-lbl">Today</div></div>
-            </div>
-            <div class="sec-hdr">
-              <div class="sec-title">Active <span>Quests</span></div>
-              <button class="sec-action" onclick="openModal()">+ Add Quest</button>
-            </div>
-            <div class="cat-pills" id="d-cat-pills">
-              <div class="cat-pill active" data-cat="all" onclick="filterCat(this)">All</div>
-              <div class="cat-pill" data-cat="health" onclick="filterCat(this)">💪 Health</div>
-              <div class="cat-pill" data-cat="mind" onclick="filterCat(this)">🧠 Mind</div>
-              <div class="cat-pill" data-cat="skill" onclick="filterCat(this)">🎯 Skills</div>
-              <div class="cat-pill" data-cat="social" onclick="filterCat(this)">🤝 Social</div>
-              <div class="cat-pill" data-cat="creative" onclick="filterCat(this)">🎨 Creative</div>
-            </div>
-            <div class="habits-grid" id="d-habits-grid"></div>
-          </div>
-          <div class="right-col">
-            <div class="char-panel">
-              <div class="char-panel-avatar" id="d-avatar" title="Click to change">🧙</div>
-              <div class="char-panel-name" id="d-name">Novice Hero</div>
-              <div class="char-panel-class" id="d-class">⚔️ Discipline Apprentice</div>
-              <div class="cp-xp-label"><span>Experience</span><span id="d-xp-label">0 / 100</span></div>
-              <div class="cp-xp-track"><div class="cp-xp-fill" id="d-xp-bar" style="width:0%"></div></div>
-              <div class="cp-level">
-                <div class="level-ring">
-                  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border2)" stroke-width="4"/>
-                    <circle cx="32" cy="32" r="26" fill="none" stroke="url(#lvlG)" stroke-width="4" stroke-dasharray="163.4" id="d-level-arc" stroke-dashoffset="163.4" stroke-linecap="round" transform="rotate(-90 32 32)"/>
-                    <defs><linearGradient id="lvlG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#c9820a"/><stop offset="100%" stop-color="#c4374a"/></linearGradient></defs>
-                  </svg>
-                  <div class="level-num" id="d-level">1</div>
-                </div>
-                <div class="level-lbl">Level</div>
-              </div>
-              <div class="cp-stats">
-                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--rose)" id="d-cp-streak">0</div><div class="cp-stat-lbl">Streak</div></div>
-                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--teal)" id="d-cp-quests">0</div><div class="cp-stat-lbl">Quests</div></div>
-                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--green)" id="d-cp-today">0</div><div class="cp-stat-lbl">Today</div></div>
-              </div>
-            </div>
-            <div class="mini-lb">
-              <div class="mini-lb-hdr">🏆 Top Rankings</div>
-              <div id="d-mini-lb"></div>
-            </div>
-          </div>
+        <div class="dash-section-hdr">
+          <div class="dash-section-title">⚔️ Solo Challenges</div>
+        </div>
+        <div class="habits-grid" id="d-habits-grid"></div>
+
+        <div class="dash-section-hdr" style="margin-top:28px">
+          <div class="dash-section-title">👥 Group Challenges</div>
+        </div>
+        <div id="d-group-dash" class="habits-grid">
+          <div class="dash-empty">Join a group to see group challenges here.</div>
         </div>
       </div>
 
       <!-- CHALLENGES PAGE -->
       <div class="page" id="page-challenges">
-        <div class="sec-hdr"><div class="sec-title">⚡ Active <span>Challenges</span></div></div>
+        <div class="sec-hdr">
+          <div class="sec-title">⚡ Active <span>Challenges</span></div>
+          <button class="sec-action" onclick="openModal()">+ Add Quest</button>
+        </div>
         <div class="challenges-grid" id="d-challenges-grid"></div>
       </div>
 
@@ -202,6 +165,16 @@
           </div>
         </div>
         <div class="ach-grid" id="d-ach-grid"></div>
+      </div>
+
+      <!-- CALENDAR PAGE -->
+      <div class="page" id="page-calendar">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calPrevMonth()">‹</button>
+          <div class="cal-month-title" id="cal-month-title"></div>
+          <button class="cal-nav-btn" onclick="calNextMonth()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
       </div>
 
       <!-- SUBSCRIPTION PAGE -->
@@ -839,6 +812,18 @@
 
     </div><!-- /content -->
   </div><!-- /main -->
+
+  <!-- NOTIFICATION PANEL -->
+  <div id="notif-fab" onclick="toggleNotifPanel()" title="Notifications">
+    🔔 <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+  </div>
+  <div id="notif-panel" style="display:none">
+    <div class="notif-panel-hdr">Notifications</div>
+    <div id="notif-panel-body" class="notif-panel-body">
+      <div class="notif-empty">No notifications</div>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <!-- MODAL -->

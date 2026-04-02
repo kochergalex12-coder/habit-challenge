@@ -76,6 +76,7 @@ const PAGE_TITLES = {
   social:       '🌐 <span style="color:var(--teal)">Friends</span>',
   chat:         '💬 <span style="color:var(--teal)">Chat</span>',
   'friends-lb': '🏆 <span style="color:var(--teal)">Friends Leaderboard</span>',
+  calendar:     '📅 <span style="color:var(--teal)">Calendar</span>',
 };
 
 /* ════ PERSISTENCE ════ */
@@ -163,39 +164,13 @@ function renderAll() {
   document.getElementById('tb-xp').textContent     = p.totalXP.toLocaleString();
   document.getElementById('tb-streak').textContent  = p.streak;
 
-  // Char panel
-  renderAvatarEl(document.getElementById('d-avatar'), p.avatar);
-  document.getElementById('d-name').textContent     = p.name;
-  document.getElementById('d-class').textContent    = `${cls.prefix} ${cls.name}`;
-  document.getElementById('d-xp-bar').style.width   = pct + '%';
-  document.getElementById('d-xp-label').textContent = `${p.xp} / ${p.xpToNext}`;
-  document.getElementById('d-level').textContent    = p.level;
-  const circ = 163.4;
-  document.getElementById('d-level-arc').setAttribute('stroke-dashoffset', circ - (pct / 100) * circ);
-  document.getElementById('d-cp-streak').textContent = p.streak;
-  document.getElementById('d-cp-quests').textContent = total;
-  document.getElementById('d-cp-today').textContent  = todayDone;
-
-  // Stats
-  document.getElementById('d-total-xp').textContent  = p.totalXP.toLocaleString();
-  document.getElementById('d-streak').textContent    = p.bestStreak;
-  document.getElementById('d-completed').textContent = p.totalCompleted;
-  document.getElementById('d-today').textContent     = total ? Math.round((todayDone / total) * 100) + '%' : '0%';
-
-  renderWeekStrip();
   renderHabits();
-  renderMiniLB();
+  renderWeekCalInTopbar();
+  renderNotifBadge();
 }
 
 function renderWeekStrip() {
-  const today = new Date().getDay(), todayIdx = today === 0 ? 6 : today - 1;
-  document.getElementById('d-week-strip').innerHTML = WEEK_DAYS.map((d, i) => {
-    const isToday = i === todayIdx, done = i < todayIdx;
-    return `<div class="day-col">
-      <div class="day-name">${d}</div>
-      <div class="day-dot ${done ? 'done' : ''} ${isToday ? 'today' : ''}">${done ? '✓' : i + 1}</div>
-    </div>`;
-  }).join('');
+  renderWeekCalInTopbar();
 }
 
 function filterCat(el) {
@@ -306,11 +281,13 @@ function renderAchievements() {
 }
 
 function renderMiniLB() {
+  const el = document.getElementById('d-mini-lb');
+  if (!el) return;
   const data = LEADERBOARD.map(r => {
     if (r.me) return { ...r, level:state.player.level, xp:state.player.totalXP, streak:state.player.streak };
     return r;
   }).sort((a,b) => b.xp - a.xp).slice(0, 5);
-  document.getElementById('d-mini-lb').innerHTML = data.map((r, i) => {
+  el.innerHTML = data.map((r, i) => {
     const rank = i + 1, rc = rank===1?'t1':rank===2?'t2':rank===3?'t3':'';
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
     return `<div class="mini-lb-row ${r.me ? 'me' : ''}">
@@ -754,6 +731,7 @@ goPage = function(page, btn) {
   if (page === 'social')     renderSocialPage();
   if (page === 'chat')       renderChatPage();
   if (page === 'friends-lb') renderFriendsLeaderboard();
+  if (page === 'calendar')   renderCalendarPage();
 };
 
 /* ════ GROUP CHALLENGE ════ */
@@ -1748,6 +1726,132 @@ function copyFriendCode() {
   }).catch(function() {
     showToast(code);
   });
+}
+
+/* ════ TOPBAR WEEK CALENDAR ════ */
+var WEEK_DAYS_FULL = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function renderWeekCalInTopbar() {
+  var el = document.getElementById('tb-week-cal');
+  if (!el) return;
+  var today = new Date().getDay();
+  var todayIdx = today === 0 ? 6 : today - 1;
+  el.innerHTML = WEEK_DAYS_FULL.map(function(d, i) {
+    var isToday = i === todayIdx;
+    return '<div class="tb-cal-day' + (isToday ? ' tb-cal-today' : '') + '">' +
+      '<div class="tb-cal-label">' + d + '</div>' +
+      '<div class="tb-cal-dot' + (isToday ? ' tb-cal-dot-today' : '') + '"></div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ════ CALENDAR PAGE ════ */
+var _calYear  = new Date().getFullYear();
+var _calMonth = new Date().getMonth();
+
+function renderCalendarPage() {
+  _calYear  = new Date().getFullYear();
+  _calMonth = new Date().getMonth();
+  _renderCalGrid();
+}
+
+function calPrevMonth() {
+  _calMonth--;
+  if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+  _renderCalGrid();
+}
+
+function calNextMonth() {
+  _calMonth++;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  _renderCalGrid();
+}
+
+function _renderCalGrid() {
+  var titleEl = document.getElementById('cal-month-title');
+  var gridEl  = document.getElementById('cal-grid');
+  if (!titleEl || !gridEl) return;
+
+  var monthNames = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+  titleEl.textContent = monthNames[_calMonth] + ' ' + _calYear;
+
+  var today   = new Date();
+  var firstDay = new Date(_calYear, _calMonth, 1).getDay();
+  var startIdx = firstDay === 0 ? 6 : firstDay - 1; // Mon=0
+  var daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+
+  var html = '<div class="cal-day-headers">';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d) {
+    html += '<div class="cal-day-hdr">' + d + '</div>';
+  });
+  html += '</div><div class="cal-days">';
+
+  for (var i = 0; i < startIdx; i++) html += '<div class="cal-day cal-day-empty"></div>';
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var isToday = (d === today.getDate() && _calMonth === today.getMonth() && _calYear === today.getFullYear());
+    var isPast  = new Date(_calYear, _calMonth, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    html += '<div class="cal-day' + (isToday ? ' cal-day-today' : '') + (isPast ? ' cal-day-past' : '') + '">' +
+      '<div class="cal-day-num">' + d + '</div>' +
+    '</div>';
+  }
+  html += '</div>';
+  gridEl.innerHTML = html;
+}
+
+/* ════ NOTIFICATIONS ════ */
+function toggleNotifPanel() {
+  var panel = document.getElementById('notif-panel');
+  if (!panel) return;
+  var open = panel.style.display === 'none' || !panel.style.display;
+  panel.style.display = open ? 'block' : 'none';
+  if (open) renderNotifPanel();
+}
+
+function renderNotifPanel() {
+  var body = document.getElementById('notif-panel-body');
+  if (!body) return;
+
+  // Friend requests
+  if (window.currentUser && window._loadMyFriendRequests) {
+    window._loadMyFriendRequests().then(function(uids) {
+      if (uids.length) {
+        window._loadFriendProfiles(uids).then(function(snaps) {
+          var html = snaps.map(function(snap, i) {
+            var name = snap.exists() ? ((snap.data().player || {}).name || 'Someone') : 'Someone';
+            var uid  = uids[i];
+            return '<div class="notif-item">' +
+              '<div class="notif-item-icon">👤</div>' +
+              '<div class="notif-item-text"><strong>' + name + '</strong> sent you a friend request</div>' +
+              '<button class="notif-btn-accept" onclick="acceptRequest(\'' + uid + '\',\'' + name.replace(/'/g,'&#39;') + '\');renderNotifPanel()">Accept</button>' +
+            '</div>';
+          }).join('');
+          body.innerHTML = html || '<div class="notif-empty">No notifications</div>';
+        });
+      } else {
+        body.innerHTML = '<div class="notif-empty">No notifications</div>';
+      }
+    }).catch(function() {
+      body.innerHTML = '<div class="notif-empty">No notifications</div>';
+    });
+  } else {
+    body.innerHTML = '<div class="notif-empty">Sign in to see notifications</div>';
+  }
+}
+
+function renderNotifBadge() {
+  if (!window.currentUser || !window._loadMyFriendRequests) return;
+  window._loadMyFriendRequests().then(function(uids) {
+    var badge = document.getElementById('notif-badge');
+    if (!badge) return;
+    if (uids.length > 0) {
+      badge.textContent = uids.length;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }).catch(function() {});
 }
 
 /* ════ BOOT ════ */
