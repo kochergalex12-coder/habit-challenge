@@ -981,10 +981,13 @@ html, body {
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 22px;
   padding: 40px 36px 36px;
-  width: 100%; max-width: 420px;
+  width: 100%; max-width: 460px;
+  max-height: 92vh;
+  overflow-y: auto;
   text-align: center;
   box-shadow: 0 24px 80px rgba(0,0,0,.5);
   animation: obCardIn .5s cubic-bezier(.4,0,.2,1);
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;
 }
 @keyframes obCardIn {
   from { opacity: 0; transform: translateY(24px) scale(.97); }
@@ -1397,4 +1400,43 @@ html, body {
 }
 @media (max-width: 480px) {
   .ap-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* ══ ONBOARDING INLINE AVATAR GRID ══ */
+.ob-av-heading {
+  font-family: var(--ff-title); font-size: 1.1rem; font-weight: 700;
+  color: #fff; margin-bottom: 10px;
+}
+.ob-av-tabs {
+  display: flex; gap: 6px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 12px;
+}
+.ob-av-tab {
+  padding: 4px 12px; border-radius: 50px;
+  font-family: var(--ff-mono); font-size: .62rem; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  border: 1.5px solid rgba(255,255,255,.15); background: transparent;
+  color: rgba(255,255,255,.4); cursor: pointer;
+  transition: all .15s ease;
+}
+.ob-av-tab:hover { border-color: rgba(13,138,127,.6); color: rgba(13,138,127,.9); }
+.ob-av-tab.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+.ob-av-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  gap: 8px; margin-bottom: 24px;
+}
+.ob-av-item {
+  aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+  border: 2px solid rgba(255,255,255,.12);
+  cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  background: rgba(255,255,255,.05);
+  transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+.ob-av-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ob-av-item:hover { border-color: rgba(13,138,127,.7); transform: scale(1.08); }
+.ob-av-item.selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(13,138,127,.35);
+  transform: scale(1.06);
 }

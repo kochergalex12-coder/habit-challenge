@@ -1311,44 +1311,44 @@ function renderXPChart() {
 
 /* ════ ONBOARDING ════ */
 
-var _obSelectedAvatar = null; // DiceBear URL chosen during onboarding (null = use default emoji)
+var _obSelectedAvatar = DICEBEAR_AVATARS[0].url; // default to first avatar
 
-function openObAvatarPicker() {
-  var modal = document.getElementById('d-modal');
-  modal.style.display = 'flex';
+function initObAvatarGrid() {
   var catDefs = [
     { id:'all', label:'All' }, { id:'heroes', label:'Heroes' },
     { id:'robots', label:'Robots' }, { id:'pixel', label:'Pixel' },
     { id:'faces', label:'Faces' }, { id:'fun', label:'Fun' },
   ];
-  var tabsHtml = catDefs.map(function(c) {
-    return '<button class="ap-tab' + (c.id === 'all' ? ' active' : '') + '" onclick="filterAvatarCat(\'' + c.id + '\')">' + c.label + '</button>';
+  var tabsEl = document.getElementById('ob-av-tabs');
+  var gridEl = document.getElementById('ob-av-grid');
+  if (!tabsEl || !gridEl) return;
+
+  tabsEl.innerHTML = catDefs.map(function(c) {
+    return '<button class="ob-av-tab' + (c.id === 'all' ? ' active' : '') + '" onclick="obFilterCat(\'' + c.id + '\')">' + c.label + '</button>';
   }).join('');
-  var gridHtml = DICEBEAR_AVATARS.map(function(av) {
-    var sel = _obSelectedAvatar === av.url;
-    return '<div class="ap-item' + (sel ? ' selected' : '') + '" data-cat="' + av.cat + '" onclick="selectObAvatar(\'' + av.url + '\')">' +
+
+  gridEl.innerHTML = DICEBEAR_AVATARS.map(function(av) {
+    var sel = av.url === _obSelectedAvatar;
+    return '<div class="ob-av-item' + (sel ? ' selected' : '') + '" data-cat="' + av.cat + '" onclick="obSelectAvatar(\'' + av.url + '\')">' +
       '<img src="' + av.url + '" loading="lazy" alt="avatar">' +
     '</div>';
   }).join('');
-  modal.innerHTML =
-    '<div class="ap-modal">' +
-      '<div class="ap-header">' +
-        '<div class="ap-title">Choose Your Avatar</div>' +
-        '<button class="ap-close" onclick="document.getElementById(\'d-modal\').style.display=\'none\'">✕</button>' +
-      '</div>' +
-      '<div class="ap-tabs">' + tabsHtml + '</div>' +
-      '<div class="ap-grid" id="ap-grid">' + gridHtml + '</div>' +
-    '</div>';
 }
 
-function selectObAvatar(url) {
+function obFilterCat(cat) {
+  document.querySelectorAll('.ob-av-tab').forEach(function(t) { t.classList.remove('active'); });
+  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.ob-av-item').forEach(function(item) {
+    item.style.display = (cat === 'all' || item.dataset.cat === cat) ? 'flex' : 'none';
+  });
+}
+
+function obSelectAvatar(url) {
   _obSelectedAvatar = url;
-  // Update the onboarding preview circle
-  var display = document.getElementById('ob-avatar-display');
-  if (display) {
-    display.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
-  }
-  document.getElementById('d-modal').style.display = 'none';
+  document.querySelectorAll('.ob-av-item').forEach(function(item) {
+    var img = item.querySelector('img');
+    item.classList.toggle('selected', img && img.getAttribute('src') === url);
+  });
 }
 
 function submitOnboarding() {
@@ -1383,6 +1383,7 @@ function submitOnboarding() {
 /* ════ BOOT ════ */
 load();
 renderAll();
+initObAvatarGrid();
 
 // Show onboarding for first-time visitors; skip for returning users
 if (!state.player.hasOnboarded) {
