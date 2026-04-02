@@ -6,7 +6,13 @@ if (!fs.existsSync(dist)) fs.mkdirSync(dist);
 
 // Inject Firebase API key into index.html
 const apiKey = process.env.FIREBASE_API_KEY || '';
-if (!apiKey) console.warn('Warning: FIREBASE_API_KEY env var is not set.');
+if (!apiKey) {
+  console.error('ERROR: FIREBASE_API_KEY environment variable is not set!');
+  console.error('Set it in Netlify: Site configuration → Environment variables');
+  process.exit(1); // Fail the build loudly instead of silently shipping a broken site
+}
+
+console.log('FIREBASE_API_KEY found, injecting into index.html...');
 
 let html = fs.readFileSync('index.html', 'utf8');
 html = html.replace('%%FIREBASE_API_KEY%%', apiKey);
