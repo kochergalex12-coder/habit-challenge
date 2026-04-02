@@ -966,6 +966,161 @@ html, body {
   letter-spacing: .08em; text-transform: uppercase; margin-bottom: 28px;
 }
 
+/* ── Running figure ── */
+.rf-scene {
+  position: relative;
+  width: 70px; height: 120px;
+  margin: 0 auto 18px;
+}
+.rf-fig {
+  position: absolute; bottom: 12px; left: 50%;
+  transform: translateX(-50%) rotate(-6deg);
+  width: 36px;
+  animation: rfBounce .38s ease-in-out infinite alternate;
+}
+@keyframes rfBounce {
+  from { transform: translateX(-50%) rotate(-6deg) translateY(0); }
+  to   { transform: translateX(-50%) rotate(-6deg) translateY(-5px); }
+}
+.rf-shadow {
+  position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 36px; height: 8px;
+  background: rgba(0,0,0,.55);
+  border-radius: 50%;
+  animation: rfShadow .38s ease-in-out infinite alternate;
+}
+@keyframes rfShadow {
+  from { transform: translateX(-50%) scaleX(1); opacity: .55; }
+  to   { transform: translateX(-50%) scaleX(.7); opacity: .3; }
+}
+
+/* Head */
+.rf-head {
+  position: relative;
+  width: 20px; height: 20px;
+  background: #f5c5a3;
+  border-radius: 50%;
+  margin: 0 auto 2px;
+  overflow: hidden;
+}
+.rf-hair {
+  position: absolute; top: 0; left: 0; right: 0; height: 9px;
+  background: #5c3d2e; border-radius: 50% 50% 0 0;
+}
+.rf-headband {
+  position: absolute; top: 7px; left: 0; right: 0; height: 4px;
+  background: #c4374a; opacity: .9;
+}
+.rf-eye-l, .rf-eye-r {
+  position: absolute; bottom: 4px;
+  width: 3px; height: 3px;
+  background: #2b1a0e; border-radius: 50%;
+}
+.rf-eye-l { left: 4px; }
+.rf-eye-r { right: 4px; }
+
+/* Arms */
+.rf-arm {
+  position: absolute;
+  width: 7px; height: 18px;
+  background: #0d8a7f;  /* teal sleeve */
+  border-radius: 4px;
+  top: 22px;
+  transform-origin: 50% 0%;
+}
+.rf-arm-l { left: -5px; animation: rfArmL .38s ease-in-out infinite alternate; }
+.rf-arm-r { right: -5px; animation: rfArmR .38s ease-in-out infinite alternate; }
+@keyframes rfArmL {
+  from { transform: rotate(-42deg); }
+  to   { transform: rotate(32deg); }
+}
+@keyframes rfArmR {
+  from { transform: rotate(32deg); }
+  to   { transform: rotate(-42deg); }
+}
+
+/* Torso */
+.rf-torso {
+  position: relative;
+  width: 24px; height: 22px;
+  background: #0d8a7f;
+  border-radius: 5px 5px 3px 3px;
+  margin: 0 auto;
+}
+.rf-torso-line {
+  position: absolute; top: 4px; left: 50%;
+  transform: translateX(-50%);
+  width: 2px; height: 14px;
+  background: rgba(255,255,255,.15);
+  border-radius: 1px;
+}
+
+/* Shorts */
+.rf-shorts {
+  position: relative;
+  width: 26px; height: 14px;
+  background: #1a2744;
+  border-radius: 2px 2px 5px 5px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.rf-shorts-stripe {
+  position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 2px; height: 100%;
+  background: rgba(255,255,255,.12);
+}
+
+/* Legs (thighs) */
+.rf-leg {
+  position: absolute;
+  width: 10px; height: 18px;
+  background: #f5c5a3;
+  border-radius: 4px;
+  top: 56px;
+  transform-origin: 50% 0%;
+}
+.rf-leg-l { left: 4px; animation: rfLegL .38s ease-in-out infinite alternate; }
+.rf-leg-r { right: 4px; animation: rfLegR .38s ease-in-out infinite alternate; }
+@keyframes rfLegL {
+  from { transform: rotate(-38deg); }
+  to   { transform: rotate(28deg); }
+}
+@keyframes rfLegR {
+  from { transform: rotate(28deg); }
+  to   { transform: rotate(-38deg); }
+}
+
+/* Shins */
+.rf-shin {
+  position: absolute;
+  width: 9px; height: 17px;
+  background: #f5c5a3;
+  border-radius: 3px;
+  top: 14px; left: 1px;
+  transform-origin: 50% 0%;
+}
+.rf-shin-l { animation: rfShinL .38s ease-in-out infinite alternate; }
+.rf-shin-r { animation: rfShinR .38s ease-in-out infinite alternate; }
+@keyframes rfShinL {
+  from { transform: rotate(4deg); }
+  to   { transform: rotate(48deg); }
+}
+@keyframes rfShinR {
+  from { transform: rotate(48deg); }
+  to   { transform: rotate(4deg); }
+}
+
+/* Shoes */
+.rf-shoe {
+  position: absolute;
+  width: 14px; height: 6px;
+  background: #e8652a;
+  border-radius: 3px 5px 3px 2px;
+  bottom: -2px; left: -1px;
+}
+
 .ob-avatar-display {
   font-size: 3.8rem; line-height: 1;
   width: 84px; height: 84px; margin: 0 auto 6px;
