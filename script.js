@@ -1311,12 +1311,44 @@ function renderXPChart() {
 
 /* ════ ONBOARDING ════ */
 
-var _OB_AVATARS = ['🧙','🦸','🧝','🦊','🐺','🦁','🐉','⚔️','🛡️','🔮','💀','👑','🌟','🎭','🚀','🎯','💎','🔥'];
-var _obIdx = 0;
+var _obSelectedAvatar = null; // DiceBear URL chosen during onboarding (null = use default emoji)
 
-function cycleObAvatar() {
-  _obIdx = (_obIdx + 1) % _OB_AVATARS.length;
-  document.getElementById('ob-avatar-display').textContent = _OB_AVATARS[_obIdx];
+function openObAvatarPicker() {
+  var modal = document.getElementById('d-modal');
+  modal.style.display = 'flex';
+  var catDefs = [
+    { id:'all', label:'All' }, { id:'heroes', label:'Heroes' },
+    { id:'robots', label:'Robots' }, { id:'pixel', label:'Pixel' },
+    { id:'faces', label:'Faces' }, { id:'fun', label:'Fun' },
+  ];
+  var tabsHtml = catDefs.map(function(c) {
+    return '<button class="ap-tab' + (c.id === 'all' ? ' active' : '') + '" onclick="filterAvatarCat(\'' + c.id + '\')">' + c.label + '</button>';
+  }).join('');
+  var gridHtml = DICEBEAR_AVATARS.map(function(av) {
+    var sel = _obSelectedAvatar === av.url;
+    return '<div class="ap-item' + (sel ? ' selected' : '') + '" data-cat="' + av.cat + '" onclick="selectObAvatar(\'' + av.url + '\')">' +
+      '<img src="' + av.url + '" loading="lazy" alt="avatar">' +
+    '</div>';
+  }).join('');
+  modal.innerHTML =
+    '<div class="ap-modal">' +
+      '<div class="ap-header">' +
+        '<div class="ap-title">Choose Your Avatar</div>' +
+        '<button class="ap-close" onclick="document.getElementById(\'d-modal\').style.display=\'none\'">✕</button>' +
+      '</div>' +
+      '<div class="ap-tabs">' + tabsHtml + '</div>' +
+      '<div class="ap-grid" id="ap-grid">' + gridHtml + '</div>' +
+    '</div>';
+}
+
+function selectObAvatar(url) {
+  _obSelectedAvatar = url;
+  // Update the onboarding preview circle
+  var display = document.getElementById('ob-avatar-display');
+  if (display) {
+    display.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+  }
+  document.getElementById('d-modal').style.display = 'none';
 }
 
 function submitOnboarding() {
@@ -1337,7 +1369,7 @@ function submitOnboarding() {
   }
 
   state.player.name         = name;
-  state.player.avatar       = _OB_AVATARS[_obIdx];
+  state.player.avatar       = _obSelectedAvatar || '🧙';
   state.player.hasOnboarded = true;
   save();
   renderAll();
