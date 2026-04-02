@@ -436,7 +436,7 @@ html, body {
 .plan-feats li { font-size: .82rem; color: var(--ink); display: flex; align-items: center; gap: 7px; }
 .fy { color: var(--green); }
 .fn { color: var(--faint); }
-.plan-btn-d { width: 100%; padding: 11px; border-radius: 9px; font-family: var(--ff-body); font-size: .88rem; font-weight: 700; cursor: pointer; transition: all var(--t); border: 1.5px solid var(--border2); background: transparent; color: var(--ink); }
+.plan-btn-d { width: 100%; padding: 11px; border-radius: 9px; font-family: var(--ff-body); font-size: .88rem; font-weight: 700; cursor: pointer; transition: all var(--t); border: 1.5px solid var(--border2); background: transparent; color: var(--ink); display: block; text-align: center; text-decoration: none; box-sizing: border-box; }
 .plan-btn-d:hover { border-color: var(--violet); color: var(--violet); background: var(--violet-bg); }
 .plan-btn-d.primary { background: linear-gradient(135deg, var(--violet), var(--rose)); border-color: transparent; color: #fff; box-shadow: 0 3px 12px rgba(109,61,189,.35); }
 .plan-btn-d.primary:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(109,61,189,.45); }
