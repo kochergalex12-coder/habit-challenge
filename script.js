@@ -73,6 +73,7 @@ const PAGE_TITLES = {
   subscription: '<span style="color:var(--teal)">Go Pro</span>',
   group:        '👥 Group <span style="color:var(--teal)">Challenge</span>',
   profile:      '👤 My <span style="color:var(--teal)">Profile</span>',
+  social:       '🌐 <span style="color:var(--teal)">Social</span>',
 };
 
 /* ════ PERSISTENCE ════ */
@@ -128,6 +129,8 @@ function goPage(page, btn) {
   if (page === 'challenges')   renderChallenges();
   if (page === 'leaderboard')  renderLeaderboard();
   if (page === 'achievements') renderAchievements();
+  if (page === 'profile')      renderProfilePage();
+  if (page === 'social')       renderSocialPage();
 }
 
 /* ════ RENDER ════ */
@@ -1260,6 +1263,8 @@ function renderProfilePage() {
     : '';
 
   renderXPChart();
+  var fcEl = document.getElementById('pf-friend-code');
+  if (fcEl) fcEl.textContent = getFriendCode();
 }
 
 function renderXPChart() {
@@ -1379,6 +1384,71 @@ function submitOnboarding() {
   var overlay = document.getElementById('onboarding-overlay');
   overlay.classList.add('ob-exit');
   setTimeout(function() { overlay.style.display = 'none'; }, 450);
+}
+
+/* ════ SOCIAL PAGE ════ */
+
+var MOCK_FRIENDS = [
+  { name:'AlexXP',       avatar:'🦸', level:42, streak:34, online:true  },
+  { name:'MashaMind',    avatar:'🧙', level:38, streak:21, online:false },
+  { name:'NightCoder',   avatar:'🦊', level:29, streak:8,  online:true  },
+  { name:'FitnessQueen', avatar:'💪', level:26, streak:12, online:false },
+];
+
+function getFriendCode() {
+  if (!state.player.friendCode) {
+    state.player.friendCode = 'HQ-' + Math.floor(10000 + Math.random() * 90000);
+    save();
+  }
+  return state.player.friendCode;
+}
+
+function renderSocialPage() {
+  var list = document.getElementById('soc-friends-list');
+  var countEl = document.getElementById('soc-friends-count');
+  if (!list) return;
+  countEl.textContent = MOCK_FRIENDS.length;
+  if (!MOCK_FRIENDS.length) {
+    list.innerHTML = '<div class="soc-empty"><div class="soc-empty-icon">👥</div>No friends yet.<br>Add someone using the methods above!</div>';
+    return;
+  }
+  list.innerHTML = MOCK_FRIENDS.map(function(f) {
+    var avHtml = f.avatar.startsWith('http')
+      ? '<img src="' + f.avatar + '">'
+      : f.avatar;
+    return '<div class="soc-friend-row">' +
+      '<div class="soc-friend-av">' + avHtml + '</div>' +
+      '<div class="soc-friend-info">' +
+        '<div class="soc-friend-name">' + f.name + '</div>' +
+        '<div class="soc-friend-meta">Lv.' + f.level + ' &nbsp;·&nbsp; 🔥 ' + f.streak + ' day streak</div>' +
+      '</div>' +
+      '<div class="soc-friend-status' + (f.online ? ' online' : '') + '" title="' + (f.online ? 'Online' : 'Offline') + '"></div>' +
+    '</div>';
+  }).join('');
+}
+
+function showMyQR() {
+  var code = getFriendCode();
+  var modal = document.getElementById('d-modal');
+  modal.style.display = 'flex';
+  var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(code);
+  modal.innerHTML =
+    '<div class="qr-modal">' +
+      '<div class="qr-title">Your QR Code</div>' +
+      '<div class="qr-sub">Let friends scan this to add you instantly</div>' +
+      '<div class="qr-img"><img src="' + qrUrl + '" alt="QR Code"></div>' +
+      '<div class="qr-code-text">' + code + '</div>' +
+      '<button class="qr-close" onclick="document.getElementById(\'d-modal\').style.display=\'none\'">Close</button>' +
+    '</div>';
+}
+
+function copyFriendCode() {
+  var code = getFriendCode();
+  navigator.clipboard.writeText(code).then(function() {
+    showToast('Friend code copied! 🔗');
+  }).catch(function() {
+    showToast(code);
+  });
 }
 
 /* ════ BOOT ════ */

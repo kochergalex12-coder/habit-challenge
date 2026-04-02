@@ -77,7 +77,7 @@
       <!-- ── SOCIAL ── -->
       <div class="sb-section-divider"></div>
       <div class="sb-section-label">Social</div>
-      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">🌐</span> Social <span class="sb-nav-badge" style="background:var(--teal)">SOON</span></button>
+      <button class="sb-nav-item" onclick="goPage('social',this)" id="nav-social"><span class="sb-nav-icon">🌐</span> Social <span class="sb-nav-badge" style="background:var(--teal)">NEW</span></button>
 
       <!-- ── PROGRESSION ── -->
       <div class="sb-section-divider"></div>
@@ -444,6 +444,71 @@
             <span class="profile-chart-sub">Peak month highlighted</span>
           </div>
           <div id="pf-chart"></div>
+        </div>
+
+        <!-- Friend Code card -->
+        <div class="pf-friend-code-card">
+          <div class="pf-fc-left">
+            <div class="pf-fc-label">🔗 Your Friend Code</div>
+            <div class="pf-fc-code" id="pf-friend-code">HQ-00000</div>
+            <div class="pf-fc-hint">Share this code with friends so they can add you</div>
+          </div>
+          <div class="pf-fc-actions">
+            <button class="pf-fc-btn" onclick="copyFriendCode()">📋 Copy Code</button>
+            <button class="pf-fc-btn pf-fc-btn-outline" onclick="showMyQR()">⬛ Show QR</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SOCIAL PAGE -->
+      <div class="page" id="page-social">
+
+        <!-- Add Friends section -->
+        <div class="social-section-title">Add Friends</div>
+
+        <div class="social-add-grid">
+
+          <!-- Method 1: by username -->
+          <div class="social-add-card">
+            <div class="social-add-card-icon">👤</div>
+            <div class="social-add-card-title">Add by Username</div>
+            <div class="social-add-card-body">
+              <input class="social-input" id="soc-username-input" placeholder="Enter username" autocomplete="off" spellcheck="false"/>
+              <button class="social-btn social-btn-primary" onclick="console.log('Add by username:', document.getElementById('soc-username-input').value)">Add Friend</button>
+            </div>
+          </div>
+
+          <!-- Method 2: by friend code -->
+          <div class="social-add-card">
+            <div class="social-add-card-icon">🔗</div>
+            <div class="social-add-card-title">Add by Friend Code</div>
+            <div class="social-add-card-body">
+              <input class="social-input" id="soc-code-input" placeholder="e.g. HQ-48291" autocomplete="off" spellcheck="false"/>
+              <button class="social-btn social-btn-primary" onclick="console.log('Add by code:', document.getElementById('soc-code-input').value)">Add by Code</button>
+              <div class="social-input-hint">Each user has a unique friend code. Ask your friend to share theirs.</div>
+            </div>
+          </div>
+
+          <!-- Method 3: QR code -->
+          <div class="social-add-card">
+            <div class="social-add-card-icon">⬛</div>
+            <div class="social-add-card-title">QR Code</div>
+            <div class="social-add-card-body">
+              <button class="social-btn social-btn-outline" onclick="showMyQR()">⬛ Show My QR Code</button>
+              <button class="social-btn social-btn-outline" onclick="console.log('QR scanning coming soon')">📷 Scan QR Code</button>
+              <div class="social-input-hint">Generate your personal QR and let friends scan to add you instantly.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="social-divider"></div>
+
+        <!-- Friends list -->
+        <div class="social-section-title">My Friends <span class="social-count" id="soc-friends-count">0</span></div>
+        <div id="soc-friends-list" class="social-friends-list">
+          <!-- rendered by JS -->
         </div>
 
       </div>
