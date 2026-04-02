@@ -1212,8 +1212,6 @@ html, body {
 .ob-btn:active { transform: translateY(0); }
 
 /* ══ PROFILE PAGE ══ */
-.sb-player-clickable { cursor: pointer; transition: background var(--t); border-radius: 10px; }
-.sb-player-clickable:hover { background: rgba(255,255,255,.05); }
 
 .profile-hero {
   display: flex; align-items: center; gap: 20px;
