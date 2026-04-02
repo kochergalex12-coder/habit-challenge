@@ -740,6 +740,7 @@ goPage = function(page, btn) {
   }
   if (page === 'group')   renderGroupPage();
   if (page === 'profile') renderProfilePage();
+  if (page === 'social')  renderSocialPage();
 };
 
 /* ════ GROUP CHALLENGE ════ */
