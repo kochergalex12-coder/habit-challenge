@@ -1307,14 +1307,17 @@
   window._acceptFriendRequest = function(fromUid) {
     if (!window.currentUser) return Promise.reject('Not signed in');
     var myUid = window.currentUser.uid;
-    return Promise.all([
-      setDoc(doc(db, 'users', myUid),
-        { player: { friends: arrayUnion(fromUid), friendRequests: arrayRemove(fromUid) } },
-        { merge: true }),
-      setDoc(doc(db, 'users', fromUid),
+    // Update own doc first (remove from requests, add to friends)
+    return setDoc(doc(db, 'users', myUid),
+      { player: { friends: arrayUnion(fromUid), friendRequests: arrayRemove(fromUid) } },
+      { merge: true }
+    ).then(function() {
+      // Add self to sender's friends (best-effort — requires updated Firestore rules)
+      return setDoc(doc(db, 'users', fromUid),
         { player: { friends: arrayUnion(myUid) } },
-        { merge: true })
-    ]);
+        { merge: true }
+      ).catch(function() {});  // don't fail the whole accept if this part fails
+    });
   };
 
   // Reject a friend request: remove their UID from our friendRequests
