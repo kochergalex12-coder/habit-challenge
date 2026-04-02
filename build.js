@@ -4,11 +4,12 @@ const path = require('path');
 const dist = 'dist';
 if (!fs.existsSync(dist)) fs.mkdirSync(dist);
 
-const config = process.env.FIREBASE_CONFIG || '';
-if (!config) {
-  console.error('ERROR: FIREBASE_CONFIG environment variable is not set!');
+const b64 = process.env.FIREBASE_CONFIG_B64 || '';
+if (!b64) {
+  console.error('ERROR: FIREBASE_CONFIG_B64 environment variable is not set!');
   process.exit(1);
 }
+const config = Buffer.from(b64, 'base64').toString('utf8');
 
 let html = fs.readFileSync('index.html', 'utf8');
 html = html.replace('%%FIREBASE_CONFIG%%', config);
