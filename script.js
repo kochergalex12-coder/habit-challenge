@@ -1409,10 +1409,49 @@ window.getFriendCode = getFriendCode;
 window.save = save;
 
 function renderSocialPage() {
-  var list    = document.getElementById('soc-friends-list');
-  var countEl = document.getElementById('soc-friends-count');
+  var list      = document.getElementById('soc-friends-list');
+  var countEl   = document.getElementById('soc-friends-count');
+  var notifList = document.getElementById('soc-notif-list');
+  var notifCount= document.getElementById('soc-notif-count');
   if (!list) return;
 
+  // ── Notifications (incoming friend requests) ──────────────────────────────
+  if (notifList && window._loadMyFriendRequests) {
+    notifList.innerHTML = '<div class="soc-loading">Loading…</div>';
+    window._loadMyFriendRequests().then(function(requestUids) {
+      if (!requestUids.length) {
+        notifList.innerHTML = '<div class="soc-empty" style="padding:10px 0 4px">No pending requests.</div>';
+        if (notifCount) notifCount.style.display = 'none';
+        return;
+      }
+      if (notifCount) { notifCount.textContent = requestUids.length; notifCount.style.display = ''; }
+      return window._loadFriendProfiles(requestUids).then(function(snaps) {
+        var rows = snaps.map(function(snap, i) {
+          var fromUid = requestUids[i];
+          var p = snap.exists() ? (snap.data().player || {}) : {};
+          var av = p.avatar || '🧙';
+          var avHtml = (av.startsWith && av.startsWith('http'))
+            ? '<img src="' + av + '" style="width:36px;height:36px;border-radius:50%">'
+            : '<span style="font-size:1.4rem">' + av + '</span>';
+          var name = p.name || 'Unknown';
+          return '<div class="soc-friend-row" style="gap:10px">' +
+            '<div class="soc-friend-av">' + avHtml + '</div>' +
+            '<div class="soc-friend-info" style="flex:1">' +
+              '<div class="soc-friend-name">' + name + '</div>' +
+              '<div class="soc-friend-meta">Wants to be your friend</div>' +
+            '</div>' +
+            '<button class="social-btn social-btn-primary" style="padding:5px 12px;font-size:.8rem" ' +
+              'onclick="acceptRequest(\'' + fromUid + '\',\'' + name.replace(/'/g,"&#39;") + '\')">Accept</button>' +
+            '<button class="social-btn social-btn-outline" style="padding:5px 12px;font-size:.8rem" ' +
+              'onclick="rejectRequest(\'' + fromUid + '\',\'' + name.replace(/'/g,"&#39;") + '\')">Decline</button>' +
+          '</div>';
+        }).join('');
+        notifList.innerHTML = rows;
+      });
+    }).catch(function() { notifList.innerHTML = ''; });
+  }
+
+  // ── Friends list ──────────────────────────────────────────────────────────
   var friends = state.player.friends || [];
   countEl.textContent = friends.length;
 
@@ -1429,7 +1468,7 @@ function renderSocialPage() {
       if (!snap.exists()) return '';
       var p  = snap.data().player || {};
       var av = p.avatar || '🧙';
-      var avHtml = av.startsWith('http')
+      var avHtml = (av.startsWith && av.startsWith('http'))
         ? '<img src="' + av + '">'
         : av;
       return '<div class="soc-friend-row">' +
@@ -1444,6 +1483,25 @@ function renderSocialPage() {
     list.innerHTML = rows || '<div class="soc-empty"><div class="soc-empty-icon">👥</div>No friends yet.</div>';
     countEl.textContent = snaps.filter(function(s) { return s.exists(); }).length;
   });
+}
+
+function acceptRequest(fromUid, fromName) {
+  if (!window._acceptFriendRequest) return;
+  window._acceptFriendRequest(fromUid).then(function() {
+    if (!state.player.friends) state.player.friends = [];
+    if (state.player.friends.indexOf(fromUid) === -1) state.player.friends.push(fromUid);
+    save();
+    _socSetStatus('✅ You and ' + fromName + ' are now friends!', false);
+    renderSocialPage();
+  }).catch(function(e) { _socSetStatus('Error: ' + e.message, true); });
+}
+
+function rejectRequest(fromUid, fromName) {
+  if (!window._rejectFriendRequest) return;
+  window._rejectFriendRequest(fromUid).then(function() {
+    _socSetStatus('Request from ' + fromName + ' declined.', false);
+    renderSocialPage();
+  }).catch(function(e) { _socSetStatus('Error: ' + e.message, true); });
 }
 
 function _socSetStatus(msg, isError) {
@@ -1463,15 +1521,11 @@ function addByUsername() {
   window._findUserByName(name).then(function(snap) {
     if (snap.empty) { _socSetStatus('User "' + name + '" not found.', true); return; }
     var friendUid = snap.docs[0].id;
-    var friends   = state.player.friends || [];
+    var friends = state.player.friends || [];
     if (friends.indexOf(friendUid) !== -1) { _socSetStatus(name + ' is already your friend!', true); return; }
-    return window._addFriendById(friendUid).then(function() {
-      if (!state.player.friends) state.player.friends = [];
-      state.player.friends.push(friendUid);
-      save();
-      _socSetStatus('✅ ' + name + ' added!', false);
+    return window._sendFriendRequest(friendUid).then(function() {
+      _socSetStatus('📨 Friend request sent to ' + name + '!', false);
       document.getElementById('soc-username-input').value = '';
-      renderSocialPage();
     });
   }).catch(function(e) { _socSetStatus('Error: ' + e.message, true); });
 }
@@ -1485,16 +1539,12 @@ function addByCode() {
   window._findUserByCode(code).then(function(snap) {
     if (snap.empty) { _socSetStatus('Code "' + code + '" not found.', true); return; }
     var friendUid = snap.docs[0].id;
-    var friends   = state.player.friends || [];
+    var friends = state.player.friends || [];
     if (friends.indexOf(friendUid) !== -1) { _socSetStatus('Already friends!', true); return; }
     var friendName = (snap.docs[0].data().player || {}).name || code;
-    return window._addFriendById(friendUid).then(function() {
-      if (!state.player.friends) state.player.friends = [];
-      state.player.friends.push(friendUid);
-      save();
-      _socSetStatus('✅ ' + friendName + ' added!', false);
+    return window._sendFriendRequest(friendUid).then(function() {
+      _socSetStatus('📨 Friend request sent to ' + friendName + '!', false);
       document.getElementById('soc-code-input').value = '';
-      renderSocialPage();
     });
   }).catch(function(e) { _socSetStatus('Error: ' + e.message, true); });
 }

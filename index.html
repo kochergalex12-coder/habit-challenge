@@ -505,6 +505,12 @@
 
         <div id="soc-status" style="display:none;font-size:.84rem;font-weight:600;margin:-10px 0 16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;"></div>
 
+        <!-- Notifications section -->
+        <div class="social-section-title">Notifications <span class="social-count" id="soc-notif-count" style="display:none;background:var(--gold)">0</span></div>
+        <div id="soc-notif-list" class="social-friends-list">
+          <!-- rendered by JS -->
+        </div>
+
         <div class="social-divider"></div>
 
         <!-- Friends list -->
@@ -1287,14 +1293,45 @@
     return getDocs(query(collection(db, 'users'), where('player.friendCode', '==', code)));
   };
 
-  // Add a friend UID to the current user's friends array in Firestore
-  window._addFriendById = function(friendUid) {
+  // Send a friend request: writes our UID into the target's friendRequests array
+  window._sendFriendRequest = function(targetUid) {
     if (!window.currentUser) return Promise.reject('Not signed in');
     return setDoc(
-      doc(db, 'users', window.currentUser.uid),
-      { player: { friends: arrayUnion(friendUid) } },
+      doc(db, 'users', targetUid),
+      { player: { friendRequests: arrayUnion(window.currentUser.uid) } },
       { merge: true }
     );
+  };
+
+  // Accept a friend request: add each other to friends, remove request
+  window._acceptFriendRequest = function(fromUid) {
+    if (!window.currentUser) return Promise.reject('Not signed in');
+    var myUid = window.currentUser.uid;
+    return Promise.all([
+      setDoc(doc(db, 'users', myUid),
+        { player: { friends: arrayUnion(fromUid), friendRequests: arrayRemove(fromUid) } },
+        { merge: true }),
+      setDoc(doc(db, 'users', fromUid),
+        { player: { friends: arrayUnion(myUid) } },
+        { merge: true })
+    ]);
+  };
+
+  // Reject a friend request: remove their UID from our friendRequests
+  window._rejectFriendRequest = function(fromUid) {
+    if (!window.currentUser) return Promise.reject('Not signed in');
+    return setDoc(doc(db, 'users', window.currentUser.uid),
+      { player: { friendRequests: arrayRemove(fromUid) } },
+      { merge: true });
+  };
+
+  // Load current user's pending friend request UIDs from Firestore
+  window._loadMyFriendRequests = function() {
+    if (!window.currentUser) return Promise.resolve([]);
+    return getDoc(doc(db, 'users', window.currentUser.uid)).then(function(snap) {
+      if (!snap.exists()) return [];
+      return (snap.data().player || {}).friendRequests || [];
+    });
   };
 
   // Fetch a list of user docs by UID array
