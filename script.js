@@ -1431,19 +1431,20 @@ function renderSocialPage() {
           var p = snap.exists() ? (snap.data().player || {}) : {};
           var av = p.avatar || '🧙';
           var avHtml = (av.startsWith && av.startsWith('http'))
-            ? '<img src="' + av + '" style="width:36px;height:36px;border-radius:50%">'
-            : '<span style="font-size:1.4rem">' + av + '</span>';
+            ? '<img src="' + av + '">'
+            : av;
           var name = p.name || 'Unknown';
-          return '<div class="soc-friend-row" style="gap:10px">' +
+          var safeName = name.replace(/'/g, '&#39;');
+          return '<div class="soc-notif-row">' +
             '<div class="soc-friend-av">' + avHtml + '</div>' +
-            '<div class="soc-friend-info" style="flex:1">' +
+            '<div class="soc-friend-info">' +
               '<div class="soc-friend-name">' + name + '</div>' +
-              '<div class="soc-friend-meta">Wants to be your friend</div>' +
+              '<div class="soc-friend-meta">Sent you a friend request</div>' +
             '</div>' +
-            '<button class="social-btn social-btn-primary" style="padding:5px 12px;font-size:.8rem" ' +
-              'onclick="acceptRequest(\'' + fromUid + '\',\'' + name.replace(/'/g,"&#39;") + '\')">Accept</button>' +
-            '<button class="social-btn social-btn-outline" style="padding:5px 12px;font-size:.8rem" ' +
-              'onclick="rejectRequest(\'' + fromUid + '\',\'' + name.replace(/'/g,"&#39;") + '\')">Decline</button>' +
+            '<div class="soc-notif-actions">' +
+              '<button class="soc-notif-btn soc-notif-btn-accept" onclick="acceptRequest(\'' + fromUid + '\',\'' + safeName + '\')">Accept</button>' +
+              '<button class="soc-notif-btn soc-notif-btn-decline" onclick="rejectRequest(\'' + fromUid + '\',\'' + safeName + '\')">Decline</button>' +
+            '</div>' +
           '</div>';
         }).join('');
         notifList.innerHTML = rows;
