@@ -110,6 +110,14 @@ function checkDayReset() {
   }
 }
 
+/* ════ SIDEBAR TOGGLE ════ */
+function toggleSidebar() {
+  var app = document.getElementById('app');
+  var expandBtn = document.getElementById('sb-expand-btn');
+  var hidden = app.classList.toggle('sidebar-hidden');
+  expandBtn.style.display = hidden ? 'flex' : 'none';
+}
+
 /* ════ NAVIGATION ════ */
 function goPage(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));

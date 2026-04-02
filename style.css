@@ -72,9 +72,41 @@ html, body {
   flex-direction: column;
   border-right: 1px solid rgba(255,255,255,.05);
   overflow: hidden;
-  /* subtle inner shadow for depth */
   box-shadow: inset -1px 0 0 rgba(255,255,255,.04);
+  transition: width .28s cubic-bezier(.4,0,.2,1), opacity .28s ease;
+  position: relative;
 }
+#app.sidebar-hidden #sidebar {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  border-right: none;
+}
+
+/* collapse button — inside sidebar, top-right corner */
+.sb-collapse-btn {
+  position: absolute; top: 14px; right: 10px;
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 7px; color: rgba(255,255,255,.5);
+  font-size: .8rem; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  transition: background var(--t), color var(--t);
+  z-index: 10;
+}
+.sb-collapse-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
+
+/* floating expand button — shown when sidebar is hidden */
+.sb-expand-btn {
+  position: fixed; top: 14px; left: 14px; z-index: 500;
+  width: 36px; height: 36px;
+  background: var(--sidebar); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px; color: rgba(255,255,255,.7);
+  font-size: 1rem; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  transition: background var(--t), color var(--t), transform var(--t);
+}
+.sb-expand-btn:hover { background: #2e2b26; color: #fff; transform: scale(1.06); }
 
 .sb-logo {
   padding: 24px 20px 20px;

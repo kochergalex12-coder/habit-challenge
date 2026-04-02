@@ -56,8 +56,12 @@
 
 <div id="app">
 
+  <!-- Floating button to re-open sidebar when collapsed -->
+  <button class="sb-expand-btn" id="sb-expand-btn" onclick="toggleSidebar()" title="Open sidebar" style="display:none">&#9776;</button>
+
   <!-- SIDEBAR -->
   <div id="sidebar">
+    <button class="sb-collapse-btn" onclick="toggleSidebar()" title="Hide sidebar">&#10094;</button>
     <div class="sb-logo" onclick="goPage('quests')">
       HabitQuest
       <span class="sb-logo-sub">Turn Discipline Into Dopamine</span>
@@ -87,7 +91,6 @@
       <button class="sb-nav-item" onclick="goPage('leaderboard',this)"><span class="sb-nav-icon">🏆</span> Leaderboard</button>
       <button class="sb-nav-item" onclick="goPage('achievements',this)"><span class="sb-nav-icon">🎖</span> Achievements</button>
       <div class="sb-section-label">Explore</div>
-      <button class="sb-nav-item" onclick="goPage('worldmap',this)" id="nav-worldmap"><span class="sb-nav-icon">🗺️</span> World Map <span class="sb-nav-badge" style="background:var(--teal)">NEW</span></button>
       <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
       <div class="sb-section-label">Shop</div>
       <a class="sb-nav-item sb-nav-link" href="https://pethub-9952.myshopify.com/" target="_blank" rel="noopener"><span class="sb-nav-icon">🛍️</span> Accessories <span class="sb-nav-badge sb-nav-badge-shop">SHOP</span></a>
