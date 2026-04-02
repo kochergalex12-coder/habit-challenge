@@ -77,6 +77,7 @@ const PAGE_TITLES = {
   chat:         '💬 <span style="color:var(--teal)">Chat</span>',
   'friends-lb': '🏆 <span style="color:var(--teal)">Friends Leaderboard</span>',
   calendar:     '📅 <span style="color:var(--teal)">Calendar</span>',
+  settings:     '⚙️ <span style="color:var(--teal)">Settings</span>',
 };
 
 /* ════ PERSISTENCE ════ */
@@ -732,6 +733,7 @@ goPage = function(page, btn) {
   if (page === 'chat')       renderChatPage();
   if (page === 'friends-lb') renderFriendsLeaderboard();
   if (page === 'calendar')   renderCalendarPage();
+  if (page === 'settings')   renderSettingsPage();
 };
 
 /* ════ GROUP CHALLENGE ════ */
@@ -1717,6 +1719,39 @@ function renderFriendsLeaderboard() {
   }).catch(function() {
     el.innerHTML = '<div class="soc-empty">Could not load leaderboard.</div>';
   });
+}
+
+/* ════ SETTINGS ════ */
+function renderSettingsPage() {
+  var input = document.getElementById('settings-name-input');
+  if (input) input.value = state.player.name || '';
+  var status = document.getElementById('settings-name-status');
+  if (status) status.style.display = 'none';
+}
+
+function saveSettingsName() {
+  var input  = document.getElementById('settings-name-input');
+  var status = document.getElementById('settings-name-status');
+  var name   = (input ? input.value : '').trim();
+  if (!name) { _showSettingsStatus('Enter a name.', true); return; }
+  if (name.length < 2) { _showSettingsStatus('Name must be at least 2 characters.', true); return; }
+  if (name === state.player.name) { _showSettingsStatus('That\'s already your name!', false); return; }
+  state.player.name = name;
+  save();
+  // Update Firestore specifically
+  if (window.currentUser && window._fbUpdateField) {
+    window._fbUpdateField('player.name', name);
+  }
+  renderAll();
+  _showSettingsStatus('✅ Name updated to "' + name + '"!', false);
+}
+
+function _showSettingsStatus(msg, isError) {
+  var el = document.getElementById('settings-name-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color   = isError ? 'var(--rose)' : 'var(--teal)';
+  el.style.display = 'block';
 }
 
 function copyFriendCode() {

@@ -1748,3 +1748,24 @@ html, body {
   background: linear-gradient(135deg, var(--violet), var(--rose)); color: #fff;
   font-size: .72rem; font-weight: 700; white-space: nowrap;
 }
+
+/* ── Settings page ── */
+.settings-card {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 28px 24px; max-width: 480px; box-shadow: var(--sh);
+}
+.settings-section-title { font-weight: 800; font-size: 1rem; color: var(--ink); margin-bottom: 6px; }
+.settings-hint { font-size: .82rem; color: var(--muted); margin: 0 0 16px; line-height: 1.5; }
+.settings-row { display: flex; gap: 10px; }
+.settings-input {
+  flex: 1; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border2); background: var(--bg); color: var(--ink);
+  font-family: var(--ff-body); font-size: .92rem; outline: none; transition: border var(--t);
+}
+.settings-input:focus { border-color: var(--teal); }
+.settings-save-btn {
+  padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--violet), var(--rose)); color: #fff;
+  font-weight: 700; font-size: .88rem; font-family: var(--ff-body); transition: all var(--t);
+}
+.settings-save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(109,61,189,.35); }

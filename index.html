@@ -86,7 +86,7 @@
       <div class="sb-section-divider"></div>
       <div class="sb-section-label">Account &amp; Info</div>
       <button class="sb-nav-item" onclick="goPage('profile',this)" id="nav-profile"><span class="sb-nav-icon">👤</span> Profile</button>
-      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">⚙️</span> Settings <span class="sb-nav-badge">NEW</span></button>
+      <button class="sb-nav-item" onclick="goPage('settings',this)" id="nav-settings"><span class="sb-nav-icon">⚙️</span> Settings</button>
       <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">ℹ️</span> About</button>
       <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">🎧</span> Support</button>
 
@@ -318,6 +318,19 @@
       </div>
 
       <!-- PROFILE PAGE -->
+      <!-- SETTINGS PAGE -->
+      <div class="page" id="page-settings">
+        <div class="settings-card">
+          <div class="settings-section-title">👤 Display Name</div>
+          <p class="settings-hint">This is the name other players see. Choose something unique.</p>
+          <div class="settings-row">
+            <input class="settings-input" id="settings-name-input" placeholder="Enter your name" maxlength="24" autocomplete="off" spellcheck="false"/>
+            <button class="settings-save-btn" onclick="saveSettingsName()">Save</button>
+          </div>
+          <div id="settings-name-status" style="display:none;font-size:.82rem;font-weight:600;margin-top:8px"></div>
+        </div>
+      </div>
+
       <div class="page" id="page-profile">
 
         <!-- Hero card: avatar + name + class + joined date -->
@@ -960,6 +973,15 @@
       { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, updatedAt: new Date().toISOString() },
       { merge: true }
     ).catch(function(e) { console.error('Firestore save error', e); });
+  };
+
+  // Safe single-field update using dotted path (won't overwrite other fields)
+  window._fbUpdateField = function(field, value) {
+    if (!window.currentUser) return;
+    var update = {};
+    update[field] = value;
+    updateDoc(doc(db, 'users', window.currentUser.uid), update)
+      .catch(function(e) { console.error('Field update error', e); });
   };
 
   // ── GROUP FUNCTIONS ───────────────────────────────────────────────────────
