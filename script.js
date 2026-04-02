@@ -381,7 +381,12 @@ function openModal() {
   document.getElementById('d-modal').classList.add('show');
 }
 
-function closeModal() { document.getElementById('d-modal').classList.remove('show'); }
+function closeModal() {
+  var m = document.getElementById('d-modal');
+  m.classList.remove('show');
+  m.style.display = 'none';  // clear inline style set by avatar/QR pickers
+  m.innerHTML = '';           // clear stale content
+}
 
 function selIcon(el, ic) {
   document.querySelectorAll('.icon-opt').forEach(e => e.classList.remove('sel'));
@@ -417,6 +422,10 @@ function addHabit() {
 
 document.getElementById('d-modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+// Escape key also closes modal
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
 });
 
 /* ════ TOAST ════ */
