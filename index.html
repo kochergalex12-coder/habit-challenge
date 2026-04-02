@@ -260,47 +260,6 @@
               </div>
             </div>
           </div>
-          <div class="pay-col">
-            <div class="pay-card" id="d-pay-form">
-              <h3>Complete Your Order</h3>
-              <p class="pay-sub">Secure payment — cancel anytime</p>
-              <div class="pay-selected">
-                <div>
-                  <div class="ps-name" id="d-plan-name">👑 Pro Monthly</div>
-                  <div style="font-size:.7rem;color:var(--muted);margin-top:2px">Select a plan to get started</div>
-                </div>
-                <div>
-                  <div class="ps-price" id="d-plan-price">$7.99/mo</div>
-                  <div class="ps-change" onclick="document.querySelector('.plans-grid-d').scrollIntoView({behavior:'smooth'})">Change plan</div>
-                </div>
-              </div>
-              <label class="pf-label">Full Name</label>
-              <input class="pf-input" type="text" id="d-pay-name" placeholder="Jane Doe" autocomplete="name"/>
-              <label class="pf-label">Email Address</label>
-              <input class="pf-input" type="email" id="d-pay-email" placeholder="jane@example.com" autocomplete="email"/>
-              <label class="pf-label">Card Number</label>
-              <input class="pf-input" type="text" id="d-pay-card" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number"/>
-              <div class="pf-row">
-                <div><label class="pf-label">Expiry</label><input class="pf-input" id="d-pay-exp" type="text" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)"/></div>
-                <div><label class="pf-label">CVC</label><input class="pf-input" id="d-pay-cvc" type="text" placeholder="•••" maxlength="4"/></div>
-              </div>
-              <div class="pay-secure">🔒 Your payment is encrypted and secure</div>
-              <button class="btn-pay" onclick="desktopPayment()">🔒 Subscribe Now</button>
-              <p class="pay-terms">By subscribing you agree to our <a>Terms</a> and <a>Privacy Policy</a>. Cancel anytime.</p>
-              <div class="trust-row">
-                <div class="trust-item">🔒 SSL</div>
-                <div class="trust-item">↩️ Cancel anytime</div>
-                <div class="trust-item">💳 All cards</div>
-              </div>
-            </div>
-            <div class="pay-card" id="d-pay-success" style="display:none">
-              <div class="pay-success-d">
-                <div class="suc-icon">🎉</div>
-                <h3>Welcome to Pro!</h3>
-                <p>Your subscription is active. Enjoy unlimited quests and all Pro features! ⚔️</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
