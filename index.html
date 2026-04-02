@@ -1387,11 +1387,24 @@
       });
 
       // Ensure friend code is generated and saved to Firestore on every sign-in.
-      // This guarantees the code exists in Firestore so other users can find it.
       if (window.getFriendCode) {
         window.getFriendCode();
         if (window.save) window.save();
       }
+
+      // Sync mutual friendships: find anyone who has us in their friends and add them back.
+      getDocs(query(collection(db, 'users'), where('player.friends', 'array-contains', user.uid)))
+        .then(function(snap) {
+          snap.docs.forEach(function(d) {
+            if (d.id === user.uid) return;
+            // Add them to our friends in Firestore (no-op if already there)
+            setDoc(doc(db, 'users', user.uid),
+              { player: { friends: arrayUnion(d.id) } },
+              { merge: true }
+            );
+          });
+        })
+        .catch(function() {});
 
       // Auto-join group if the page was opened with ?group=GROUP_ID.
       // _checkAndJoinGroup will skip the modal if the user is already a member.
