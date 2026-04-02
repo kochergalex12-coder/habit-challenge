@@ -1,6 +1,6 @@
 /* ════ STATE ════ */
 let state = {
-  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[] },
+  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all'
 };
 
@@ -90,6 +90,10 @@ function load() {
   // Init join date once — used on profile page for "Days Active"
   if (!state.player.joinDate) { state.player.joinDate = new Date().toISOString(); save(); }
   if (!state.player.xpLog)    { state.player.xpLog = []; }
+  // Existing users (already gave themselves a name) skip onboarding automatically
+  if (state.player.name && state.player.name !== 'Novice Hero') {
+    state.player.hasOnboarded = true;
+  }
   checkDayReset();
 }
 
@@ -1202,6 +1206,50 @@ function renderXPChart() {
   }).join('');
 }
 
+/* ════ ONBOARDING ════ */
+
+var _OB_AVATARS = ['🧙','🦸','🧝','🦊','🐺','🦁','🐉','⚔️','🛡️','🔮','💀','👑','🌟','🎭','🚀','🎯','💎','🔥'];
+var _obIdx = 0;
+
+function cycleObAvatar() {
+  _obIdx = (_obIdx + 1) % _OB_AVATARS.length;
+  document.getElementById('ob-avatar-display').textContent = _OB_AVATARS[_obIdx];
+}
+
+function submitOnboarding() {
+  var nameEl = document.getElementById('ob-name-input');
+  var errEl  = document.getElementById('ob-error');
+  var name   = nameEl ? nameEl.value.trim() : '';
+
+  if (!name) {
+    errEl.textContent = 'Enter a nickname to continue';
+    errEl.style.display = 'block';
+    if (nameEl) nameEl.focus();
+    return;
+  }
+  if (name.length < 2) {
+    errEl.textContent = 'At least 2 characters please';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  state.player.name         = name;
+  state.player.avatar       = _OB_AVATARS[_obIdx];
+  state.player.hasOnboarded = true;
+  save();
+  renderAll();
+
+  // Slide the overlay out then hide it
+  var overlay = document.getElementById('onboarding-overlay');
+  overlay.classList.add('ob-exit');
+  setTimeout(function() { overlay.style.display = 'none'; }, 450);
+}
+
 /* ════ BOOT ════ */
 load();
 renderAll();
+
+// Show onboarding for first-time visitors; skip for returning users
+if (!state.player.hasOnboarded) {
+  document.getElementById('onboarding-overlay').style.display = 'flex';
+}

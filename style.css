@@ -928,6 +928,94 @@ html, body {
   .grp-invite-text { max-width: 160px; }
 }
 
+/* ══ ONBOARDING OVERLAY ══ */
+.ob-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: #1c1a16;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.ob-overlay.ob-exit {
+  animation: obFadeOut .45s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes obFadeOut {
+  to { opacity: 0; transform: scale(1.04); }
+}
+
+.ob-card {
+  background: #272420;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  padding: 40px 36px 36px;
+  width: 100%; max-width: 420px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,.5);
+  animation: obCardIn .5s cubic-bezier(.4,0,.2,1);
+}
+@keyframes obCardIn {
+  from { opacity: 0; transform: translateY(24px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+.ob-logo {
+  font-family: var(--ff-title); font-size: 1.9rem; font-weight: 900;
+  color: #fff; letter-spacing: -.01em; margin-bottom: 4px;
+}
+.ob-logo-sub {
+  font-family: var(--ff-mono); font-size: .62rem; color: rgba(255,255,255,.35);
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 28px;
+}
+
+.ob-avatar-display {
+  font-size: 3.8rem; line-height: 1;
+  width: 84px; height: 84px; margin: 0 auto 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.12);
+  border-radius: 50%; cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+  user-select: none;
+}
+.ob-avatar-display:hover { transform: scale(1.08); border-color: rgba(13,138,127,.6); }
+.ob-avatar-hint {
+  font-family: var(--ff-mono); font-size: .58rem; color: rgba(255,255,255,.25);
+  margin-bottom: 24px;
+}
+
+.ob-heading {
+  font-family: var(--ff-title); font-size: 1.35rem; font-weight: 700;
+  color: #fff; margin-bottom: 6px;
+}
+.ob-sub {
+  font-size: .78rem; color: rgba(255,255,255,.4); line-height: 1.5; margin-bottom: 20px;
+}
+
+.ob-input {
+  width: 100%; padding: 13px 16px;
+  background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 11px; color: #fff; font-family: var(--ff-body); font-size: 1rem;
+  text-align: center; outline: none; transition: border-color var(--t);
+  margin-bottom: 6px;
+}
+.ob-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,138,127,.2); }
+.ob-input::placeholder { color: rgba(255,255,255,.2); }
+
+.ob-error {
+  font-size: .75rem; color: var(--rose); min-height: 18px;
+  margin-bottom: 10px; display: none;
+}
+
+.ob-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  border: none; border-radius: 11px;
+  font-family: var(--ff-title); font-size: 1rem; font-weight: 700; color: #fff;
+  cursor: pointer; letter-spacing: .01em;
+  box-shadow: 0 4px 20px rgba(13,138,127,.35);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.ob-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(13,138,127,.45); }
+.ob-btn:active { transform: translateY(0); }
+
 /* ══ PROFILE PAGE ══ */
 .sb-player-clickable { cursor: pointer; transition: background var(--t); border-radius: 10px; }
 .sb-player-clickable:hover { background: rgba(255,255,255,.05); }

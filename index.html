@@ -8,6 +8,33 @@
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+
+<!-- ══ ONBOARDING OVERLAY — shown once on first visit, hidden after username is set ══ -->
+<div id="onboarding-overlay" class="ob-overlay" style="display:none">
+  <div class="ob-card">
+
+    <div class="ob-logo">HabitQuest</div>
+    <div class="ob-logo-sub">Turn Discipline Into Dopamine</div>
+
+    <!-- Avatar picker — click to cycle through options -->
+    <div class="ob-avatar-display" id="ob-avatar-display" onclick="cycleObAvatar()" title="Click to change">🧙</div>
+    <div class="ob-avatar-hint">Tap avatar to change</div>
+
+    <div class="ob-heading">Choose your hero name</div>
+    <div class="ob-sub">Other players will see this name on leaderboards and in groups</div>
+
+    <input class="ob-input" id="ob-name-input" maxlength="20"
+      placeholder="e.g. SpeedRunner42"
+      autocomplete="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter') submitOnboarding()"/>
+
+    <div class="ob-error" id="ob-error"></div>
+
+    <button class="ob-btn" onclick="submitOnboarding()">Enter HabitQuest →</button>
+
+  </div>
+</div>
+
 <div id="app">
 
   <!-- SIDEBAR -->
