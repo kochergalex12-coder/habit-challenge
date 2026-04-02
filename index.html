@@ -1337,6 +1337,13 @@
         if (snap.exists() && window._setState) window._setState(snap.data());
       });
 
+      // Ensure friend code is generated and saved to Firestore on every sign-in.
+      // This guarantees the code exists in Firestore so other users can find it.
+      if (window.getFriendCode) {
+        window.getFriendCode();
+        if (window.save) window.save();
+      }
+
       // Auto-join group if the page was opened with ?group=GROUP_ID.
       // _checkAndJoinGroup will skip the modal if the user is already a member.
       if (window._pendingGroupId) {

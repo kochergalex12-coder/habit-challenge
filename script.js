@@ -1396,6 +1396,8 @@ function getFriendCode() {
   }
   return state.player.friendCode;
 }
+window.getFriendCode = getFriendCode;
+window.save = save;
 
 function renderSocialPage() {
   var list    = document.getElementById('soc-friends-list');
