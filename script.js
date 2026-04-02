@@ -73,7 +73,9 @@ const PAGE_TITLES = {
   subscription: '<span style="color:var(--teal)">Go Pro</span>',
   group:        '👥 Group <span style="color:var(--teal)">Challenge</span>',
   profile:      '👤 My <span style="color:var(--teal)">Profile</span>',
-  social:       '🌐 <span style="color:var(--teal)">Social</span>',
+  social:       '🌐 <span style="color:var(--teal)">Friends</span>',
+  chat:         '💬 <span style="color:var(--teal)">Chat</span>',
+  'friends-lb': '🏆 <span style="color:var(--teal)">Friends Leaderboard</span>',
 };
 
 /* ════ PERSISTENCE ════ */
@@ -747,9 +749,11 @@ goPage = function(page, btn) {
   if (page === 'worldmap') {
     document.getElementById('topbar-title').innerHTML = '🗺️ <span style="color:var(--teal)">World Map</span>';
   }
-  if (page === 'group')   renderGroupPage();
-  if (page === 'profile') renderProfilePage();
-  if (page === 'social')  renderSocialPage();
+  if (page === 'group')      renderGroupPage();
+  if (page === 'profile')    renderProfilePage();
+  if (page === 'social')     renderSocialPage();
+  if (page === 'chat')       renderChatPage();
+  if (page === 'friends-lb') renderFriendsLeaderboard();
 };
 
 /* ════ GROUP CHALLENGE ════ */
@@ -1563,6 +1567,178 @@ function showMyQR() {
       '<div class="qr-code-text">' + code + '</div>' +
       '<button class="qr-close" onclick="document.getElementById(\'d-modal\').style.display=\'none\'">Close</button>' +
     '</div>';
+}
+
+/* ════ CHAT ════ */
+
+var _chatUnsubscribe = null;
+var _chatFriendUid   = null;
+
+function renderChatPage() {
+  var listEl = document.getElementById('chat-friends-list');
+  if (!listEl) return;
+
+  // Show list view, hide room view
+  document.getElementById('chat-list-view').style.display = '';
+  var roomView = document.getElementById('chat-room-view');
+  roomView.style.display = 'none';
+  if (_chatUnsubscribe) { _chatUnsubscribe(); _chatUnsubscribe = null; }
+
+  var friends = state.player.friends || [];
+  if (!friends.length) {
+    listEl.innerHTML = '<div class="soc-empty"><div class="soc-empty-icon">💬</div>No friends yet.<br>Add friends first to start chatting!</div>';
+    return;
+  }
+  listEl.innerHTML = '<div class="soc-loading">Loading…</div>';
+  window._loadFriendProfiles(friends).then(function(snaps) {
+    var rows = snaps.map(function(snap) {
+      if (!snap.exists()) return '';
+      var uid = snap.id;
+      var p   = snap.data().player || {};
+      var av  = p.avatar || '🧙';
+      var avHtml = (av.startsWith && av.startsWith('http'))
+        ? '<img src="' + av + '">'
+        : av;
+      var safeName = (p.name || 'Friend').replace(/'/g, '&#39;');
+      return '<div class="soc-friend-row" style="cursor:pointer" onclick="openChatRoom(\'' + uid + '\',\'' + safeName + '\')">' +
+        '<div class="soc-friend-av">' + avHtml + '</div>' +
+        '<div class="soc-friend-info">' +
+          '<div class="soc-friend-name">' + (p.name || 'Friend') + '</div>' +
+          '<div class="soc-friend-meta">Tap to open chat</div>' +
+        '</div>' +
+        '<div style="color:var(--teal);font-size:1.2rem">›</div>' +
+      '</div>';
+    }).join('');
+    listEl.innerHTML = rows || '<div class="soc-empty">No friends found.</div>';
+  });
+}
+
+function openChatRoom(friendUid, friendName) {
+  _chatFriendUid = friendUid;
+  document.getElementById('chat-list-view').style.display = 'none';
+  var roomView = document.getElementById('chat-room-view');
+  roomView.style.display = 'flex';
+  document.getElementById('chat-room-name').textContent = friendName;
+  document.getElementById('chat-messages').innerHTML = '<div class="soc-loading">Loading messages…</div>';
+  document.getElementById('chat-msg-input').value = '';
+
+  if (!window._listenChat || !window.currentUser) return;
+  if (_chatUnsubscribe) _chatUnsubscribe();
+  _chatUnsubscribe = window._listenChat(friendUid, function(msgs) {
+    var myUid = window.currentUser.uid;
+    var msgsEl = document.getElementById('chat-messages');
+    if (!msgsEl) return;
+    if (!msgs.length) {
+      msgsEl.innerHTML = '<div class="chat-empty">No messages yet. Say hi! 👋</div>';
+      return;
+    }
+    msgsEl.innerHTML = msgs.map(function(m) {
+      var mine = m.senderUid === myUid;
+      var time = m.timestamp ? new Date(m.timestamp.seconds ? m.timestamp.seconds * 1000 : m.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+      return '<div class="chat-msg ' + (mine ? 'chat-msg-mine' : 'chat-msg-theirs') + '">' +
+        '<div class="chat-bubble">' + escapeHtml(m.text) + '</div>' +
+        '<div class="chat-time">' + time + '</div>' +
+      '</div>';
+    }).join('');
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  });
+}
+
+function closeChatRoom() {
+  if (_chatUnsubscribe) { _chatUnsubscribe(); _chatUnsubscribe = null; }
+  _chatFriendUid = null;
+  document.getElementById('chat-room-view').style.display = 'none';
+  document.getElementById('chat-list-view').style.display = '';
+}
+
+function sendChatMessage() {
+  var input = document.getElementById('chat-msg-input');
+  var text  = (input.value || '').trim();
+  if (!text || !_chatFriendUid || !window.currentUser) return;
+  input.value = '';
+  window._sendChatMessage(_chatFriendUid, text).catch(function(e) {
+    showToast('Could not send: ' + e.message);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ════ FRIENDS LEADERBOARD ════ */
+
+function renderFriendsLeaderboard() {
+  var el = document.getElementById('flb-list');
+  if (!el) return;
+
+  var friends = state.player.friends || [];
+  // Include self
+  var allUids = friends.slice();
+
+  el.innerHTML = '<div class="soc-loading">Loading leaderboard…</div>';
+
+  var loadProfiles = friends.length
+    ? window._loadFriendProfiles(friends)
+    : Promise.resolve([]);
+
+  loadProfiles.then(function(snaps) {
+    var entries = [];
+
+    // Add self
+    entries.push({
+      name:   state.player.name || 'You',
+      avatar: state.player.avatar || '🧙',
+      level:  state.player.level || 1,
+      xp:     state.player.totalXP || 0,
+      streak: state.player.streak || 0,
+      done:   state.player.totalCompleted || 0,
+      isMe:   true
+    });
+
+    snaps.forEach(function(snap) {
+      if (!snap.exists()) return;
+      var p = snap.data().player || {};
+      entries.push({
+        name:   p.name || 'Friend',
+        avatar: p.avatar || '🧙',
+        level:  p.level || 1,
+        xp:     p.totalXP || 0,
+        streak: p.streak || 0,
+        done:   p.totalCompleted || 0,
+        isMe:   false
+      });
+    });
+
+    // Sort by XP descending
+    entries.sort(function(a, b) { return b.xp - a.xp; });
+
+    if (!entries.length) {
+      el.innerHTML = '<div class="soc-empty"><div class="soc-empty-icon">🏆</div>Add friends to see them here!</div>';
+      return;
+    }
+
+    var medals = ['🥇','🥈','🥉'];
+    el.innerHTML = '<div class="flb-table">' +
+      entries.map(function(e, i) {
+        var av = e.avatar;
+        var avHtml = (av.startsWith && av.startsWith('http'))
+          ? '<img src="' + av + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover">'
+          : '<span style="font-size:1.3rem">' + av + '</span>';
+        var medal = medals[i] || ('#' + (i + 1));
+        return '<div class="flb-row' + (e.isMe ? ' flb-row-me' : '') + '">' +
+          '<div class="flb-rank">' + medal + '</div>' +
+          '<div class="flb-av">' + avHtml + '</div>' +
+          '<div class="flb-info">' +
+            '<div class="flb-name">' + e.name + (e.isMe ? ' <span class="flb-you">You</span>' : '') + '</div>' +
+            '<div class="flb-meta">Lv.' + e.level + ' &nbsp;·&nbsp; 🔥 ' + e.streak + ' streak &nbsp;·&nbsp; ✅ ' + e.done + ' done</div>' +
+          '</div>' +
+          '<div class="flb-xp">' + e.xp + '<span class="flb-xp-label"> XP</span></div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }).catch(function() {
+    el.innerHTML = '<div class="soc-empty">Could not load leaderboard.</div>';
+  });
 }
 
 function copyFriendCode() {

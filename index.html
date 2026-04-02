@@ -77,7 +77,9 @@
       <!-- ── SOCIAL ── -->
       <div class="sb-section-divider"></div>
       <div class="sb-section-label">Social</div>
-      <button class="sb-nav-item" onclick="goPage('social',this)" id="nav-social"><span class="sb-nav-icon">🌐</span> Social <span class="sb-nav-badge" style="background:var(--teal)">NEW</span></button>
+      <button class="sb-nav-item" onclick="goPage('social',this)" id="nav-social"><span class="sb-nav-icon">🌐</span> Friends</button>
+      <button class="sb-nav-item" onclick="goPage('chat',this)" id="nav-chat"><span class="sb-nav-icon">💬</span> Chat</button>
+      <button class="sb-nav-item" onclick="goPage('friends-lb',this)" id="nav-friends-lb"><span class="sb-nav-icon">🏆</span> Friends Leaderboard</button>
 
       <!-- ── PROGRESSION ── -->
       <div class="sb-section-divider"></div>
@@ -480,6 +482,32 @@
 
       </div>
 
+      <!-- CHAT PAGE -->
+      <div class="page" id="page-chat">
+        <div id="chat-list-view">
+          <div class="social-section-title">Messages</div>
+          <div id="chat-friends-list" class="social-friends-list"><!-- rendered by JS --></div>
+        </div>
+        <div id="chat-room-view" style="display:none;flex-direction:column;height:calc(100vh - 120px)">
+          <div class="chat-room-header">
+            <button class="chat-back-btn" onclick="closeChatRoom()">← Back</button>
+            <div class="chat-room-name" id="chat-room-name"></div>
+          </div>
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-row">
+            <input class="chat-input" id="chat-msg-input" placeholder="Type a message…" autocomplete="off"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage()}"/>
+            <button class="chat-send-btn" onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRIENDS LEADERBOARD PAGE -->
+      <div class="page" id="page-friends-lb">
+        <div class="social-section-title">Friends Leaderboard</div>
+        <div id="flb-list"><!-- rendered by JS --></div>
+      </div>
+
       <!-- WORLD MAP PAGE -->
       <div class="page" id="page-worldmap">
         <div class="wm-header">
@@ -864,7 +892,7 @@
 <script type="module">
   import { initializeApp, getApps, getApp }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, getDoc, getDocs, query, where, onSnapshot, setDoc, updateDoc, arrayUnion, arrayRemove }
+  import { getFirestore, collection, addDoc, doc, getDoc, getDocs, query, where, orderBy, onSnapshot, setDoc, updateDoc, arrayUnion, arrayRemove }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -1300,6 +1328,36 @@
   window._loadFriendProfiles = function(uids) {
     if (!uids || !uids.length) return Promise.resolve([]);
     return Promise.all(uids.map(function(uid) { return getDoc(doc(db, 'users', uid)); }));
+  };
+
+  // ── CHAT ──────────────────────────────────────────────────────────────────
+  window._getChatId = function(uid1, uid2) {
+    return [uid1, uid2].sort().join('_');
+  };
+
+  window._sendChatMessage = function(friendUid, text) {
+    if (!window.currentUser) return Promise.reject('Not signed in');
+    var chatId = window._getChatId(window.currentUser.uid, friendUid);
+    var p = window.currentUser;
+    return addDoc(collection(db, 'chats', chatId, 'messages'), {
+      text: text,
+      senderUid: p.uid,
+      senderName: p.displayName || p.email || 'Me',
+      timestamp: new Date()
+    });
+  };
+
+  window._listenChat = function(friendUid, callback) {
+    var chatId = window._getChatId(window.currentUser.uid, friendUid);
+    var q = query(
+      collection(db, 'chats', chatId, 'messages'),
+      orderBy('timestamp', 'asc')
+    );
+    return onSnapshot(q, function(snap) {
+      var msgs = [];
+      snap.forEach(function(d) { msgs.push(d.data()); });
+      callback(msgs);
+    });
   };
 
   // ── AUTH STATE ────────────────────────────────────────────────────────────
