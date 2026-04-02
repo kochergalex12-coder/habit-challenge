@@ -443,7 +443,7 @@ html, body {
 /* ═══════════════════════════
    SUBSCRIPTION PAGE
 ═══════════════════════════ */
-.sub-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+.sub-layout { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
 
 .sub-hero {
   background: linear-gradient(135deg, var(--surface), rgba(201,130,10,.04));
