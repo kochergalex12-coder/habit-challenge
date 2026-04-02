@@ -144,6 +144,8 @@ html, body {
 .sb-nav-item.active .sb-nav-icon { opacity: 1; }
 .sb-nav-icon { font-size: 1.05rem; flex-shrink: 0; opacity: .7; }
 .sb-nav-badge { margin-left: auto; background: var(--rose); border-radius: 50px; font-family: var(--ff-mono); font-size: .58rem; padding: 2px 7px; color: #fff; font-weight: 700; }
+.sb-nav-badge-shop { background: #e8652a; }
+.sb-nav-link { text-decoration: none; }
 
 .sb-footer { padding: 14px 18px; border-top: 1px solid var(--sidebar-border); }
 .sb-stats-mini { display: flex; gap: 12px; }
