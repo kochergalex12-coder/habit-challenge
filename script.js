@@ -66,8 +66,8 @@ const CLASSES = [
 ];
 
 const PAGE_TITLES = {
-  quests:       'My <span style="color:var(--teal)">Quests</span>',
-  challenges:   'Active <span style="color:var(--teal)">Challenges</span>',
+  quests:       'My <span style="color:var(--teal)">Dashboard</span>',
+  challenges:   'Your <span style="color:var(--teal)">Challenges</span>',
   leaderboard:  'World <span style="color:var(--teal)">Leaderboard</span>',
   achievements: '<span style="color:var(--teal)">Achievements</span>',
   subscription: '<span style="color:var(--teal)">Go Pro</span>',

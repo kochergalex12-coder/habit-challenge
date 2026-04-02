@@ -67,18 +67,37 @@
     </div>
 
     <div class="sb-nav">
-      <div class="sb-section-label">Navigation</div>
-      <button class="sb-nav-item active" onclick="goPage('quests',this)"><span class="sb-nav-icon">⚔️</span> Quests</button>
-      <button class="sb-nav-item" onclick="goPage('challenges',this)"><span class="sb-nav-icon">⚡</span> Challenges</button>
+
+      <!-- ── MAIN ── -->
+      <div class="sb-section-label">Main</div>
+      <button class="sb-nav-item active" onclick="goPage('quests',this)"><span class="sb-nav-icon">🏠</span> Dashboard</button>
+      <button class="sb-nav-item" onclick="goPage('challenges',this)"><span class="sb-nav-icon">⚡</span> Your Challenges</button>
+      <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
+
+      <!-- ── SOCIAL ── -->
+      <div class="sb-section-divider"></div>
+      <div class="sb-section-label">Social</div>
+      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">🌐</span> Social <span class="sb-nav-badge" style="background:var(--teal)">SOON</span></button>
+
+      <!-- ── PROGRESSION ── -->
+      <div class="sb-section-divider"></div>
+      <div class="sb-section-label">Progression</div>
       <button class="sb-nav-item" onclick="goPage('leaderboard',this)"><span class="sb-nav-icon">🏆</span> Leaderboard</button>
       <button class="sb-nav-item" onclick="goPage('achievements',this)"><span class="sb-nav-icon">🎖</span> Achievements</button>
-      <div class="sb-section-label">Explore</div>
-      <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
+
+      <!-- ── ACCOUNT & INFO ── -->
+      <div class="sb-section-divider"></div>
+      <div class="sb-section-label">Account &amp; Info</div>
+      <button class="sb-nav-item" onclick="goPage('profile',this)" id="nav-profile"><span class="sb-nav-icon">👤</span> Profile</button>
+      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">⚙️</span> Settings <span class="sb-nav-badge">NEW</span></button>
+      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">ℹ️</span> About</button>
+      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">🎧</span> Support</button>
+
+      <!-- ── SHOP ── -->
+      <div class="sb-section-divider"></div>
       <div class="sb-section-label">Shop</div>
       <a class="sb-nav-item sb-nav-link" href="https://pethub-9952.myshopify.com/" target="_blank" rel="noopener"><span class="sb-nav-icon">🛍️</span> Accessories <span class="sb-nav-badge sb-nav-badge-shop">SHOP</span></a>
-      <div class="sb-section-label">Account</div>
-      <button class="sb-nav-item" onclick="goPage('profile',this)" id="nav-profile"><span class="sb-nav-icon">👤</span> My Profile</button>
-      <button class="sb-nav-item" onclick="goPage('subscription',this)"><span class="sb-nav-icon">👑</span> Go Pro <span class="sb-nav-badge">NEW</span></button>
+
     </div>
 
     <div class="sb-footer">
