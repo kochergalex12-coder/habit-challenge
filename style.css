@@ -1699,3 +1699,16 @@ html, body {
 .dash-ch-record { padding:7px 13px;border-radius:10px;background:var(--teal-bg);border:1.5px solid var(--teal-br);color:var(--teal);font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all var(--t); }
 .dash-ch-record:hover { background:var(--teal);color:#fff; }
 .dash-ch-record.done { background:var(--bg);border-color:var(--border2);color:var(--muted);cursor:default; }
+
+/* ── Dashboard challenge check-in ── */
+.dch-action { display:flex; align-items:center; flex-shrink:0; }
+.dch-btns { display:flex; gap:7px; }
+.dch-btn-done { padding:8px 14px; border-radius:10px; background:var(--teal-bg); border:1.5px solid var(--teal-br); color:var(--teal); font-size:.82rem; font-weight:700; cursor:pointer; white-space:nowrap; transition:all var(--t); }
+.dch-btn-done:hover { background:var(--teal); color:#fff; }
+.dch-btn-skip { padding:8px 12px; border-radius:10px; background:var(--bg); border:1.5px solid var(--border2); color:var(--muted); font-size:.82rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all var(--t); }
+.dch-btn-skip:hover { border-color:var(--rose); color:var(--rose); }
+.dch-done { font-size:.85rem; font-weight:700; color:var(--green); white-space:nowrap; }
+.dch-xp-earned { font-family:var(--ff-mono); font-size:.75rem; color:var(--gold); margin-left:5px; }
+.dch-skipped { font-size:.82rem; color:var(--muted); font-style:italic; white-space:nowrap; }
+.dch-streak { font-family:var(--ff-mono); font-size:.72rem; color:var(--rose); margin-left:6px; }
+.dch-count { font-size:.72rem; opacity:.7; }

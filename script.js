@@ -370,6 +370,30 @@ function _renderMiniLBRows(el, entries) {
   }).join('');
 }
 
+// Returns the today entry for a challenge: { status, count } or null
+function _chTodayEntry(id) {
+  var today = new Date().toDateString();
+  var log = state.challengeLog || {};
+  return (log[id] && log[id][today]) || null;
+}
+
+// Computes current streak (consecutive completed days ending today or yesterday)
+function _chStreak(id) {
+  var log = (state.challengeLog || {})[id] || {};
+  var streak = 0;
+  var d = new Date();
+  // If today not completed yet, start checking from yesterday
+  var todayStr = d.toDateString();
+  var todayEntry = log[todayStr];
+  if (!todayEntry || todayEntry.status !== 'completed') d.setDate(d.getDate() - 1);
+  for (var i = 0; i < 365; i++) {
+    var key = d.toDateString();
+    if (log[key] && log[key].status === 'completed') { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
 function renderDashChallenges() {
   var el = document.getElementById('d-dash-challenges');
   if (!el) return;
@@ -384,30 +408,77 @@ function renderDashChallenges() {
     return;
   }
 
-  var today = new Date().toDateString();
   el.innerHTML = '<div class="dash-ch-list">' +
     active.map(function(c) {
-      var recordBtn = '';
-      if (c.isCustom) {
-        var log = (state.challengeLog || {});
-        var todayCount = (log[c.id] && log[c.id][today]) || 0;
-        var limit = c.dailyLimit || 1;
-        var canRecord = limit === 99 || todayCount < limit;
-        var limitLabel = limit === 99 ? '∞' : limit;
-        recordBtn = '<button class="dash-ch-record' + (canRecord ? '' : ' done') + '" ' +
-          'onclick="recordCustomChallenge(\'' + c.id + '\')">' +
-          (canRecord ? '+ Record' : '✓ Done') + ' <span style="font-size:.7rem;opacity:.7">(' + todayCount + '/' + limitLabel + ')</span></button>';
+      var entry   = _chTodayEntry(c.id);
+      var status  = entry ? entry.status : 'pending';
+      var count   = entry ? (entry.count || 0) : 0;
+      var limit   = c.isCustom ? (c.dailyLimit || 1) : 1;
+      var limitLbl = limit === 99 ? '∞' : limit;
+      var streak  = _chStreak(c.id);
+      var streakHtml = streak > 0
+        ? '<span class="dch-streak">🔥 ' + streak + ' day' + (streak > 1 ? 's' : '') + '</span>'
+        : '';
+
+      var actionHtml;
+      if (status === 'completed' || (limit !== 99 && count >= limit)) {
+        actionHtml = '<div class="dch-done">✅ Done <span class="dch-xp-earned">+' + (count * c.xp) + ' XP</span></div>';
+      } else if (status === 'skipped') {
+        actionHtml = '<div class="dch-skipped">⏭ Skipped today</div>';
+      } else {
+        // pending — show buttons
+        var countHtml = (c.isCustom && limit > 1)
+          ? ' <span class="dch-count">(' + count + '/' + limitLbl + ')</span>'
+          : '';
+        actionHtml =
+          '<div class="dch-btns">' +
+            '<button class="dch-btn-done" onclick="checkInChallenge(\'' + c.id + '\',\'completed\')">' +
+              '✅ Done' + countHtml +
+            '</button>' +
+            '<button class="dch-btn-skip" onclick="checkInChallenge(\'' + c.id + '\',\'skipped\')">' +
+              '⏭ Skip' +
+            '</button>' +
+          '</div>';
       }
+
       return '<div class="dash-ch-card" style="border-left:4px solid ' + (c.cc1 || '#6d3dbd') + '">' +
         '<div class="dash-ch-icon">' + c.icon + '</div>' +
         '<div class="dash-ch-info">' +
-          '<div class="dash-ch-name">' + c.name + '</div>' +
+          '<div class="dash-ch-name">' + c.name + ' ' + streakHtml + '</div>' +
           '<div class="dash-ch-desc">' + c.desc + '</div>' +
         '</div>' +
-        (recordBtn || '<div class="dash-ch-xp">+' + c.xp + ' XP</div>') +
+        '<div class="dch-action">' + actionHtml + '</div>' +
       '</div>';
     }).join('') +
   '</div>';
+}
+
+function checkInChallenge(id, action) {
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var c = allCh.find(function(x) { return x.id === id; });
+  if (!c) return;
+  var today = new Date().toDateString();
+  if (!state.challengeLog) state.challengeLog = {};
+  if (!state.challengeLog[id]) state.challengeLog[id] = {};
+  var entry = state.challengeLog[id][today] || { status: 'pending', count: 0 };
+  var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
+
+  if (action === 'completed') {
+    var newCount = entry.count + 1;
+    var nowDone  = limit === 99 || newCount >= limit;
+    state.challengeLog[id][today] = { status: nowDone ? 'completed' : 'pending', count: newCount };
+    grantXP(c.xp);
+    renderAll();
+    save();
+    showToast('✅ ' + c.name, '+' + c.xp + ' XP earned!', 'xp-gain');
+  } else {
+    // skipped — only if not already done today
+    if (entry.status === 'completed') return;
+    state.challengeLog[id][today] = { status: 'skipped', count: entry.count };
+    renderDashChallenges();
+    save();
+    showToast('⏭ Skipped', c.name + ' — come back tomorrow', 'streak');
+  }
 }
 
 function renderChallenges() {
@@ -514,20 +585,7 @@ function deleteCustomChallenge(id) {
 }
 
 function recordCustomChallenge(id) {
-  var allCh = CHALLENGES.concat(state.customChallenges || []);
-  var ch = allCh.find(function(c) { return c.id === id; });
-  if (!ch) return;
-  var today = new Date().toDateString();
-  if (!state.challengeLog) state.challengeLog = {};
-  if (!state.challengeLog[id]) state.challengeLog[id] = {};
-  var count = state.challengeLog[id][today] || 0;
-  var limit = ch.dailyLimit || 1;
-  if (limit !== 99 && count >= limit) { showToast('⏳ Limit reached', 'Come back tomorrow!', 'streak'); return; }
-  state.challengeLog[id][today] = count + 1;
-  grantXP(ch.xp);
-  renderAll();
-  save();
-  showToast('✅ Recorded!', '+' + ch.xp + ' XP — keep going!', 'xp-gain');
+  checkInChallenge(id, 'completed');
 }
 
 function joinChallenge(id, btn) {
