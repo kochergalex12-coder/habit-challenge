@@ -559,63 +559,112 @@ function _chStreak(id) {
   return streak;
 }
 
+// Returns group habits as challenge-compatible objects for dashboard rendering
+function _getGroupChallengesForDash() {
+  if (!window.activeGroup || !window._latestGroupHabits || !window._latestGroupHabits.length) return [];
+  return window._latestGroupHabits.map(function(h) {
+    return {
+      id: 'grp_' + h.id,
+      _origId: h.id,
+      name: h.name,
+      desc: h.desc || '',
+      icon: h.icon || '👥',
+      xp: DIFF_XP[h.diff] || 25,
+      cc1: h.color || '#0d8a7f',
+      isGroup: true,
+      isCustom: true,
+      dailyLimit: 1
+    };
+  });
+}
+
+// Done on a group challenge: track XP/streak locally + sync completion to Firebase
+function checkInGroupChallenge(id, action) {
+  checkInChallenge(id, action);
+  if (action === 'completed') {
+    var gc = _getGroupChallengesForDash().find(function(c) { return c.id === id; });
+    if (gc && window.currentUser && window.activeGroup && window._completeGroupHabit) {
+      window._completeGroupHabit(window.activeGroup.id, gc._origId, null);
+    }
+  }
+}
+
+function _renderDashChCard(c, isGroup) {
+  var entry    = _chTodayEntry(c.id);
+  var status   = entry ? entry.status : 'pending';
+  var count    = entry ? (entry.count || 0) : 0;
+  var limit    = c.isCustom ? (c.dailyLimit || 1) : 1;
+  var limitLbl = limit === 99 ? '∞' : limit;
+  var streak   = _chStreak(c.id);
+  var streakHtml = streak > 0
+    ? '<span class="dch-streak">🔥 ' + streak + ' day' + (streak > 1 ? 's' : '') + '</span>'
+    : '';
+
+  var fn = isGroup ? 'checkInGroupChallenge' : 'checkInChallenge';
+  var actionHtml;
+  if (status === 'completed' || (limit !== 99 && count >= limit)) {
+    actionHtml = '<div class="dch-done">✅ Done <span class="dch-xp-earned">+' + (count * c.xp) + ' XP</span></div>';
+  } else if (status === 'skipped') {
+    actionHtml = '<div class="dch-skipped">⏭ Skipped today</div>';
+  } else {
+    var countHtml = (c.isCustom && limit > 1)
+      ? ' <span class="dch-count">(' + count + '/' + limitLbl + ')</span>'
+      : '';
+    actionHtml =
+      '<div class="dch-btns">' +
+        '<button class="dch-btn-done" onclick="' + fn + '(\'' + c.id + '\',\'completed\')">' +
+          '✅ Done' + countHtml +
+        '</button>' +
+        '<button class="dch-btn-skip" onclick="' + fn + '(\'' + c.id + '\',\'skipped\')">' +
+          '⏭ Skip' +
+        '</button>' +
+      '</div>';
+  }
+
+  return '<div class="dash-ch-card" style="border-left:4px solid ' + (c.cc1 || '#6d3dbd') + '" onclick="openChallengeDetail(\'' + c.id + '\')">' +
+    '<div class="dash-ch-icon">' + c.icon + '</div>' +
+    '<div class="dash-ch-info">' +
+      '<div class="dash-ch-name">' + c.name + ' ' + streakHtml + '</div>' +
+      '<div class="dash-ch-desc">' + c.desc + '</div>' +
+    '</div>' +
+    '<div class="dch-action" onclick="event.stopPropagation()">' + actionHtml + '</div>' +
+  '</div>';
+}
+
 function renderDashChallenges() {
   var el = document.getElementById('d-dash-challenges');
   if (!el) return;
-  var joined = (state.player.joinedChallenges || []);
-  var allCh = CHALLENGES.concat(state.customChallenges || []);
-  var active = allCh.filter(function(c) { return joined.includes(c.id); });
 
-  if (!active.length) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:.88rem;padding:18px 0 8px">' +
+  var joined = (state.player.joinedChallenges || []);
+  var allCh  = CHALLENGES.concat(state.customChallenges || []);
+  var solo   = allCh.filter(function(c) { return joined.includes(c.id); });
+  var group  = _getGroupChallengesForDash();
+
+  var html = '';
+
+  // ── Solo Challenges ──
+  html += '<div class="dash-section-label">👤 Solo Challenges</div>';
+  if (!solo.length) {
+    html += '<div style="color:var(--muted);font-size:.88rem;padding:8px 0 4px">' +
       'No challenges joined yet. <a href="#" onclick="goPage(\'challenges\',document.querySelector(\'[onclick*=challenges]\')); return false;" ' +
       'style="color:var(--teal);text-decoration:none">Browse challenges →</a></div>';
-    return;
+  } else {
+    html += '<div class="dash-ch-list">' + solo.map(function(c) { return _renderDashChCard(c, false); }).join('') + '</div>';
   }
 
-  el.innerHTML = '<div class="dash-ch-list">' +
-    active.map(function(c) {
-      var entry   = _chTodayEntry(c.id);
-      var status  = entry ? entry.status : 'pending';
-      var count   = entry ? (entry.count || 0) : 0;
-      var limit   = c.isCustom ? (c.dailyLimit || 1) : 1;
-      var limitLbl = limit === 99 ? '∞' : limit;
-      var streak  = _chStreak(c.id);
-      var streakHtml = streak > 0
-        ? '<span class="dch-streak">🔥 ' + streak + ' day' + (streak > 1 ? 's' : '') + '</span>'
-        : '';
+  // ── Group Challenges ── (only shown when user is in a group)
+  if (window.activeGroup) {
+    html += '<div class="dash-section-label" style="margin-top:20px">👥 Group Challenges</div>';
+    if (!group.length) {
+      html += '<div style="color:var(--muted);font-size:.88rem;padding:8px 0 4px">' +
+        'No group challenges yet. <a href="#" onclick="goPage(\'group\',document.querySelector(\'[onclick*=group]\')); return false;" ' +
+        'style="color:var(--teal);text-decoration:none">Go to Group →</a></div>';
+    } else {
+      html += '<div class="dash-ch-list">' + group.map(function(c) { return _renderDashChCard(c, true); }).join('') + '</div>';
+    }
+  }
 
-      var actionHtml;
-      if (status === 'completed' || (limit !== 99 && count >= limit)) {
-        actionHtml = '<div class="dch-done">✅ Done <span class="dch-xp-earned">+' + (count * c.xp) + ' XP</span></div>';
-      } else if (status === 'skipped') {
-        actionHtml = '<div class="dch-skipped">⏭ Skipped today</div>';
-      } else {
-        // pending — show buttons
-        var countHtml = (c.isCustom && limit > 1)
-          ? ' <span class="dch-count">(' + count + '/' + limitLbl + ')</span>'
-          : '';
-        actionHtml =
-          '<div class="dch-btns">' +
-            '<button class="dch-btn-done" onclick="checkInChallenge(\'' + c.id + '\',\'completed\')">' +
-              '✅ Done' + countHtml +
-            '</button>' +
-            '<button class="dch-btn-skip" onclick="checkInChallenge(\'' + c.id + '\',\'skipped\')">' +
-              '⏭ Skip' +
-            '</button>' +
-          '</div>';
-      }
-
-      return '<div class="dash-ch-card" style="border-left:4px solid ' + (c.cc1 || '#6d3dbd') + '" onclick="openChallengeDetail(\'' + c.id + '\')">' +
-        '<div class="dash-ch-icon">' + c.icon + '</div>' +
-        '<div class="dash-ch-info">' +
-          '<div class="dash-ch-name">' + c.name + ' ' + streakHtml + '</div>' +
-          '<div class="dash-ch-desc">' + c.desc + '</div>' +
-        '</div>' +
-        '<div class="dch-action" onclick="event.stopPropagation()">' + actionHtml + '</div>' +
-      '</div>';
-    }).join('') +
-  '</div>';
+  el.innerHTML = html;
 }
 
 // Returns ms until local midnight (00:00:00 next day)
@@ -637,7 +686,7 @@ function _fmtCountdown(ms) {
 }
 
 function checkInChallenge(id, action) {
-  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var allCh = CHALLENGES.concat(state.customChallenges || []).concat(_getGroupChallengesForDash());
   var c = allCh.find(function(x) { return x.id === id; });
   if (!c) return;
   var today = new Date().toDateString();
@@ -675,7 +724,7 @@ var _detailModalId = null;
 var _detailTimerInterval = null;
 
 function openChallengeDetail(id) {
-  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var allCh = CHALLENGES.concat(state.customChallenges || []).concat(_getGroupChallengesForDash());
   var c = allCh.find(function(x) { return x.id === id; });
   if (!c) return;
   _detailModalId = id;
@@ -1559,6 +1608,7 @@ function renderGroupHabits(habits) {
   // Cache for leaderboard computation — always update even if empty
   window._latestGroupHabits = habits || [];
   renderGroupLeaderboard();
+  renderDashChallenges();
 
   if (!habits || !habits.length) {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">' +

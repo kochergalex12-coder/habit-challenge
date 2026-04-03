@@ -1663,6 +1663,7 @@ html, body {
 }
 
 /* ── Dashboard joined challenges ── */
+.dash-section-label { font-family: var(--ff-title); font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; margin-top: 4px; }
 .dash-ch-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 .dash-ch-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 14px; padding: 14px 16px; box-shadow: var(--sh-sm); transition: box-shadow var(--t); }
 .dash-ch-card:hover { box-shadow: var(--sh-md); }
