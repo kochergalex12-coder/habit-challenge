@@ -332,7 +332,6 @@ function renderChallenges() {
       <div class="ch-desc">${c.desc}</div>
       <div class="ch-rewards">
         <div class="reward-chip">⚡ ${c.xp} XP</div>
-        <div class="reward-chip" style="background:var(--teal-bg);border-color:var(--teal-br);color:var(--teal)">👥 ${c.participants.toLocaleString()}</div>
       </div>
       <div class="ch-bar"><div class="ch-bar-fill" style="width:${joined ? c.progress : 0}%;--cg1:${c.g1};--cg2:${c.g2}"></div></div>
       <button class="ch-join-btn ${joined ? 'joined' : ''}" onclick="joinChallenge('${c.id}',this)">${joined ? '✓ Joined' : '⚡ Join Challenge'}</button>
