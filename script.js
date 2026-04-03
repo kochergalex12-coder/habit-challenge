@@ -1,7 +1,8 @@
 /* ════ STATE ════ */
 let state = {
   player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[] },
-  habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all'
+  habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all',
+  customChallenges: [], challengeLog: {}
 };
 
 const ICONS = ['🏃','🧘','📚','💪','💧','🥗','😴','🧠','✍️','🎯','🎨','🎸','🏊','🚴','🌿','🌅','💻','📖','🏋️','🎭','🗣️','🧩','🌱','⚡','🔥','💎','🎪','🌍'];
@@ -373,7 +374,8 @@ function renderDashChallenges() {
   var el = document.getElementById('d-dash-challenges');
   if (!el) return;
   var joined = (state.player.joinedChallenges || []);
-  var active = CHALLENGES.filter(function(c) { return joined.includes(c.id); });
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var active = allCh.filter(function(c) { return joined.includes(c.id); });
 
   if (!active.length) {
     el.innerHTML = '<div style="color:var(--muted);font-size:.88rem;padding:18px 0 8px">' +
@@ -382,44 +384,163 @@ function renderDashChallenges() {
     return;
   }
 
+  var today = new Date().toDateString();
   el.innerHTML = '<div class="dash-ch-list">' +
     active.map(function(c) {
-      return '<div class="dash-ch-card" style="border-left:4px solid ' + c.cc1 + '">' +
+      var recordBtn = '';
+      if (c.isCustom) {
+        var log = (state.challengeLog || {});
+        var todayCount = (log[c.id] && log[c.id][today]) || 0;
+        var limit = c.dailyLimit || 1;
+        var canRecord = limit === 99 || todayCount < limit;
+        var limitLabel = limit === 99 ? '∞' : limit;
+        recordBtn = '<button class="dash-ch-record' + (canRecord ? '' : ' done') + '" ' +
+          'onclick="recordCustomChallenge(\'' + c.id + '\')">' +
+          (canRecord ? '+ Record' : '✓ Done') + ' <span style="font-size:.7rem;opacity:.7">(' + todayCount + '/' + limitLabel + ')</span></button>';
+      }
+      return '<div class="dash-ch-card" style="border-left:4px solid ' + (c.cc1 || '#6d3dbd') + '">' +
         '<div class="dash-ch-icon">' + c.icon + '</div>' +
         '<div class="dash-ch-info">' +
           '<div class="dash-ch-name">' + c.name + '</div>' +
           '<div class="dash-ch-desc">' + c.desc + '</div>' +
         '</div>' +
-        '<div class="dash-ch-xp">+' + c.xp + ' XP</div>' +
+        (recordBtn || '<div class="dash-ch-xp">+' + c.xp + ' XP</div>') +
       '</div>';
     }).join('') +
   '</div>';
 }
 
 function renderChallenges() {
-  document.getElementById('d-challenges-grid').innerHTML = CHALLENGES.map(c => {
+  var custom = (state.customChallenges || []);
+  var all = CHALLENGES.concat(custom);
+  document.getElementById('d-challenges-grid').innerHTML = all.map(c => {
     const joined = state.player.joinedChallenges.includes(c.id);
-    return `<div class="challenge-card" style="--cc1:${c.cc1}">
-      <div class="ch-badge-d ${c.diffCls}">${c.icon} ${c.badge}</div>
+    const isCustom = !!c.isCustom;
+    const badgeHtml = isCustom
+      ? `<div class="ch-badge-d diff-custom">✨ Custom${c.dailyLimit > 1 ? ' · ' + (c.dailyLimit === 99 ? '∞' : c.dailyLimit) + '×/day' : ''}</div>`
+      : `<div class="ch-badge-d ${c.diffCls}">${c.icon} ${c.badge}</div>`;
+    const durationHtml = isCustom
+      ? `<div class="reward-chip" style="background:var(--teal-bg);border-color:var(--teal-br);color:var(--teal)">📅 ${c.durationLabel}</div>`
+      : '';
+    return `<div class="challenge-card" style="--cc1:${c.cc1 || '#6d3dbd'}">
+      ${badgeHtml}
       <div class="ch-icon">${c.icon}</div>
       <div class="ch-name">${c.name}</div>
       <div class="ch-desc">${c.desc}</div>
       <div class="ch-rewards">
         <div class="reward-chip">⚡ ${c.xp} XP</div>
+        ${durationHtml}
       </div>
-      <div class="ch-bar"><div class="ch-bar-fill" style="width:${joined ? c.progress : 0}%;--cg1:${c.g1};--cg2:${c.g2}"></div></div>
+      ${!isCustom ? `<div class="ch-bar"><div class="ch-bar-fill" style="width:${joined ? c.progress : 0}%;--cg1:${c.g1};--cg2:${c.g2}"></div></div>` : ''}
       <button class="ch-join-btn ${joined ? 'joined' : ''}" onclick="joinChallenge('${c.id}',this)">${joined ? '✓ Joined' : '⚡ Join Challenge'}</button>
+      ${isCustom ? `<button class="ch-delete-btn" onclick="deleteCustomChallenge('${c.id}')">🗑 Remove</button>` : ''}
     </div>`;
   }).join('');
+}
+
+/* ════ CUSTOM CHALLENGES ════ */
+var _achSelectedIcon = '⚡';
+
+function openAddChallengeModal() {
+  _achSelectedIcon = '⚡';
+  var modal = document.getElementById('add-ch-modal');
+  // Build icon picker
+  var icons = ['⚡','🔥','💪','🧘','📚','💧','🥗','😴','🧠','✍️','🎯','🎨','🎸','🏊','🚴','🌿','🌅','💻','📖','🏋️','🎭','🗣️','🧩','🌱','💎','🏃','🎪','🌍','❄️','🧗'];
+  document.getElementById('ach-icon-row').innerHTML = icons.map(function(ic) {
+    return '<div class="ach-icon-opt' + (ic === _achSelectedIcon ? ' sel' : '') + '" onclick="selectAchIcon(this,\'' + ic + '\')">' + ic + '</div>';
+  }).join('');
+  document.getElementById('ach-name').value = '';
+  document.getElementById('ach-desc').value = '';
+  document.getElementById('ach-error').textContent = '';
+  modal.style.display = 'flex';
+}
+
+function closeAddChallengeModal() {
+  document.getElementById('add-ch-modal').style.display = 'none';
+}
+
+function selectAchIcon(el, icon) {
+  document.querySelectorAll('.ach-icon-opt').forEach(function(e) { e.classList.remove('sel'); });
+  el.classList.add('sel');
+  _achSelectedIcon = icon;
+}
+
+function submitCustomChallenge() {
+  var name = document.getElementById('ach-name').value.trim();
+  var desc = document.getElementById('ach-desc').value.trim();
+  var xp   = parseInt(document.getElementById('ach-xp').value);
+  var dur  = parseInt(document.getElementById('ach-duration').value);
+  var daily = parseInt(document.getElementById('ach-daily').value);
+  var errEl = document.getElementById('ach-error');
+
+  if (!name) { errEl.textContent = 'Please enter a challenge name.'; return; }
+  if (!desc) { errEl.textContent = 'Please add a short description.'; return; }
+
+  var durLabels = {7:'1 Week',14:'2 Weeks',30:'1 Month',60:'2 Months',90:'3 Months',365:'1 Year'};
+  var colors = ['#c4374a','#6d3dbd','#0d8a7f','#c9820a','#1a8a5a','#c47028','#8b5cf6'];
+  var cc1 = colors[Math.floor(Math.random() * colors.length)];
+
+  var ch = {
+    id: 'custom_' + Date.now(),
+    name: name,
+    desc: desc,
+    icon: _achSelectedIcon,
+    xp: xp,
+    duration: dur,
+    durationLabel: durLabels[dur] || (dur + ' days'),
+    dailyLimit: daily,
+    cc1: cc1,
+    isCustom: true,
+    createdAt: new Date().toISOString()
+  };
+
+  if (!state.customChallenges) state.customChallenges = [];
+  state.customChallenges.push(ch);
+  // Auto-join the custom challenge
+  if (!state.player.joinedChallenges.includes(ch.id)) state.player.joinedChallenges.push(ch.id);
+  save();
+  closeAddChallengeModal();
+  renderChallenges();
+  renderDashChallenges();
+  showToast('✨ Challenge Created!', name + ' — good luck!', 'streak');
+}
+
+function deleteCustomChallenge(id) {
+  state.customChallenges = (state.customChallenges || []).filter(function(c) { return c.id !== id; });
+  state.player.joinedChallenges = state.player.joinedChallenges.filter(function(i) { return i !== id; });
+  save();
+  renderChallenges();
+  renderDashChallenges();
+}
+
+function recordCustomChallenge(id) {
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var ch = allCh.find(function(c) { return c.id === id; });
+  if (!ch) return;
+  var today = new Date().toDateString();
+  if (!state.challengeLog) state.challengeLog = {};
+  if (!state.challengeLog[id]) state.challengeLog[id] = {};
+  var count = state.challengeLog[id][today] || 0;
+  var limit = ch.dailyLimit || 1;
+  if (limit !== 99 && count >= limit) { showToast('⏳ Limit reached', 'Come back tomorrow!', 'streak'); return; }
+  state.challengeLog[id][today] = count + 1;
+  grantXP(ch.xp);
+  renderAll();
+  save();
+  showToast('✅ Recorded!', '+' + ch.xp + ' XP — keep going!', 'xp-gain');
 }
 
 function joinChallenge(id, btn) {
   if (state.player.joinedChallenges.includes(id)) return;
   state.player.joinedChallenges.push(id);
-  const c = CHALLENGES.find(c => c.id === id);
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  const c = allCh.find(c => c.id === id);
   btn.className = 'ch-join-btn joined';
   btn.textContent = '✓ Joined';
-  btn.previousElementSibling.querySelector('.ch-bar-fill').style.width = c.progress + '%';
+  if (!c.isCustom && btn.previousElementSibling && btn.previousElementSibling.querySelector) {
+    var fill = btn.previousElementSibling.querySelector('.ch-bar-fill');
+    if (fill) fill.style.width = c.progress + '%';
+  }
   showToast('⚡ Challenge Joined!', c.name + ' — good luck!', 'streak');
   save();
 }
@@ -789,9 +910,11 @@ function wmSaveLog() {
 // Called by the Firebase module (index.html) when Firestore data arrives.
 // Merges remote state into local state and re-renders without reloading.
 window._setState = function(remoteState) {
-  if (remoteState.player)         state.player         = { ...state.player, ...remoteState.player };
-  if (remoteState.habits)         state.habits         = remoteState.habits;
-  if (remoteState.todayCompleted) state.todayCompleted = remoteState.todayCompleted;
+  if (remoteState.player)           state.player           = { ...state.player, ...remoteState.player };
+  if (remoteState.habits)           state.habits           = remoteState.habits;
+  if (remoteState.todayCompleted)   state.todayCompleted   = remoteState.todayCompleted;
+  if (remoteState.customChallenges) state.customChallenges = remoteState.customChallenges;
+  if (remoteState.challengeLog)     state.challengeLog     = remoteState.challengeLog;
   renderAll();
 };
 

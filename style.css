@@ -1671,3 +1671,31 @@ html, body {
 .dash-ch-name { font-family: var(--ff-title); font-weight: 700; font-size: .95rem; color: var(--ink); }
 .dash-ch-desc { font-size: .78rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dash-ch-xp { font-family: var(--ff-mono); font-size: .8rem; font-weight: 700; color: var(--gold); background: var(--gold-bg, #fdf3dc); border: 1px solid #f0d080; border-radius: 8px; padding: 4px 10px; white-space: nowrap; flex-shrink: 0; }
+
+/* ── Add Challenge Modal ── */
+.add-ch-overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px; }
+.add-ch-card { background:var(--surface);border-radius:20px;padding:32px 28px;width:100%;max-width:520px;box-shadow:var(--sh-lg);position:relative;max-height:90vh;overflow-y:auto; }
+.add-ch-close { position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.1rem;color:var(--muted);cursor:pointer; }
+.add-ch-title { font-family:var(--ff-title);font-size:1.3rem;font-weight:900;color:var(--ink);margin-bottom:18px; }
+.add-ch-label { display:block;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 5px; }
+.add-ch-input { width:100%;padding:10px 13px;border:1.5px solid var(--border2);border-radius:10px;font-family:var(--ff-body);font-size:.88rem;color:var(--ink);background:var(--bg);outline:none;box-sizing:border-box;transition:border-color var(--t); }
+.add-ch-input:focus { border-color:var(--teal); }
+.add-ch-icon-row { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px; }
+.ach-icon-opt { width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;border-radius:9px;border:2px solid transparent;cursor:pointer;background:var(--bg);transition:all var(--t); }
+.ach-icon-opt:hover { border-color:var(--border2); }
+.ach-icon-opt.sel { border-color:var(--teal);background:var(--teal-bg); }
+.add-ch-row2 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:4px; }
+.add-ch-select { width:100%;padding:9px 11px;border:1.5px solid var(--border2);border-radius:10px;font-family:var(--ff-body);font-size:.85rem;color:var(--ink);background:var(--bg);outline:none;cursor:pointer; }
+.add-ch-error { color:var(--rose);font-size:.8rem;min-height:18px;margin-top:8px; }
+.add-ch-btn { width:100%;margin-top:14px;padding:13px;border-radius:12px;background:linear-gradient(135deg,var(--teal),var(--green));border:none;color:#fff;font-family:var(--ff-title);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity var(--t); }
+.add-ch-btn:hover { opacity:.88; }
+
+/* ── Custom challenge badge ── */
+.diff-custom { background:linear-gradient(135deg,#6d3dbd22,#c4374a22);color:var(--violet);border:1px solid #6d3dbd44; }
+
+/* ── Delete / Record buttons on challenge cards ── */
+.ch-delete-btn { width:100%;margin-top:6px;padding:8px;border-radius:10px;background:none;border:1.5px solid var(--border2);color:var(--muted);font-size:.8rem;cursor:pointer;transition:all var(--t); }
+.ch-delete-btn:hover { border-color:var(--rose);color:var(--rose); }
+.dash-ch-record { padding:7px 13px;border-radius:10px;background:var(--teal-bg);border:1.5px solid var(--teal-br);color:var(--teal);font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all var(--t); }
+.dash-ch-record:hover { background:var(--teal);color:#fff; }
+.dash-ch-record.done { background:var(--bg);border-color:var(--border2);color:var(--muted);cursor:default; }

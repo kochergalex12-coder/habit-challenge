@@ -175,8 +175,66 @@
 
       <!-- CHALLENGES PAGE -->
       <div class="page" id="page-challenges">
-        <div class="sec-hdr"><div class="sec-title">⚡ Active <span>Challenges</span></div></div>
+        <div class="sec-hdr">
+          <div class="sec-title">⚡ Active <span>Challenges</span></div>
+          <button class="sec-action" onclick="openAddChallengeModal()">+ Add Challenge</button>
+        </div>
         <div class="challenges-grid" id="d-challenges-grid"></div>
+
+        <!-- Add Challenge Modal -->
+        <div id="add-ch-modal" class="add-ch-overlay" style="display:none" onclick="if(event.target===this)closeAddChallengeModal()">
+          <div class="add-ch-card">
+            <button class="add-ch-close" onclick="closeAddChallengeModal()">✕</button>
+            <div class="add-ch-title">Create Challenge</div>
+
+            <label class="add-ch-label">Challenge Name</label>
+            <input class="add-ch-input" id="ach-name" maxlength="40" placeholder="e.g. Cold Shower Every Day"/>
+
+            <label class="add-ch-label">Description</label>
+            <input class="add-ch-input" id="ach-desc" maxlength="80" placeholder="Short description…"/>
+
+            <label class="add-ch-label">Icon</label>
+            <div class="add-ch-icon-row" id="ach-icon-row"></div>
+
+            <div class="add-ch-row2">
+              <div>
+                <label class="add-ch-label">XP per completion</label>
+                <select class="add-ch-select" id="ach-xp">
+                  <option value="10">10 XP</option>
+                  <option value="25">25 XP</option>
+                  <option value="50" selected>50 XP</option>
+                  <option value="100">100 XP</option>
+                  <option value="200">200 XP</option>
+                  <option value="500">500 XP</option>
+                </select>
+              </div>
+              <div>
+                <label class="add-ch-label">Duration</label>
+                <select class="add-ch-select" id="ach-duration">
+                  <option value="7">1 Week</option>
+                  <option value="14">2 Weeks</option>
+                  <option value="30" selected>1 Month</option>
+                  <option value="60">2 Months</option>
+                  <option value="90">3 Months</option>
+                  <option value="365">1 Year</option>
+                </select>
+              </div>
+              <div>
+                <label class="add-ch-label">Times per day</label>
+                <select class="add-ch-select" id="ach-daily">
+                  <option value="1" selected>Once</option>
+                  <option value="2">Twice</option>
+                  <option value="3">3×</option>
+                  <option value="5">5×</option>
+                  <option value="99">Unlimited</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="add-ch-error" id="ach-error"></div>
+            <button class="add-ch-btn" onclick="submitCustomChallenge()">Create Challenge →</button>
+          </div>
+        </div>
       </div>
 
       <!-- LEADERBOARD PAGE -->
@@ -965,7 +1023,7 @@
     if (!window.currentUser) return;
     setDoc(
       doc(db, 'users', window.currentUser.uid),
-      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, updatedAt: new Date().toISOString() },
+      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, customChallenges: state.customChallenges || [], challengeLog: state.challengeLog || {}, updatedAt: new Date().toISOString() },
       { merge: true }
     ).catch(function(e) { console.error('Firestore save error', e); });
   };
