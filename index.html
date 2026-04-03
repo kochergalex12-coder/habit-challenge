@@ -972,11 +972,35 @@
 
   window._fbSave = function(state) {
     if (!window.currentUser || !window._firestoreReady) return;
-    setDoc(
-      doc(db, 'users', window.currentUser.uid),
-      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, updatedAt: new Date().toISOString() },
-      { merge: true }
-    ).catch(function(e) { console.error('Firestore save error', e); });
+    // Use dotted paths so we NEVER overwrite friends/friendCode/friendRequests
+    // — those are managed separately by the social functions.
+    var p = state.player;
+    var update = {
+      'player.name':            p.name,
+      'player.avatar':          p.avatar,
+      'player.level':           p.level,
+      'player.xp':              p.xp,
+      'player.xpToNext':        p.xpToNext,
+      'player.totalXP':         p.totalXP,
+      'player.streak':          p.streak,
+      'player.bestStreak':      p.bestStreak,
+      'player.totalCompleted':  p.totalCompleted,
+      'player.joinedChallenges':p.joinedChallenges || [],
+      'player.lastActiveDate':  p.lastActiveDate,
+      'player.joinDate':        p.joinDate,
+      'player.xpLog':           p.xpLog || [],
+      'player.hasOnboarded':    p.hasOnboarded,
+      'habits':                 state.habits,
+      'todayCompleted':         state.todayCompleted,
+      'updatedAt':              new Date().toISOString()
+    };
+    updateDoc(doc(db, 'users', window.currentUser.uid), update)
+      .catch(function() {
+        // Doc doesn't exist yet (new user) — create it
+        setDoc(doc(db, 'users', window.currentUser.uid),
+          { player: p, habits: state.habits, todayCompleted: state.todayCompleted },
+          { merge: true });
+      });
   };
 
   // Safe single-field update using dotted path (won't overwrite other fields)
