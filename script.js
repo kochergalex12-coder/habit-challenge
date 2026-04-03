@@ -694,9 +694,23 @@ function wmSaveLog() {
 // Called by the Firebase module (index.html) when Firestore data arrives.
 // Merges remote state into local state and re-renders without reloading.
 window._setState = function(remoteState) {
-  if (remoteState.player)         state.player         = { ...state.player, ...remoteState.player };
-  if (remoteState.habits)         state.habits         = remoteState.habits;
-  if (remoteState.todayCompleted) state.todayCompleted = remoteState.todayCompleted;
+  if (remoteState.player) {
+    var localName = state.player.name;
+    var remoteName = remoteState.player.name;
+    state.player = { ...state.player, ...remoteState.player };
+
+    // If Firestore has the default name but we have a real name locally,
+    // keep the local name and fix Firestore so it doesn't regress again.
+    var hasGoodLocalName  = localName  && localName  !== 'Novice Hero';
+    var hasStaleRemoteName = !remoteName || remoteName === 'Novice Hero';
+    if (hasGoodLocalName && hasStaleRemoteName) {
+      state.player.name = localName;
+      if (window._fbUpdateField) window._fbUpdateField('player.name', localName);
+    }
+  }
+  // Only replace habits/todayCompleted when Firestore actually has data
+  if (remoteState.habits !== undefined)         state.habits         = remoteState.habits;
+  if (remoteState.todayCompleted !== undefined) state.todayCompleted = remoteState.todayCompleted;
   // Persist to localStorage so data survives page refresh without waiting for Firestore
   try { localStorage.setItem('hqd_v1', JSON.stringify(state)); } catch(e) {}
   renderAll();
