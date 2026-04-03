@@ -153,7 +153,8 @@ function renderAll() {
   // Sidebar
   renderAvatarEl(document.getElementById('sb-avatar'), p.avatar);
   document.getElementById('sb-name').textContent      = p.name;
-  document.getElementById('sb-class').textContent     = `${cls.prefix} ${cls.name}`;
+  const sbClassEl = document.getElementById('sb-class');
+  if (sbClassEl) sbClassEl.textContent               = `${cls.prefix} ${cls.name}`;
   document.getElementById('sb-xp-bar').style.width    = pct + '%';
   document.getElementById('sb-xp-label').textContent  = `${p.xp} / ${p.xpToNext}`;
   document.getElementById('sb-level').textContent     = p.level;
