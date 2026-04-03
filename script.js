@@ -1602,13 +1602,15 @@ function renderGroupLeaderboard() {
 // renderGroupHabits — called by Firebase module when habits subcollection changes.
 // Renders each card with: edit button, result input, current results, complete button.
 function renderGroupHabits(habits) {
+  // Always cache and update dashboard — even when the group page isn't visible
+  window._latestGroupHabits = habits || [];
+  renderDashChallenges();
+
   var grid = document.getElementById('grp-habits-grid');
   if (!grid) return;
 
-  // Cache for leaderboard computation — always update even if empty
-  window._latestGroupHabits = habits || [];
+  // Cache for leaderboard computation
   renderGroupLeaderboard();
-  renderDashChallenges();
 
   if (!habits || !habits.length) {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">' +
