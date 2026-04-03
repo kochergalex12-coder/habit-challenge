@@ -136,18 +136,10 @@
               <div class="stat-card" style="--s-c1:#1a8a5a;--s-c2:#0d8a7f"><div class="stat-val" id="d-today">0%</div><div class="stat-lbl">Today</div></div>
             </div>
             <div class="sec-hdr">
-              <div class="sec-title">Active <span>Quests</span></div>
-              <button class="sec-action" onclick="openModal()">+ Add Quest</button>
+              <div class="sec-title">My <span>Challenges</span></div>
+              <button class="sec-action" onclick="goPage('challenges',document.querySelector('[onclick*=challenges]'))">Browse All</button>
             </div>
-            <div class="cat-pills" id="d-cat-pills">
-              <div class="cat-pill active" data-cat="all" onclick="filterCat(this)">All</div>
-              <div class="cat-pill" data-cat="health" onclick="filterCat(this)">💪 Health</div>
-              <div class="cat-pill" data-cat="mind" onclick="filterCat(this)">🧠 Mind</div>
-              <div class="cat-pill" data-cat="skill" onclick="filterCat(this)">🎯 Skills</div>
-              <div class="cat-pill" data-cat="social" onclick="filterCat(this)">🤝 Social</div>
-              <div class="cat-pill" data-cat="creative" onclick="filterCat(this)">🎨 Creative</div>
-            </div>
-            <div class="habits-grid" id="d-habits-grid"></div>
+            <div id="d-dash-challenges"></div>
           </div>
           <div class="right-col">
             <div class="char-panel">

@@ -183,7 +183,7 @@ function renderAll() {
   document.getElementById('d-today').textContent     = total ? Math.round((todayDone / total) * 100) + '%' : '0%';
 
   renderWeekStrip();
-  renderHabits();
+  renderDashChallenges();
   renderMiniLB();
 }
 
@@ -367,6 +367,33 @@ function _renderMiniLBRows(el, entries) {
       '<div class="mini-xp">' + r.xp.toLocaleString() + '</div>' +
     '</div>';
   }).join('');
+}
+
+function renderDashChallenges() {
+  var el = document.getElementById('d-dash-challenges');
+  if (!el) return;
+  var joined = (state.player.joinedChallenges || []);
+  var active = CHALLENGES.filter(function(c) { return joined.includes(c.id); });
+
+  if (!active.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:.88rem;padding:18px 0 8px">' +
+      'No challenges joined yet. <a href="#" onclick="goPage(\'challenges\',document.querySelector(\'[onclick*=challenges]\')); return false;" ' +
+      'style="color:var(--teal);text-decoration:none">Browse challenges →</a></div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="dash-ch-list">' +
+    active.map(function(c) {
+      return '<div class="dash-ch-card" style="border-left:4px solid ' + c.cc1 + '">' +
+        '<div class="dash-ch-icon">' + c.icon + '</div>' +
+        '<div class="dash-ch-info">' +
+          '<div class="dash-ch-name">' + c.name + '</div>' +
+          '<div class="dash-ch-desc">' + c.desc + '</div>' +
+        '</div>' +
+        '<div class="dash-ch-xp">+' + c.xp + ' XP</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
 }
 
 function renderChallenges() {

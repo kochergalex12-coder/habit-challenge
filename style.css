@@ -1661,3 +1661,13 @@ html, body {
   .pf-fc-actions { flex-direction: row; width: 100%; }
   .pf-fc-btn { flex: 1; text-align: center; }
 }
+
+/* ── Dashboard joined challenges ── */
+.dash-ch-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.dash-ch-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border-radius: 14px; padding: 14px 16px; box-shadow: var(--sh-sm); transition: box-shadow var(--t); }
+.dash-ch-card:hover { box-shadow: var(--sh-md); }
+.dash-ch-icon { font-size: 1.6rem; flex-shrink: 0; }
+.dash-ch-info { flex: 1; min-width: 0; }
+.dash-ch-name { font-family: var(--ff-title); font-weight: 700; font-size: .95rem; color: var(--ink); }
+.dash-ch-desc { font-size: .78rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-ch-xp { font-family: var(--ff-mono); font-size: .8rem; font-weight: 700; color: var(--gold); background: var(--gold-bg, #fdf3dc); border: 1px solid #f0d080; border-radius: 8px; padding: 4px 10px; white-space: nowrap; flex-shrink: 0; }
