@@ -306,19 +306,66 @@ function renderAchievements() {
 }
 
 function renderMiniLB() {
-  const data = LEADERBOARD.map(r => {
-    if (r.me) return { ...r, level:state.player.level, xp:state.player.totalXP, streak:state.player.streak };
-    return r;
-  }).sort((a,b) => b.xp - a.xp).slice(0, 5);
-  document.getElementById('d-mini-lb').innerHTML = data.map((r, i) => {
-    const rank = i + 1, rc = rank===1?'t1':rank===2?'t2':rank===3?'t3':'';
-    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
-    return `<div class="mini-lb-row ${r.me ? 'me' : ''}">
-      <div class="mini-rank ${rc}">${medal}</div>
-      ${avatarHtml(r.avatar)}
-      <div><div class="mini-name">${r.me ? 'YOU' : r.name}</div><div style="font-family:var(--ff-mono);font-size:.6rem;color:var(--muted)">Lv. ${r.level}</div></div>
-      <div class="mini-xp">${r.xp.toLocaleString()}</div>
-    </div>`;
+  var el = document.getElementById('d-mini-lb');
+  if (!el) return;
+
+  var friends = state.player.friends || [];
+
+  // Always show self immediately
+  var entries = [{
+    name:   state.player.name || 'You',
+    avatar: state.player.avatar || '🧙',
+    level:  state.player.level || 1,
+    xp:     state.player.totalXP || 0,
+    isMe:   true
+  }];
+
+  if (!friends.length) {
+    // No friends yet — just show self with a prompt
+    _renderMiniLBRows(el, entries);
+    return;
+  }
+
+  if (!window._loadFriendProfiles) {
+    _renderMiniLBRows(el, entries);
+    return;
+  }
+
+  window._loadFriendProfiles(friends).then(function(snaps) {
+    snaps.forEach(function(snap) {
+      if (!snap.exists()) return;
+      var p = snap.data().player || {};
+      entries.push({
+        name:   p.name   || 'Friend',
+        avatar: p.avatar || '🧙',
+        level:  p.level  || 1,
+        xp:     p.totalXP || 0,
+        isMe:   false
+      });
+    });
+    _renderMiniLBRows(el, entries);
+  }).catch(function() {
+    _renderMiniLBRows(el, entries);
+  });
+}
+
+function _renderMiniLBRows(el, entries) {
+  entries.sort(function(a, b) { return b.xp - a.xp; });
+  var medals = ['🥇','🥈','🥉'];
+  if (entries.length === 1 && !entries[0].isMe) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0">Add friends to see them here!</div>';
+    return;
+  }
+  el.innerHTML = entries.map(function(r, i) {
+    var medal = medals[i] || ('#' + (i + 1));
+    var rc = i === 0 ? 't1' : i === 1 ? 't2' : i === 2 ? 't3' : '';
+    return '<div class="mini-lb-row' + (r.isMe ? ' me' : '') + '">' +
+      '<div class="mini-rank ' + rc + '">' + medal + '</div>' +
+      avatarHtml(r.avatar) +
+      '<div><div class="mini-name">' + (r.isMe ? 'YOU' : r.name) + '</div>' +
+      '<div style="font-family:var(--ff-mono);font-size:.6rem;color:var(--muted)">Lv. ' + r.level + '</div></div>' +
+      '<div class="mini-xp">' + r.xp.toLocaleString() + '</div>' +
+    '</div>';
   }).join('');
 }
 
