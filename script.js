@@ -189,14 +189,179 @@ function renderAll() {
 }
 
 function renderWeekStrip() {
-  const today = new Date().getDay(), todayIdx = today === 0 ? 6 : today - 1;
-  document.getElementById('d-week-strip').innerHTML = WEEK_DAYS.map((d, i) => {
-    const isToday = i === todayIdx, done = i < todayIdx;
-    return `<div class="day-col">
-      <div class="day-name">${d}</div>
-      <div class="day-dot ${done ? 'done' : ''} ${isToday ? 'today' : ''}">${done ? '✓' : i + 1}</div>
-    </div>`;
-  }).join('');
+  const now = new Date();
+  const today = now.getDay(), todayIdx = today === 0 ? 6 : today - 1;
+  // Get Mon of this week
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - todayIdx);
+
+  document.getElementById('d-week-strip').innerHTML =
+    '<div class="week-strip-inner" onclick="openCalendarModal()" title="Open Calendar">' +
+    WEEK_DAYS.map((d, i) => {
+      const day = new Date(mon); day.setDate(mon.getDate() + i);
+      const dateStr = day.toDateString();
+      const isToday = i === todayIdx;
+      const isPast  = i < todayIdx;
+      const hasActivity = _dayHasActivity(dateStr);
+      const dotCls = isToday ? 'today' : (hasActivity ? 'done' : (isPast ? 'past' : ''));
+      const label  = hasActivity ? '✓' : day.getDate();
+      return `<div class="day-col">
+        <div class="day-name">${d}</div>
+        <div class="day-dot ${dotCls}">${label}</div>
+      </div>`;
+    }).join('') +
+    '</div>';
+}
+
+// Returns true if any challenge was completed on that dateStr
+function _dayHasActivity(dateStr) {
+  var log = state.challengeLog || {};
+  return Object.keys(log).some(function(id) {
+    var entry = log[id][dateStr];
+    return entry && entry.status === 'completed';
+  });
+}
+
+// Returns list of completed/skipped challenge names for a given dateStr
+function _dayActivity(dateStr) {
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var log    = state.challengeLog || {};
+  var completed = [], skipped = [];
+  allCh.forEach(function(c) {
+    var entry = log[c.id] && log[c.id][dateStr];
+    if (!entry) return;
+    if (entry.status === 'completed') completed.push(c);
+    if (entry.status === 'skipped')   skipped.push(c);
+  });
+  return { completed: completed, skipped: skipped };
+}
+
+/* ════ CALENDAR MODAL ════ */
+var _calYear  = new Date().getFullYear();
+var _calMonth = new Date().getMonth(); // 0-based
+
+function openCalendarModal(date) {
+  if (date) { _calYear = date.getFullYear(); _calMonth = date.getMonth(); }
+  else       { _calYear = new Date().getFullYear(); _calMonth = new Date().getMonth(); }
+
+  var existing = document.getElementById('cal-modal-overlay');
+  if (!existing) {
+    var ov = document.createElement('div');
+    ov.id = 'cal-modal-overlay';
+    ov.className = 'cal-modal-overlay';
+    ov.onclick = function(e) { if (e.target === ov) closeCalendarModal(); };
+    document.body.appendChild(ov);
+  }
+  document.getElementById('cal-modal-overlay').style.display = 'flex';
+  _renderCalModal();
+}
+
+function closeCalendarModal() {
+  var ov = document.getElementById('cal-modal-overlay');
+  if (ov) ov.style.display = 'none';
+}
+
+function _calNavMonth(delta) {
+  _calMonth += delta;
+  if (_calMonth > 11) { _calMonth = 0;  _calYear++; }
+  if (_calMonth < 0)  { _calMonth = 11; _calYear--; }
+  _renderCalModal();
+}
+
+function _renderCalModal() {
+  var ov = document.getElementById('cal-modal-overlay');
+  if (!ov) return;
+
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var now    = new Date();
+  var first  = new Date(_calYear, _calMonth, 1);
+  var last   = new Date(_calYear, _calMonth + 1, 0);
+  // Start grid on Monday
+  var startDow = first.getDay(); // 0=Sun
+  var offset   = startDow === 0 ? 6 : startDow - 1;
+  var totalCells = offset + last.getDate();
+  var rows = Math.ceil(totalCells / 7);
+
+  var cells = '';
+  for (var r = 0; r < rows; r++) {
+    cells += '<div class="cal-row">';
+    for (var col = 0; col < 7; col++) {
+      var cellIdx = r * 7 + col;
+      var dayNum  = cellIdx - offset + 1;
+      if (dayNum < 1 || dayNum > last.getDate()) {
+        cells += '<div class="cal-cell cal-cell-empty"></div>';
+      } else {
+        var d = new Date(_calYear, _calMonth, dayNum);
+        var dateStr = d.toDateString();
+        var isToday = dateStr === now.toDateString();
+        var isFuture = d > now;
+        var act = _dayActivity(dateStr);
+        var hasDone = act.completed.length > 0;
+        var hasSkip = act.skipped.length > 0;
+        var dotHtml = hasDone
+          ? '<div class="cal-dot cal-dot-done"></div>'
+          : (hasSkip ? '<div class="cal-dot cal-dot-skip"></div>' : '');
+        cells += '<div class="cal-cell' + (isToday ? ' cal-cell-today' : '') + (isFuture ? ' cal-cell-future' : '') + '" ' +
+          'onclick="' + (isFuture ? '' : '_showCalDay(\'' + dateStr + '\')') + '">' +
+          '<span class="cal-cell-num">' + dayNum + '</span>' +
+          dotHtml +
+        '</div>';
+      }
+    }
+    cells += '</div>';
+  }
+
+  ov.innerHTML =
+    '<div class="cal-modal-card">' +
+      '<button class="cal-modal-close" onclick="closeCalendarModal()">✕</button>' +
+      '<div class="cal-modal-header">' +
+        '<button class="cal-nav-btn" onclick="_calNavMonth(-1)">‹</button>' +
+        '<div class="cal-modal-title">' + MONTHS[_calMonth] + ' ' + _calYear + '</div>' +
+        '<button class="cal-nav-btn" onclick="_calNavMonth(1)">›</button>' +
+      '</div>' +
+      '<div class="cal-dow-row">' +
+        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(function(d) {
+          return '<div class="cal-dow">' + d + '</div>';
+        }).join('') +
+      '</div>' +
+      '<div class="cal-grid">' + cells + '</div>' +
+      '<div id="cal-day-detail" class="cal-day-detail"></div>' +
+    '</div>';
+}
+
+function _showCalDay(dateStr) {
+  var act  = _dayActivity(dateStr);
+  var d    = new Date(dateStr);
+  var lbl  = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  var el   = document.getElementById('cal-day-detail');
+  if (!el) return;
+
+  if (!act.completed.length && !act.skipped.length) {
+    el.innerHTML = '<div class="cal-day-hdr">' + lbl + '</div>' +
+      '<div class="cal-day-empty">No activity recorded</div>';
+    return;
+  }
+
+  var html = '<div class="cal-day-hdr">' + lbl + '</div>';
+  if (act.completed.length) {
+    html += act.completed.map(function(c) {
+      return '<div class="cal-day-item cal-day-done">' +
+        '<span class="cal-day-icon">' + c.icon + '</span>' +
+        '<span class="cal-day-name">' + c.name + '</span>' +
+        '<span class="cal-day-xp">+' + c.xp + ' XP</span>' +
+      '</div>';
+    }).join('');
+  }
+  if (act.skipped.length) {
+    html += act.skipped.map(function(c) {
+      return '<div class="cal-day-item cal-day-skip">' +
+        '<span class="cal-day-icon">' + c.icon + '</span>' +
+        '<span class="cal-day-name">' + c.name + '</span>' +
+        '<span class="cal-day-skiplbl">skipped</span>' +
+      '</div>';
+    }).join('');
+  }
+  el.innerHTML = html;
 }
 
 function filterCat(el) {
