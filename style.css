@@ -1712,3 +1712,27 @@ html, body {
 .dch-skipped { font-size:.82rem; color:var(--muted); font-style:italic; white-space:nowrap; }
 .dch-streak { font-family:var(--ff-mono); font-size:.72rem; color:var(--rose); margin-left:6px; }
 .dch-count { font-size:.72rem; opacity:.7; }
+
+/* ── Challenge Detail Modal ── */
+.ch-detail-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100;display:flex;align-items:center;justify-content:center;padding:16px; }
+.ch-detail-card { background:var(--surface);border-radius:22px;padding:36px 32px 28px;width:100%;max-width:440px;box-shadow:var(--sh-lg);position:relative;text-align:center;animation:obCardIn .25s cubic-bezier(.4,0,.2,1); }
+.chd-close { position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.1rem;color:var(--muted);cursor:pointer; }
+.chd-icon { font-size:3rem;margin-bottom:10px; }
+.chd-name { font-family:var(--ff-title);font-size:1.4rem;font-weight:900;color:var(--ink);margin-bottom:6px; }
+.chd-desc { font-size:.9rem;color:var(--muted);margin-bottom:14px;line-height:1.5; }
+.chd-pills { display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px; }
+.chd-pill { background:var(--bg);border:1.5px solid var(--border2);border-radius:8px;padding:4px 11px;font-family:var(--ff-mono);font-size:.75rem;color:var(--ink); }
+.chd-streak { font-family:var(--ff-mono);font-size:.85rem;color:var(--rose);margin-bottom:10px; }
+.chd-divider { height:1px;background:var(--border2);margin:18px 0; }
+.chd-countdown-wrap { text-align:center;padding:10px 0; }
+.chd-countdown-lbl { font-size:.78rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em; }
+.chd-countdown { font-family:var(--ff-mono);font-size:2.6rem;font-weight:700;color:var(--ink);letter-spacing:.06em; }
+.chd-status-row { margin-top:14px; }
+.chd-done-badge { background:#e8faf0;border:1.5px solid #6fcf97;color:#219150;padding:6px 16px;border-radius:10px;font-size:.85rem;font-weight:700; }
+.chd-skip-badge { background:var(--bg);border:1.5px solid var(--border2);color:var(--muted);padding:6px 16px;border-radius:10px;font-size:.85rem; }
+.chd-btns { display:flex;flex-direction:column;gap:10px; }
+.chd-btn-done { padding:14px;border-radius:13px;background:linear-gradient(135deg,var(--teal),var(--green));border:none;color:#fff;font-family:var(--ff-title);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity var(--t); }
+.chd-btn-done:hover { opacity:.88; }
+.chd-btn-skip { padding:11px;border-radius:13px;background:var(--bg);border:1.5px solid var(--border2);color:var(--muted);font-family:var(--ff-body);font-size:.88rem;font-weight:600;cursor:pointer;transition:all var(--t); }
+.chd-btn-skip:hover { border-color:var(--rose);color:var(--rose); }
+.dash-ch-card { cursor:pointer; }

@@ -2,7 +2,7 @@
 let state = {
   player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[] },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all',
-  customChallenges: [], challengeLog: {}
+  customChallenges: [], challengeLog: {}, challengeTimes: {}
 };
 
 const ICONS = ['🏃','🧘','📚','💪','💧','🥗','😴','🧠','✍️','🎯','🎨','🎸','🏊','🚴','🌿','🌅','💻','📖','🏋️','🎭','🗣️','🧩','🌱','⚡','🔥','💎','🎪','🌍'];
@@ -441,13 +441,13 @@ function renderDashChallenges() {
           '</div>';
       }
 
-      return '<div class="dash-ch-card" style="border-left:4px solid ' + (c.cc1 || '#6d3dbd') + '">' +
+      return '<div class="dash-ch-card" style="border-left:4px solid ' + (c.cc1 || '#6d3dbd') + '" onclick="openChallengeDetail(\'' + c.id + '\')">' +
         '<div class="dash-ch-icon">' + c.icon + '</div>' +
         '<div class="dash-ch-info">' +
           '<div class="dash-ch-name">' + c.name + ' ' + streakHtml + '</div>' +
           '<div class="dash-ch-desc">' + c.desc + '</div>' +
         '</div>' +
-        '<div class="dch-action">' + actionHtml + '</div>' +
+        '<div class="dch-action" onclick="event.stopPropagation()">' + actionHtml + '</div>' +
       '</div>';
     }).join('') +
   '</div>';
@@ -457,28 +457,160 @@ function checkInChallenge(id, action) {
   var allCh = CHALLENGES.concat(state.customChallenges || []);
   var c = allCh.find(function(x) { return x.id === id; });
   if (!c) return;
-  var today = new Date().toDateString();
-  if (!state.challengeLog) state.challengeLog = {};
-  if (!state.challengeLog[id]) state.challengeLog[id] = {};
-  var entry = state.challengeLog[id][today] || { status: 'pending', count: 0 };
-  var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
+
+  // 24-hour cooldown check
+  if (!state.challengeTimes) state.challengeTimes = {};
+  var times = state.challengeTimes[id] || {};
+  var lastAt = times.lastCompletedAt ? new Date(times.lastCompletedAt).getTime() : 0;
+  var cooldownMs = 24 * 60 * 60 * 1000;
+  var remaining = lastAt ? (lastAt + cooldownMs - Date.now()) : 0;
 
   if (action === 'completed') {
+    if (remaining > 0) {
+      showToast('⏳ Not yet!', 'Next entry in ' + _fmtCountdown(remaining), 'streak');
+      return;
+    }
+    var today = new Date().toDateString();
+    if (!state.challengeLog) state.challengeLog = {};
+    if (!state.challengeLog[id]) state.challengeLog[id] = {};
+    var entry = state.challengeLog[id][today] || { status: 'pending', count: 0 };
+    var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
     var newCount = entry.count + 1;
     var nowDone  = limit === 99 || newCount >= limit;
     state.challengeLog[id][today] = { status: nowDone ? 'completed' : 'pending', count: newCount };
+    // Record timestamp for 24h cooldown
+    state.challengeTimes[id] = { lastCompletedAt: new Date().toISOString() };
     grantXP(c.xp);
     renderAll();
     save();
+    // Refresh detail modal if open
+    if (_detailModalId === id) _renderDetailModal(c);
     showToast('✅ ' + c.name, '+' + c.xp + ' XP earned!', 'xp-gain');
   } else {
-    // skipped — only if not already done today
-    if (entry.status === 'completed') return;
-    state.challengeLog[id][today] = { status: 'skipped', count: entry.count };
+    var today2 = new Date().toDateString();
+    if (!state.challengeLog) state.challengeLog = {};
+    if (!state.challengeLog[id]) state.challengeLog[id] = {};
+    var entry2 = state.challengeLog[id][today2] || { status: 'pending', count: 0 };
+    if (entry2.status === 'completed') return;
+    state.challengeLog[id][today2] = { status: 'skipped', count: entry2.count };
     renderDashChallenges();
+    if (_detailModalId === id) _renderDetailModal(c);
     save();
     showToast('⏭ Skipped', c.name + ' — come back tomorrow', 'streak');
   }
+}
+
+// Format milliseconds as HH:MM:SS
+function _fmtCountdown(ms) {
+  if (ms <= 0) return '00:00:00';
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+/* ════ CHALLENGE DETAIL MODAL ════ */
+var _detailModalId = null;
+var _detailTimerInterval = null;
+
+function openChallengeDetail(id) {
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var c = allCh.find(function(x) { return x.id === id; });
+  if (!c) return;
+  _detailModalId = id;
+
+  // Create overlay if not exists
+  var existing = document.getElementById('ch-detail-overlay');
+  if (!existing) {
+    var ov = document.createElement('div');
+    ov.id = 'ch-detail-overlay';
+    ov.className = 'ch-detail-overlay';
+    ov.onclick = function(e) { if (e.target === ov) closeChallengeDetail(); };
+    document.body.appendChild(ov);
+  }
+  document.getElementById('ch-detail-overlay').style.display = 'flex';
+  _renderDetailModal(c);
+}
+
+function _renderDetailModal(c) {
+  var ov = document.getElementById('ch-detail-overlay');
+  if (!ov) return;
+
+  // Cooldown
+  var times = (state.challengeTimes || {})[c.id] || {};
+  var lastAt = times.lastCompletedAt ? new Date(times.lastCompletedAt).getTime() : 0;
+  var cooldownMs = 24 * 60 * 60 * 1000;
+  var remaining = lastAt ? Math.max(0, lastAt + cooldownMs - Date.now()) : 0;
+
+  var today = new Date().toDateString();
+  var entry = ((state.challengeLog || {})[c.id] || {})[today] || { status: 'pending', count: 0 };
+  var streak = _chStreak(c.id);
+  var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
+  var limitLbl = limit === 99 ? 'Unlimited' : limit + '× per day';
+
+  var actionHtml;
+  if (remaining > 0) {
+    actionHtml = '<div class="chd-countdown-wrap">' +
+      '<div class="chd-countdown-lbl">Next entry available in</div>' +
+      '<div class="chd-countdown" id="chd-timer">' + _fmtCountdown(remaining) + '</div>' +
+    '</div>' +
+    '<div class="chd-status-row">' +
+      (entry.status === 'completed' ? '<span class="chd-done-badge">✅ Completed today</span>' : '') +
+      (entry.status === 'skipped'   ? '<span class="chd-skip-badge">⏭ Skipped today</span>'   : '') +
+    '</div>';
+  } else {
+    actionHtml =
+      '<div class="chd-btns">' +
+        '<button class="chd-btn-done" onclick="checkInChallenge(\'' + c.id + '\',\'completed\')">' +
+          '✅ Mark as Done &nbsp;+' + c.xp + ' XP' +
+        '</button>' +
+        '<button class="chd-btn-skip" onclick="checkInChallenge(\'' + c.id + '\',\'skipped\')">' +
+          '⏭ Skip Today' +
+        '</button>' +
+      '</div>';
+  }
+
+  var durationInfo = c.isCustom
+    ? '<span class="chd-pill">📅 ' + (c.durationLabel || '') + '</span><span class="chd-pill">' + limitLbl + '</span>'
+    : '<span class="chd-pill">⚡ ' + c.xp + ' XP/day</span>';
+
+  ov.innerHTML =
+    '<div class="ch-detail-card" style="border-top:5px solid ' + (c.cc1 || '#6d3dbd') + '">' +
+      '<button class="chd-close" onclick="closeChallengeDetail()">✕</button>' +
+      '<div class="chd-icon">' + c.icon + '</div>' +
+      '<div class="chd-name">' + c.name + '</div>' +
+      '<div class="chd-desc">' + c.desc + '</div>' +
+      '<div class="chd-pills">' + durationInfo + '<span class="chd-pill">⚡ ' + c.xp + ' XP</span></div>' +
+      (streak > 0 ? '<div class="chd-streak">🔥 ' + streak + '-day streak</div>' : '') +
+      '<div class="chd-divider"></div>' +
+      actionHtml +
+    '</div>';
+
+  // Start / restart live timer
+  if (_detailTimerInterval) clearInterval(_detailTimerInterval);
+  if (remaining > 0) {
+    _detailTimerInterval = setInterval(function() {
+      var times2 = (state.challengeTimes || {})[c.id] || {};
+      var lastAt2 = times2.lastCompletedAt ? new Date(times2.lastCompletedAt).getTime() : 0;
+      var rem2 = lastAt2 ? Math.max(0, lastAt2 + cooldownMs - Date.now()) : 0;
+      var timerEl = document.getElementById('chd-timer');
+      if (!timerEl) { clearInterval(_detailTimerInterval); return; }
+      if (rem2 <= 0) {
+        clearInterval(_detailTimerInterval);
+        _renderDetailModal(c); // refresh to show Done button
+      } else {
+        timerEl.textContent = _fmtCountdown(rem2);
+      }
+    }, 1000);
+  }
+}
+
+function closeChallengeDetail() {
+  _detailModalId = null;
+  if (_detailTimerInterval) { clearInterval(_detailTimerInterval); _detailTimerInterval = null; }
+  var ov = document.getElementById('ch-detail-overlay');
+  if (ov) ov.style.display = 'none';
 }
 
 function renderChallenges() {
@@ -988,6 +1120,7 @@ window._setState = function(remoteState) {
   if (remoteState.todayCompleted)   state.todayCompleted   = remoteState.todayCompleted;
   if (remoteState.customChallenges) state.customChallenges = remoteState.customChallenges;
   if (remoteState.challengeLog)     state.challengeLog     = remoteState.challengeLog;
+  if (remoteState.challengeTimes)   state.challengeTimes   = remoteState.challengeTimes;
   renderAll();
 };
 

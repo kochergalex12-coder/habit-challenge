@@ -1023,7 +1023,7 @@
     if (!window.currentUser) return;
     setDoc(
       doc(db, 'users', window.currentUser.uid),
-      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, customChallenges: state.customChallenges || [], challengeLog: state.challengeLog || {}, updatedAt: new Date().toISOString() },
+      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, customChallenges: state.customChallenges || [], challengeLog: state.challengeLog || {}, challengeTimes: state.challengeTimes || {}, updatedAt: new Date().toISOString() },
       { merge: true }
     ).catch(function(e) { console.error('Firestore save error', e); });
   };
