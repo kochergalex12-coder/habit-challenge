@@ -50,11 +50,12 @@
     </div>
 
     <!-- Clicking the player panel navigates to the profile page -->
-    <div class="sb-player">
+    <div class="sb-player sb-player-clickable" onclick="goPage('profile',document.getElementById('nav-profile'))" title="View your profile">
       <div class="sb-avatar-row">
         <div class="sb-avatar" id="sb-avatar">🧙</div>
         <div class="sb-player-info">
           <div class="sb-player-name" id="sb-name">Novice Hero</div>
+          <div class="sb-player-class" id="sb-class">⚔️ Discipline Apprentice</div>
         </div>
       </div>
       <div class="sb-xp-bar-label">
@@ -73,7 +74,6 @@
       <button class="sb-nav-item" onclick="goPage('challenges',this)"><span class="sb-nav-icon">⚡</span> Your Challenges</button>
       <button class="sb-nav-item" onclick="goPage('group',this)" id="nav-group"><span class="sb-nav-icon">👥</span> Group Challenge <span class="sb-nav-badge" style="background:var(--violet)">LIVE</span></button>
       <button class="sb-nav-item" onclick="goPage('achievements',this)"><span class="sb-nav-icon">🎖</span> Achievements</button>
-      <button class="sb-nav-item" onclick="goPage('calendar',this)" id="nav-calendar"><span class="sb-nav-icon">📅</span> Calendar</button>
 
       <!-- ── SOCIAL ── -->
       <div class="sb-section-divider"></div>
@@ -86,7 +86,7 @@
       <div class="sb-section-divider"></div>
       <div class="sb-section-label">Account &amp; Info</div>
       <button class="sb-nav-item" onclick="goPage('profile',this)" id="nav-profile"><span class="sb-nav-icon">👤</span> Profile</button>
-      <button class="sb-nav-item" onclick="goPage('settings',this)" id="nav-settings"><span class="sb-nav-icon">⚙️</span> Settings</button>
+      <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">⚙️</span> Settings <span class="sb-nav-badge">NEW</span></button>
       <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">ℹ️</span> About</button>
       <button class="sb-nav-item sb-nav-soon" onclick="console.log('Coming soon')"><span class="sb-nav-icon">🎧</span> Support</button>
 
@@ -113,7 +113,6 @@
     <!-- TOPBAR -->
     <div id="topbar">
       <div class="topbar-title" id="topbar-title">My <span>Quests</span></div>
-      <div class="tb-week-cal" id="tb-week-cal" onclick="goPage('calendar', document.getElementById('nav-calendar'))" title="Open calendar"></div>
       <div class="topbar-right">
         <div class="tb-badge tb-streak">🔥 <span id="tb-streak">0</span> days</div>
         <div class="tb-badge tb-xp">⚡ <span id="tb-xp">0</span> XP</div>
@@ -127,25 +126,64 @@
 
       <!-- QUESTS PAGE -->
       <div class="page active" id="page-quests">
-        <div class="dash-section-hdr">
-          <div class="dash-section-title">⚔️ Solo Challenges</div>
-        </div>
-        <div class="habits-grid" id="d-habits-grid"></div>
-
-        <div class="dash-section-hdr" style="margin-top:28px">
-          <div class="dash-section-title">👥 Group Challenges</div>
-        </div>
-        <div id="d-group-dash" class="habits-grid">
-          <div class="dash-empty">Join a group to see group challenges here.</div>
+        <div class="page-grid">
+          <div>
+            <div class="week-strip" id="d-week-strip"></div>
+            <div class="stats-row">
+              <div class="stat-card" style="--s-c1:#c9820a;--s-c2:#c4374a"><div class="stat-val" id="d-total-xp">0</div><div class="stat-lbl">Total XP</div></div>
+              <div class="stat-card" style="--s-c1:#c4374a;--s-c2:#6d3dbd"><div class="stat-val" id="d-streak">0</div><div class="stat-lbl">Best Streak</div></div>
+              <div class="stat-card" style="--s-c1:#0d8a7f;--s-c2:#1a8a5a"><div class="stat-val" id="d-completed">0</div><div class="stat-lbl">Quests Done</div></div>
+              <div class="stat-card" style="--s-c1:#1a8a5a;--s-c2:#0d8a7f"><div class="stat-val" id="d-today">0%</div><div class="stat-lbl">Today</div></div>
+            </div>
+            <div class="sec-hdr">
+              <div class="sec-title">Active <span>Quests</span></div>
+              <button class="sec-action" onclick="openModal()">+ Add Quest</button>
+            </div>
+            <div class="cat-pills" id="d-cat-pills">
+              <div class="cat-pill active" data-cat="all" onclick="filterCat(this)">All</div>
+              <div class="cat-pill" data-cat="health" onclick="filterCat(this)">💪 Health</div>
+              <div class="cat-pill" data-cat="mind" onclick="filterCat(this)">🧠 Mind</div>
+              <div class="cat-pill" data-cat="skill" onclick="filterCat(this)">🎯 Skills</div>
+              <div class="cat-pill" data-cat="social" onclick="filterCat(this)">🤝 Social</div>
+              <div class="cat-pill" data-cat="creative" onclick="filterCat(this)">🎨 Creative</div>
+            </div>
+            <div class="habits-grid" id="d-habits-grid"></div>
+          </div>
+          <div class="right-col">
+            <div class="char-panel">
+              <div class="char-panel-avatar" id="d-avatar" title="Click to change">🧙</div>
+              <div class="char-panel-name" id="d-name">Novice Hero</div>
+              <div class="char-panel-class" id="d-class">⚔️ Discipline Apprentice</div>
+              <div class="cp-xp-label"><span>Experience</span><span id="d-xp-label">0 / 100</span></div>
+              <div class="cp-xp-track"><div class="cp-xp-fill" id="d-xp-bar" style="width:0%"></div></div>
+              <div class="cp-level">
+                <div class="level-ring">
+                  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border2)" stroke-width="4"/>
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="url(#lvlG)" stroke-width="4" stroke-dasharray="163.4" id="d-level-arc" stroke-dashoffset="163.4" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+                    <defs><linearGradient id="lvlG" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#c9820a"/><stop offset="100%" stop-color="#c4374a"/></linearGradient></defs>
+                  </svg>
+                  <div class="level-num" id="d-level">1</div>
+                </div>
+                <div class="level-lbl">Level</div>
+              </div>
+              <div class="cp-stats">
+                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--rose)" id="d-cp-streak">0</div><div class="cp-stat-lbl">Streak</div></div>
+                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--teal)" id="d-cp-quests">0</div><div class="cp-stat-lbl">Quests</div></div>
+                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--green)" id="d-cp-today">0</div><div class="cp-stat-lbl">Today</div></div>
+              </div>
+            </div>
+            <div class="mini-lb">
+              <div class="mini-lb-hdr">🏆 Top Rankings</div>
+              <div id="d-mini-lb"></div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- CHALLENGES PAGE -->
       <div class="page" id="page-challenges">
-        <div class="sec-hdr">
-          <div class="sec-title">⚡ Active <span>Challenges</span></div>
-          <button class="sec-action" onclick="openModal()">+ Add Quest</button>
-        </div>
+        <div class="sec-hdr"><div class="sec-title">⚡ Active <span>Challenges</span></div></div>
         <div class="challenges-grid" id="d-challenges-grid"></div>
       </div>
 
@@ -165,16 +203,6 @@
           </div>
         </div>
         <div class="ach-grid" id="d-ach-grid"></div>
-      </div>
-
-      <!-- CALENDAR PAGE -->
-      <div class="page" id="page-calendar">
-        <div class="cal-header">
-          <button class="cal-nav-btn" onclick="calPrevMonth()">‹</button>
-          <div class="cal-month-title" id="cal-month-title"></div>
-          <button class="cal-nav-btn" onclick="calNextMonth()">›</button>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
       </div>
 
       <!-- SUBSCRIPTION PAGE -->
@@ -318,19 +346,6 @@
       </div>
 
       <!-- PROFILE PAGE -->
-      <!-- SETTINGS PAGE -->
-      <div class="page" id="page-settings">
-        <div class="settings-card">
-          <div class="settings-section-title">👤 Display Name</div>
-          <p class="settings-hint">This is the name other players see. Choose something unique.</p>
-          <div class="settings-row">
-            <input class="settings-input" id="settings-name-input" placeholder="Enter your name" maxlength="24" autocomplete="off" spellcheck="false"/>
-            <button class="settings-save-btn" onclick="saveSettingsName()">Save</button>
-          </div>
-          <div id="settings-name-status" style="display:none;font-size:.82rem;font-weight:600;margin-top:8px"></div>
-        </div>
-      </div>
-
       <div class="page" id="page-profile">
 
         <!-- Hero card: avatar + name + class + joined date -->
@@ -825,18 +840,6 @@
 
     </div><!-- /content -->
   </div><!-- /main -->
-
-  <!-- NOTIFICATION PANEL -->
-  <div id="notif-fab" onclick="toggleNotifPanel()" title="Notifications">
-    🔔 <span class="notif-badge" id="notif-badge" style="display:none">0</span>
-  </div>
-  <div id="notif-panel" style="display:none">
-    <div class="notif-panel-hdr">Notifications</div>
-    <div id="notif-panel-body" class="notif-panel-body">
-      <div class="notif-empty">No notifications</div>
-    </div>
-  </div>
-
 </div><!-- /app -->
 
 <!-- MODAL -->
@@ -966,50 +969,13 @@
   };
 
   // ── FIRESTORE SAVE ────────────────────────────────────────────────────────
-  // Only write to Firestore after we've confirmed the user's data has loaded from Firestore.
-  // This prevents local empty-state from overwriting saved data on page refresh.
-  window._firestoreReady = false;
-
   window._fbSave = function(state) {
-    if (!window.currentUser || !window._firestoreReady) return;
-    // Use dotted paths so we NEVER overwrite friends/friendCode/friendRequests
-    // — those are managed separately by the social functions.
-    var p = state.player;
-    var update = {
-      'player.name':            p.name,
-      'player.avatar':          p.avatar,
-      'player.level':           p.level,
-      'player.xp':              p.xp,
-      'player.xpToNext':        p.xpToNext,
-      'player.totalXP':         p.totalXP,
-      'player.streak':          p.streak,
-      'player.bestStreak':      p.bestStreak,
-      'player.totalCompleted':  p.totalCompleted,
-      'player.joinedChallenges':p.joinedChallenges || [],
-      'player.lastActiveDate':  p.lastActiveDate,
-      'player.joinDate':        p.joinDate,
-      'player.xpLog':           p.xpLog || [],
-      'player.hasOnboarded':    p.hasOnboarded,
-      'habits':                 state.habits,
-      'todayCompleted':         state.todayCompleted,
-      'updatedAt':              new Date().toISOString()
-    };
-    updateDoc(doc(db, 'users', window.currentUser.uid), update)
-      .catch(function() {
-        // Doc doesn't exist yet (new user) — create it
-        setDoc(doc(db, 'users', window.currentUser.uid),
-          { player: p, habits: state.habits, todayCompleted: state.todayCompleted },
-          { merge: true });
-      });
-  };
-
-  // Safe single-field update using dotted path (won't overwrite other fields)
-  window._fbUpdateField = function(field, value) {
     if (!window.currentUser) return;
-    var update = {};
-    update[field] = value;
-    updateDoc(doc(db, 'users', window.currentUser.uid), update)
-      .catch(function(e) { console.error('Field update error', e); });
+    setDoc(
+      doc(db, 'users', window.currentUser.uid),
+      { player: state.player, habits: state.habits, todayCompleted: state.todayCompleted, updatedAt: new Date().toISOString() },
+      { merge: true }
+    ).catch(function(e) { console.error('Firestore save error', e); });
   };
 
   // ── GROUP FUNCTIONS ───────────────────────────────────────────────────────
@@ -1412,29 +1378,25 @@
       // Real-time listener for this user's personal state (habits, XP, etc.)
       if (window._userUnsub) window._userUnsub();
       window._userUnsub = onSnapshot(doc(db, 'users', user.uid), function(snap) {
-        // Mark Firestore as loaded — safe to write from now on
-        window._firestoreReady = true;
         if (snap.exists() && window._setState) window._setState(snap.data());
       });
 
-      // Ensure friend code is generated and saved — only update that one field,
-      // never overwrite the whole state (which would erase XP/quests on a fresh browser).
+      // Ensure friend code is generated and saved to Firestore on every sign-in.
       if (window.getFriendCode) {
-        var _fc = window.getFriendCode();
-        updateDoc(doc(db, 'users', user.uid), { 'player.friendCode': _fc })
-          .catch(function() {
-            // Doc doesn't exist yet (brand new user) — create it with just the code
-            setDoc(doc(db, 'users', user.uid), { player: { friendCode: _fc } }, { merge: true });
-          });
+        window.getFriendCode();
+        if (window.save) window.save();
       }
 
-      // Sync mutual friendships using updateDoc (dotted path) so we never overwrite other fields.
+      // Sync mutual friendships: find anyone who has us in their friends and add them back.
       getDocs(query(collection(db, 'users'), where('player.friends', 'array-contains', user.uid)))
         .then(function(snap) {
           snap.docs.forEach(function(d) {
             if (d.id === user.uid) return;
-            updateDoc(doc(db, 'users', user.uid), { 'player.friends': arrayUnion(d.id) })
-              .catch(function() {});
+            // Add them to our friends in Firestore (no-op if already there)
+            setDoc(doc(db, 'users', user.uid),
+              { player: { friends: arrayUnion(d.id) } },
+              { merge: true }
+            );
           });
         })
         .catch(function() {});
@@ -1461,8 +1423,7 @@
       signInBtn.onclick = function() { window.signInWithGoogle(); };
       signOutBtn.style.display = 'none';
 
-      // Clean up Firestore listener and reset ready flag
-      window._firestoreReady = false;
+      // Clean up Firestore listener
       if (window._userUnsub) { window._userUnsub(); window._userUnsub = null; }
 
       // Update group page if it's visible
