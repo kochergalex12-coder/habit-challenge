@@ -453,51 +453,12 @@ function renderDashChallenges() {
   '</div>';
 }
 
-function checkInChallenge(id, action) {
-  var allCh = CHALLENGES.concat(state.customChallenges || []);
-  var c = allCh.find(function(x) { return x.id === id; });
-  if (!c) return;
-
-  // 24-hour cooldown check
-  if (!state.challengeTimes) state.challengeTimes = {};
-  var times = state.challengeTimes[id] || {};
-  var lastAt = times.lastCompletedAt ? new Date(times.lastCompletedAt).getTime() : 0;
-  var cooldownMs = 24 * 60 * 60 * 1000;
-  var remaining = lastAt ? (lastAt + cooldownMs - Date.now()) : 0;
-
-  if (action === 'completed') {
-    if (remaining > 0) {
-      showToast('⏳ Not yet!', 'Next entry in ' + _fmtCountdown(remaining), 'streak');
-      return;
-    }
-    var today = new Date().toDateString();
-    if (!state.challengeLog) state.challengeLog = {};
-    if (!state.challengeLog[id]) state.challengeLog[id] = {};
-    var entry = state.challengeLog[id][today] || { status: 'pending', count: 0 };
-    var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
-    var newCount = entry.count + 1;
-    var nowDone  = limit === 99 || newCount >= limit;
-    state.challengeLog[id][today] = { status: nowDone ? 'completed' : 'pending', count: newCount };
-    // Record timestamp for 24h cooldown
-    state.challengeTimes[id] = { lastCompletedAt: new Date().toISOString() };
-    grantXP(c.xp);
-    renderAll();
-    save();
-    // Refresh detail modal if open
-    if (_detailModalId === id) _renderDetailModal(c);
-    showToast('✅ ' + c.name, '+' + c.xp + ' XP earned!', 'xp-gain');
-  } else {
-    var today2 = new Date().toDateString();
-    if (!state.challengeLog) state.challengeLog = {};
-    if (!state.challengeLog[id]) state.challengeLog[id] = {};
-    var entry2 = state.challengeLog[id][today2] || { status: 'pending', count: 0 };
-    if (entry2.status === 'completed') return;
-    state.challengeLog[id][today2] = { status: 'skipped', count: entry2.count };
-    renderDashChallenges();
-    if (_detailModalId === id) _renderDetailModal(c);
-    save();
-    showToast('⏭ Skipped', c.name + ' — come back tomorrow', 'streak');
-  }
+// Returns ms until local midnight (00:00:00 next day)
+function _msUntilMidnight() {
+  var now = new Date();
+  var midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight.getTime() - now.getTime();
 }
 
 // Format milliseconds as HH:MM:SS
@@ -508,6 +469,40 @@ function _fmtCountdown(ms) {
   var m = Math.floor((s % 3600) / 60);
   var sec = s % 60;
   return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+function checkInChallenge(id, action) {
+  var allCh = CHALLENGES.concat(state.customChallenges || []);
+  var c = allCh.find(function(x) { return x.id === id; });
+  if (!c) return;
+  var today = new Date().toDateString();
+  if (!state.challengeLog) state.challengeLog = {};
+  if (!state.challengeLog[id]) state.challengeLog[id] = {};
+  var entry = state.challengeLog[id][today] || { status: 'pending', count: 0 };
+  var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
+
+  if (action === 'completed') {
+    // Block if already hit today's limit
+    if (entry.status === 'completed' || (limit !== 99 && entry.count >= limit)) {
+      showToast('⏳ Not yet!', 'Next entry at midnight', 'streak');
+      return;
+    }
+    var newCount = entry.count + 1;
+    var nowDone  = limit === 99 || newCount >= limit;
+    state.challengeLog[id][today] = { status: nowDone ? 'completed' : 'pending', count: newCount };
+    grantXP(c.xp);
+    renderAll();
+    save();
+    if (_detailModalId === id) _renderDetailModal(c);
+    showToast('✅ ' + c.name, '+' + c.xp + ' XP earned!', 'xp-gain');
+  } else {
+    if (entry.status === 'completed') return;
+    state.challengeLog[id][today] = { status: 'skipped', count: entry.count };
+    renderDashChallenges();
+    if (_detailModalId === id) _renderDetailModal(c);
+    save();
+    showToast('⏭ Skipped', c.name + ' — come back tomorrow', 'streak');
+  }
 }
 
 /* ════ CHALLENGE DETAIL MODAL ════ */
@@ -537,33 +532,31 @@ function _renderDetailModal(c) {
   var ov = document.getElementById('ch-detail-overlay');
   if (!ov) return;
 
-  // Cooldown
-  var times = (state.challengeTimes || {})[c.id] || {};
-  var lastAt = times.lastCompletedAt ? new Date(times.lastCompletedAt).getTime() : 0;
-  var cooldownMs = 24 * 60 * 60 * 1000;
-  var remaining = lastAt ? Math.max(0, lastAt + cooldownMs - Date.now()) : 0;
-
   var today = new Date().toDateString();
   var entry = ((state.challengeLog || {})[c.id] || {})[today] || { status: 'pending', count: 0 };
-  var streak = _chStreak(c.id);
   var limit = c.isCustom ? (c.dailyLimit || 1) : 1;
   var limitLbl = limit === 99 ? 'Unlimited' : limit + '× per day';
+  var streak = _chStreak(c.id);
+  var isDone = entry.status === 'completed' || (limit !== 99 && entry.count >= limit);
+  var remaining = isDone ? _msUntilMidnight() : 0;
 
   var actionHtml;
-  if (remaining > 0) {
-    actionHtml = '<div class="chd-countdown-wrap">' +
-      '<div class="chd-countdown-lbl">Next entry available in</div>' +
-      '<div class="chd-countdown" id="chd-timer">' + _fmtCountdown(remaining) + '</div>' +
-    '</div>' +
-    '<div class="chd-status-row">' +
-      (entry.status === 'completed' ? '<span class="chd-done-badge">✅ Completed today</span>' : '') +
-      (entry.status === 'skipped'   ? '<span class="chd-skip-badge">⏭ Skipped today</span>'   : '') +
-    '</div>';
+  if (isDone || entry.status === 'skipped') {
+    actionHtml =
+      '<div class="chd-countdown-wrap">' +
+        '<div class="chd-countdown-lbl">Next entry available in</div>' +
+        '<div class="chd-countdown" id="chd-timer">' + _fmtCountdown(_msUntilMidnight()) + '</div>' +
+      '</div>' +
+      '<div class="chd-status-row">' +
+        (isDone ? '<span class="chd-done-badge">✅ Completed today</span>' : '') +
+        (entry.status === 'skipped' && !isDone ? '<span class="chd-skip-badge">⏭ Skipped today</span>' : '') +
+      '</div>';
   } else {
     actionHtml =
       '<div class="chd-btns">' +
         '<button class="chd-btn-done" onclick="checkInChallenge(\'' + c.id + '\',\'completed\')">' +
           '✅ Mark as Done &nbsp;+' + c.xp + ' XP' +
+          (limit > 1 && limit !== 99 ? ' <span style="opacity:.7;font-size:.8rem">(' + entry.count + '/' + limit + ')</span>' : '') +
         '</button>' +
         '<button class="chd-btn-skip" onclick="checkInChallenge(\'' + c.id + '\',\'skipped\')">' +
           '⏭ Skip Today' +
@@ -573,7 +566,7 @@ function _renderDetailModal(c) {
 
   var durationInfo = c.isCustom
     ? '<span class="chd-pill">📅 ' + (c.durationLabel || '') + '</span><span class="chd-pill">' + limitLbl + '</span>'
-    : '<span class="chd-pill">⚡ ' + c.xp + ' XP/day</span>';
+    : '';
 
   ov.innerHTML =
     '<div class="ch-detail-card" style="border-top:5px solid ' + (c.cc1 || '#6d3dbd') + '">' +
@@ -581,29 +574,25 @@ function _renderDetailModal(c) {
       '<div class="chd-icon">' + c.icon + '</div>' +
       '<div class="chd-name">' + c.name + '</div>' +
       '<div class="chd-desc">' + c.desc + '</div>' +
-      '<div class="chd-pills">' + durationInfo + '<span class="chd-pill">⚡ ' + c.xp + ' XP</span></div>' +
+      '<div class="chd-pills">' + durationInfo + '<span class="chd-pill">⚡ ' + c.xp + ' XP/day</span></div>' +
       (streak > 0 ? '<div class="chd-streak">🔥 ' + streak + '-day streak</div>' : '') +
       '<div class="chd-divider"></div>' +
       actionHtml +
     '</div>';
 
-  // Start / restart live timer
+  // Live countdown ticking every second
   if (_detailTimerInterval) clearInterval(_detailTimerInterval);
-  if (remaining > 0) {
-    _detailTimerInterval = setInterval(function() {
-      var times2 = (state.challengeTimes || {})[c.id] || {};
-      var lastAt2 = times2.lastCompletedAt ? new Date(times2.lastCompletedAt).getTime() : 0;
-      var rem2 = lastAt2 ? Math.max(0, lastAt2 + cooldownMs - Date.now()) : 0;
-      var timerEl = document.getElementById('chd-timer');
-      if (!timerEl) { clearInterval(_detailTimerInterval); return; }
-      if (rem2 <= 0) {
-        clearInterval(_detailTimerInterval);
-        _renderDetailModal(c); // refresh to show Done button
-      } else {
-        timerEl.textContent = _fmtCountdown(rem2);
-      }
-    }, 1000);
-  }
+  _detailTimerInterval = setInterval(function() {
+    var timerEl = document.getElementById('chd-timer');
+    if (!timerEl) { clearInterval(_detailTimerInterval); return; }
+    var rem = _msUntilMidnight();
+    if (rem <= 0) {
+      clearInterval(_detailTimerInterval);
+      _renderDetailModal(c);
+    } else {
+      timerEl.textContent = _fmtCountdown(rem);
+    }
+  }, 1000);
 }
 
 function closeChallengeDetail() {
