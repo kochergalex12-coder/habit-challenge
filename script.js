@@ -24,12 +24,46 @@ const DEFAULT_HABITS = [
 ];
 
 const CHALLENGES = [
-  { id:'c1', name:'30-Day Detox',       desc:'No social media for 30 days',         icon:'📵', badge:'EPIC',   cc1:'rgba(109,61,189,.06)', g1:'#6d3dbd', g2:'#c4374a', xp:500, participants:1247, progress:60, diffCls:'diff-epic'   },
-  { id:'c2', name:'Week Warrior',       desc:'Train 7 days in a row',               icon:'💪', badge:'HARD',   cc1:'rgba(196,55,74,.06)',  g1:'#c4374a', g2:'#c47028', xp:200, participants:3821, progress:40, diffCls:'diff-hard'   },
-  { id:'c3', name:'Book Marathon',      desc:'Read 4 books in 30 days',             icon:'📚', badge:'MEDIUM', cc1:'rgba(201,130,10,.06)', g1:'#c9820a', g2:'#0d8a7f', xp:150, participants:892,  progress:25, diffCls:'diff-medium' },
-  { id:'c4', name:'Meditation Master',  desc:'Meditate every day for 14 days',      icon:'🧘', badge:'EASY',   cc1:'rgba(13,138,127,.06)', g1:'#0d8a7f', g2:'#1a8a5a', xp:100, participants:5634, progress:70, diffCls:'diff-easy'   },
-  { id:'c5', name:'Hydration Hero',     desc:'2L water daily for 21 days',          icon:'💧', badge:'EASY',   cc1:'rgba(26,138,90,.06)',  g1:'#1a8a5a', g2:'#0d8a7f', xp:80,  participants:8201, progress:55, diffCls:'diff-easy'   },
-  { id:'c6', name:'Code & Conquer',     desc:'Code every day for 14 days',          icon:'💻', badge:'HARD',   cc1:'rgba(109,61,189,.06)', g1:'#6d3dbd', g2:'#c4374a', xp:300, participants:2103, progress:35, diffCls:'diff-hard'   },
+  // ── HEALTH ──────────────────────────────────────────────────────────────────
+  { id:'c1',  cat:'health',   name:'Week Warrior',       desc:'Train every day for 7 days in a row',            icon:'💪', badge:'HARD',   cc1:'rgba(196,55,74,.06)',   g1:'#c4374a', g2:'#c47028', xp:200,  participants:3821, progress:40, diffCls:'diff-hard'   },
+  { id:'c2',  cat:'health',   name:'Hydration Hero',     desc:'Drink 2L of water daily for 21 days',            icon:'💧', badge:'EASY',   cc1:'rgba(26,138,90,.06)',   g1:'#1a8a5a', g2:'#0d8a7f', xp:80,   participants:8201, progress:55, diffCls:'diff-easy'   },
+  { id:'c3',  cat:'health',   name:'Morning Runner',     desc:'Run every morning for 21 days straight',         icon:'🏃', badge:'HARD',   cc1:'rgba(13,138,127,.06)',  g1:'#0d8a7f', g2:'#059669', xp:250,  participants:2103, progress:35, diffCls:'diff-hard'   },
+  { id:'c4',  cat:'health',   name:'Cold Shower Hero',   desc:'Take a cold shower every day for 30 days',       icon:'🚿', badge:'MEDIUM', cc1:'rgba(0,168,204,.06)',   g1:'#00a8cc', g2:'#0d8a7f', xp:150,  participants:1540, progress:30, diffCls:'diff-medium' },
+  { id:'c5',  cat:'health',   name:'10K Steps',          desc:'Walk 10,000 steps every day for 30 days',        icon:'👟', badge:'EASY',   cc1:'rgba(5,150,105,.06)',   g1:'#059669', g2:'#1a8a5a', xp:100,  participants:6300, progress:60, diffCls:'diff-easy'   },
+  { id:'c6',  cat:'health',   name:'Sleep Champion',     desc:'Sleep 8 hours every night for 14 days',          icon:'😴', badge:'EASY',   cc1:'rgba(109,61,189,.06)',  g1:'#6d3dbd', g2:'#8b5cf6', xp:80,   participants:4100, progress:50, diffCls:'diff-easy'   },
+  { id:'c7',  cat:'health',   name:'No Sugar',           desc:'Cut out sugar completely for 21 days',           icon:'🍎', badge:'HARD',   cc1:'rgba(196,112,40,.06)',  g1:'#c47028', g2:'#c9820a', xp:220,  participants:890,  progress:25, diffCls:'diff-hard'   },
+  { id:'c8',  cat:'health',   name:'Fitness Beast',      desc:'Work out 5 days a week for 6 weeks',             icon:'🏋️', badge:'EPIC',   cc1:'rgba(196,55,74,.06)',   g1:'#c4374a', g2:'#6d3dbd', xp:500,  participants:710,  progress:20, diffCls:'diff-epic'   },
+  // ── MIND ────────────────────────────────────────────────────────────────────
+  { id:'c9',  cat:'mind',     name:'30-Day Detox',       desc:'No social media for 30 days',                    icon:'📵', badge:'EPIC',   cc1:'rgba(109,61,189,.06)',  g1:'#6d3dbd', g2:'#c4374a', xp:500,  participants:1247, progress:60, diffCls:'diff-epic'   },
+  { id:'c10', cat:'mind',     name:'Meditation Master',  desc:'Meditate every single day for 14 days',          icon:'🧘', badge:'EASY',   cc1:'rgba(13,138,127,.06)',  g1:'#0d8a7f', g2:'#1a8a5a', xp:100,  participants:5634, progress:70, diffCls:'diff-easy'   },
+  { id:'c11', cat:'mind',     name:'Gratitude Journal',  desc:'Write 3 gratitudes every day for 30 days',       icon:'📝', badge:'EASY',   cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#c47028', xp:80,   participants:3200, progress:65, diffCls:'diff-easy'   },
+  { id:'c12', cat:'mind',     name:'Digital Sunset',     desc:'No screens after 9pm for 21 days',               icon:'🌙', badge:'MEDIUM', cc1:'rgba(109,61,189,.06)',  g1:'#6d3dbd', g2:'#00a8cc', xp:150,  participants:1800, progress:40, diffCls:'diff-medium' },
+  { id:'c13', cat:'mind',     name:'Brain Training',     desc:'Solve a puzzle or brain game every day for 14 days', icon:'🧩', badge:'EASY', cc1:'rgba(139,92,246,.06)', g1:'#8b5cf6', g2:'#6d3dbd', xp:80, participants:2900, progress:55, diffCls:'diff-easy'   },
+  { id:'c14', cat:'mind',     name:'Journaling Habit',   desc:'Write in your journal every day for 30 days',    icon:'✍️', badge:'EASY',   cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#0d8a7f', xp:80,   participants:4200, progress:60, diffCls:'diff-easy'   },
+  { id:'c15', cat:'mind',     name:'Mindful Mornings',   desc:'Spend 10 min in silence every morning for 21 days', icon:'🌅', badge:'MEDIUM', cc1:'rgba(196,112,40,.06)', g1:'#c47028', g2:'#6d3dbd', xp:130, participants:2100, progress:45, diffCls:'diff-medium' },
+  // ── EDUCATION & SKILLS ──────────────────────────────────────────────────────
+  { id:'c16', cat:'skill',    name:'Book Marathon',      desc:'Read 4 books in 30 days',                        icon:'📚', badge:'MEDIUM', cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#0d8a7f', xp:150,  participants:892,  progress:25, diffCls:'diff-medium' },
+  { id:'c17', cat:'skill',    name:'Code & Conquer',     desc:'Write code every single day for 14 days',        icon:'💻', badge:'HARD',   cc1:'rgba(109,61,189,.06)',  g1:'#6d3dbd', g2:'#c4374a', xp:300,  participants:2103, progress:35, diffCls:'diff-hard'   },
+  { id:'c18', cat:'skill',    name:'Language Sprint',    desc:'Learn a new language 15 min/day for 30 days',    icon:'🌍', badge:'MEDIUM', cc1:'rgba(13,138,127,.06)',  g1:'#0d8a7f', g2:'#c9820a', xp:180,  participants:1560, progress:30, diffCls:'diff-medium' },
+  { id:'c19', cat:'skill',    name:'Online Course',      desc:'Complete an online course within 30 days',       icon:'🎓', badge:'HARD',   cc1:'rgba(196,55,74,.06)',   g1:'#c4374a', g2:'#c9820a', xp:280,  participants:980,  progress:20, diffCls:'diff-hard'   },
+  { id:'c20', cat:'skill',    name:'Skill Builder',      desc:'Practice a chosen skill 30 min/day for 21 days', icon:'🎯', badge:'MEDIUM', cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#6d3dbd', xp:150,  participants:2200, progress:40, diffCls:'diff-medium' },
+  { id:'c21', cat:'skill',    name:'Financial Tracker',  desc:'Track every single expense for 30 days',         icon:'💰', badge:'EASY',   cc1:'rgba(26,138,90,.06)',   g1:'#1a8a5a', g2:'#c9820a', xp:100,  participants:3400, progress:50, diffCls:'diff-easy'   },
+  { id:'c22', cat:'skill',    name:'Reading Streak',     desc:'Read at least 20 minutes every day for 30 days', icon:'📖', badge:'EASY',   cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#1a8a5a', xp:80,   participants:4100, progress:55, diffCls:'diff-easy'   },
+  { id:'c23', cat:'skill',    name:'Public Speaker',     desc:'Give 5 presentations or speeches in 30 days',    icon:'🗣️', badge:'HARD',   cc1:'rgba(196,55,74,.06)',   g1:'#c4374a', g2:'#8b5cf6', xp:350,  participants:540,  progress:15, diffCls:'diff-hard'   },
+  // ── SOCIAL ──────────────────────────────────────────────────────────────────
+  { id:'c24', cat:'social',   name:'Kindness Quest',     desc:'Do 1 random act of kindness every day for 21 days', icon:'🤝', badge:'EASY', cc1:'rgba(244,114,182,.06)', g1:'#f472b6', g2:'#c4374a', xp:80, participants:3100, progress:60, diffCls:'diff-easy'   },
+  { id:'c25', cat:'social',   name:'Compliment Daily',   desc:'Give 1 sincere compliment every day for 14 days', icon:'💬', badge:'EASY',  cc1:'rgba(13,138,127,.06)',  g1:'#0d8a7f', g2:'#f472b6', xp:80,   participants:2700, progress:65, diffCls:'diff-easy'   },
+  { id:'c26', cat:'social',   name:'Network Builder',    desc:'Meet or connect with 3 new people a week for 4 weeks', icon:'👥', badge:'MEDIUM', cc1:'rgba(196,55,74,.06)', g1:'#c4374a', g2:'#6d3dbd', xp:160, participants:890, progress:25, diffCls:'diff-medium' },
+  { id:'c27', cat:'social',   name:'Volunteer Hero',     desc:'Volunteer at least 8 hours within 30 days',      icon:'🤲', badge:'HARD',   cc1:'rgba(13,138,127,.06)',  g1:'#0d8a7f', g2:'#1a8a5a', xp:300,  participants:540,  progress:20, diffCls:'diff-hard'   },
+  { id:'c28', cat:'social',   name:'Family First',       desc:'Have family dinner 5 nights a week for 4 weeks', icon:'🏠', badge:'MEDIUM', cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#c4374a', xp:150,  participants:1200, progress:40, diffCls:'diff-medium' },
+  { id:'c29', cat:'social',   name:'Unplug & Connect',   desc:'Spend 1 hour phone-free with someone daily for 14 days', icon:'🌿', badge:'MEDIUM', cc1:'rgba(5,150,105,.06)', g1:'#059669', g2:'#0d8a7f', xp:130, participants:1600, progress:45, diffCls:'diff-medium' },
+  // ── CREATIVE ────────────────────────────────────────────────────────────────
+  { id:'c30', cat:'creative', name:'Art Every Day',      desc:'Create something artistic every day for 30 days', icon:'🎨', badge:'MEDIUM', cc1:'rgba(244,114,182,.06)', g1:'#f472b6', g2:'#8b5cf6', xp:180, participants:1300, progress:35, diffCls:'diff-medium' },
+  { id:'c31', cat:'creative', name:'Photo Journal',      desc:'Take 1 meaningful photo every day for 30 days',  icon:'📷', badge:'EASY',   cc1:'rgba(139,92,246,.06)',  g1:'#8b5cf6', g2:'#f472b6', xp:80,   participants:3200, progress:55, diffCls:'diff-easy'   },
+  { id:'c32', cat:'creative', name:'Writing Streak',     desc:'Write at least 500 words every day for 14 days', icon:'✏️', badge:'MEDIUM', cc1:'rgba(201,130,10,.06)',  g1:'#c9820a', g2:'#8b5cf6', xp:160,  participants:1800, progress:30, diffCls:'diff-medium' },
+  { id:'c33', cat:'creative', name:'Music Practice',     desc:'Practice an instrument 20 min/day for 21 days',  icon:'🎸', badge:'MEDIUM', cc1:'rgba(109,61,189,.06)',  g1:'#6d3dbd', g2:'#f472b6', xp:160,  participants:1100, progress:35, diffCls:'diff-medium' },
+  { id:'c34', cat:'creative', name:'Passion Project',    desc:'Work on your passion project every day for 60 days', icon:'🎭', badge:'EPIC', cc1:'rgba(109,61,189,.06)', g1:'#6d3dbd', g2:'#c4374a', xp:600, participants:420,  progress:15, diffCls:'diff-epic'   },
+  { id:'c35', cat:'creative', name:'Cook Something New', desc:'Try a brand-new recipe every week for 2 months', icon:'🍳', badge:'EASY',   cc1:'rgba(196,112,40,.06)',  g1:'#c47028', g2:'#c9820a', xp:100,  participants:2100, progress:45, diffCls:'diff-easy'   },
 ];
 
 const LEADERBOARD = [
@@ -816,32 +850,65 @@ function closeChallengeDetail() {
   if (ov) ov.style.display = 'none';
 }
 
+var _chActiveCat = 'all';
+
+var CH_CATS = [
+  { id:'all',      label:'All',        icon:'⚡' },
+  { id:'health',   label:'Sport',      icon:'💪' },
+  { id:'mind',     label:'Mind',       icon:'🧠' },
+  { id:'skill',    label:'Education',  icon:'📚' },
+  { id:'social',   label:'Social',     icon:'🤝' },
+  { id:'creative', label:'Creative',   icon:'🎨' },
+];
+
+function filterChallenges(cat) {
+  _chActiveCat = cat;
+  document.querySelectorAll('.ch-cat-pill').forEach(function(el) {
+    el.classList.toggle('active', el.dataset.cat === cat);
+  });
+  renderChallenges();
+}
+
 function renderChallenges() {
-  var custom = (state.customChallenges || []);
-  var all = CHALLENGES.concat(custom);
-  document.getElementById('d-challenges-grid').innerHTML = all.map(c => {
-    const joined = state.player.joinedChallenges.includes(c.id);
-    const isCustom = !!c.isCustom;
-    const badgeHtml = isCustom
-      ? `<div class="ch-badge-d diff-custom">✨ Custom${c.dailyLimit > 1 ? ' · ' + (c.dailyLimit === 99 ? '∞' : c.dailyLimit) + '×/day' : ''}</div>`
-      : `<div class="ch-badge-d ${c.diffCls}">${c.icon} ${c.badge}</div>`;
-    const durationHtml = isCustom
-      ? `<div class="reward-chip" style="background:var(--teal-bg);border-color:var(--teal-br);color:var(--teal)">📅 ${c.durationLabel}</div>`
+  var custom  = (state.customChallenges || []);
+  var preset  = _chActiveCat === 'all'
+    ? CHALLENGES
+    : CHALLENGES.filter(function(c) { return c.cat === _chActiveCat; });
+  // Custom challenges only visible in All or their own section
+  var visible = _chActiveCat === 'all' ? preset.concat(custom) : preset;
+
+  // Category tab bar
+  var tabBar = '<div class="cat-pills ch-cat-bar">' +
+    CH_CATS.map(function(c) {
+      return '<button class="cat-pill ch-cat-pill' + (c.id === _chActiveCat ? ' active' : '') + '" ' +
+        'data-cat="' + c.id + '" onclick="filterChallenges(\'' + c.id + '\')">' +
+        c.icon + ' ' + c.label + '</button>';
+    }).join('') +
+  '</div>';
+
+  var cards = visible.map(function(c) {
+    var joined   = state.player.joinedChallenges.includes(c.id);
+    var isCustom = !!c.isCustom;
+    var badgeHtml = isCustom
+      ? '<div class="ch-badge-d diff-custom">✨ Custom' + (c.dailyLimit > 1 ? ' · ' + (c.dailyLimit === 99 ? '∞' : c.dailyLimit) + '×/day' : '') + '</div>'
+      : '<div class="ch-badge-d ' + c.diffCls + '">' + c.icon + ' ' + c.badge + '</div>';
+    var durationHtml = isCustom
+      ? '<div class="reward-chip" style="background:var(--teal-bg);border-color:var(--teal-br);color:var(--teal)">📅 ' + c.durationLabel + '</div>'
       : '';
-    return `<div class="challenge-card" style="--cc1:${c.cc1 || '#6d3dbd'}">
-      ${badgeHtml}
-      <div class="ch-icon">${c.icon}</div>
-      <div class="ch-name">${c.name}</div>
-      <div class="ch-desc">${c.desc}</div>
-      <div class="ch-rewards">
-        <div class="reward-chip">⚡ ${c.xp} XP</div>
-        ${durationHtml}
-      </div>
-      ${!isCustom ? `<div class="ch-bar"><div class="ch-bar-fill" style="width:${joined ? c.progress : 0}%;--cg1:${c.g1};--cg2:${c.g2}"></div></div>` : ''}
-      <button class="ch-join-btn ${joined ? 'joined' : ''}" onclick="joinChallenge('${c.id}',this)">${joined ? '✓ Joined — Quit?' : '⚡ Join Challenge'}</button>
-      ${isCustom ? `<button class="ch-delete-btn" onclick="deleteCustomChallenge('${c.id}')">🗑 Remove</button>` : ''}
-    </div>`;
+    return '<div class="challenge-card" style="--cc1:' + (c.cc1 || '#6d3dbd') + '">' +
+      badgeHtml +
+      '<div class="ch-icon">' + c.icon + '</div>' +
+      '<div class="ch-name">' + c.name + '</div>' +
+      '<div class="ch-desc">' + c.desc + '</div>' +
+      '<div class="ch-rewards"><div class="reward-chip">⚡ ' + c.xp + ' XP</div>' + durationHtml + '</div>' +
+      (!isCustom ? '<div class="ch-bar"><div class="ch-bar-fill" style="width:' + (joined ? c.progress : 0) + '%;--cg1:' + c.g1 + ';--cg2:' + c.g2 + '"></div></div>' : '') +
+      '<button class="ch-join-btn ' + (joined ? 'joined' : '') + '" onclick="joinChallenge(\'' + c.id + '\',this)">' + (joined ? '✓ Joined — Quit?' : '⚡ Join Challenge') + '</button>' +
+      (isCustom ? '<button class="ch-delete-btn" onclick="deleteCustomChallenge(\'' + c.id + '\')">🗑 Remove</button>' : '') +
+    '</div>';
   }).join('');
+
+  var grid = document.getElementById('d-challenges-grid');
+  if (grid) grid.innerHTML = tabBar + '<div class="challenges-grid ch-inner-grid">' + cards + '</div>';
 }
 
 /* ════ CUSTOM CHALLENGES ════ */
