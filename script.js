@@ -158,6 +158,23 @@ function save() {
   if (window._fbSave) window._fbSave(state);
 }
 
+/* ════ DARK MODE ════ */
+function toggleDarkMode(on) {
+  document.body.classList.toggle('dark', on);
+  try { localStorage.setItem('hqd_darkmode', on ? '1' : '0'); } catch(e) {}
+  var cb = document.getElementById('nm-checkbox');
+  if (cb) cb.checked = on;
+}
+
+function _loadDarkMode() {
+  var saved = localStorage.getItem('hqd_darkmode');
+  var on = saved === '1';
+  document.body.classList.toggle('dark', on);
+  // Sync checkbox once profile page DOM is ready
+  var cb = document.getElementById('nm-checkbox');
+  if (cb) cb.checked = on;
+}
+
 function load() {
   try {
     const r = localStorage.getItem('hqd_v1');
@@ -171,6 +188,7 @@ function load() {
   if (state.player.name && state.player.name !== 'Novice Hero') {
     state.player.hasOnboarded = true;
   }
+  _loadDarkMode();
   checkDayReset();
 }
 
@@ -2013,6 +2031,10 @@ function renderProfilePage() {
   renderXPChart();
   var fcEl = document.getElementById('pf-friend-code');
   if (fcEl) fcEl.textContent = getFriendCode();
+
+  // Sync night mode checkbox to current state
+  var cb = document.getElementById('nm-checkbox');
+  if (cb) cb.checked = document.body.classList.contains('dark');
 }
 
 function renderXPChart() {

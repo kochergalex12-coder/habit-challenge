@@ -37,6 +37,61 @@
   --sidebar-w: 240px;
 }
 
+/* ═══ DARK MODE ═══════════════════════════════════════════════════════════ */
+body.dark {
+  --bg:        #111009;
+  --surface:   #1c1a15;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --ink:       #f0ede8;
+  --muted:     #9a9080;
+  --faint:     #3a3530;
+  --sidebar:          #0a0906;
+  --sidebar-surface:  #141210;
+  --sidebar-border:   rgba(255,255,255,0.06);
+  --gold-bg:    rgba(201,130,10,0.18);
+  --gold-br:    rgba(201,130,10,0.32);
+  --teal-bg:    rgba(13,138,127,0.18);
+  --teal-br:    rgba(13,138,127,0.32);
+  --rose-bg:    rgba(196,55,74,0.18);
+  --rose-br:    rgba(196,55,74,0.28);
+  --violet-bg:  rgba(109,61,189,0.20);
+  --violet-br:  rgba(109,61,189,0.35);
+  --green-bg:   rgba(26,138,90,0.18);
+  --green-br:   rgba(26,138,90,0.28);
+  --sh:    0 1px 4px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.28);
+  --sh-md: 0 4px 20px rgba(0,0,0,0.45), 0 8px 32px rgba(0,0,0,0.30);
+}
+/* Illustrated challenge cards have inline gradient bg — darken with overlay */
+body.dark .ch-card-illustrated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(17,16,10,0.84);
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+}
+body.dark .ch-card-body  { position: relative; z-index: 1; }
+body.dark .ch-card-art   { opacity: 0.80; }
+body.dark .ch-join-btn   { background: rgba(255,255,255,0.06); }
+/* Modals & overlays */
+body.dark .add-ch-card, body.dark .modal-card, body.dark .generic-modal-inner { background: var(--surface); }
+body.dark input, body.dark textarea, body.dark select { background: #252218; color: var(--ink); border-color: var(--border2); }
+/* Night mode toggle button */
+.nm-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; margin-top: 14px; box-shadow: var(--sh); }
+.nm-toggle-label { display: flex; flex-direction: column; gap: 3px; }
+.nm-toggle-label strong { font-size: .9rem; color: var(--ink); }
+.nm-toggle-label span   { font-size: .75rem; color: var(--muted); }
+.nm-switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+.nm-switch input { opacity: 0; width: 0; height: 0; }
+.nm-slider { position: absolute; inset: 0; background: var(--border2); border-radius: 28px; cursor: pointer; transition: background .25s; }
+.nm-slider::before { content: ''; position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; background: #fff; border-radius: 50%; transition: transform .25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.nm-switch input:checked + .nm-slider { background: var(--violet); }
+.nm-switch input:checked + .nm-slider::before { transform: translateX(24px); }
+.pf-settings-card { margin-top: 18px; }
+.pf-settings-title { font-family: var(--ff-title); font-size: .82rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
