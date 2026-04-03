@@ -432,7 +432,7 @@ function renderChallenges() {
         ${durationHtml}
       </div>
       ${!isCustom ? `<div class="ch-bar"><div class="ch-bar-fill" style="width:${joined ? c.progress : 0}%;--cg1:${c.g1};--cg2:${c.g2}"></div></div>` : ''}
-      <button class="ch-join-btn ${joined ? 'joined' : ''}" onclick="joinChallenge('${c.id}',this)">${joined ? '✓ Joined' : '⚡ Join Challenge'}</button>
+      <button class="ch-join-btn ${joined ? 'joined' : ''}" onclick="joinChallenge('${c.id}',this)">${joined ? '✓ Joined — Quit?' : '⚡ Join Challenge'}</button>
       ${isCustom ? `<button class="ch-delete-btn" onclick="deleteCustomChallenge('${c.id}')">🗑 Remove</button>` : ''}
     </div>`;
   }).join('');
@@ -531,18 +531,33 @@ function recordCustomChallenge(id) {
 }
 
 function joinChallenge(id, btn) {
-  if (state.player.joinedChallenges.includes(id)) return;
-  state.player.joinedChallenges.push(id);
   var allCh = CHALLENGES.concat(state.customChallenges || []);
   const c = allCh.find(c => c.id === id);
+  if (state.player.joinedChallenges.includes(id)) {
+    // Quit
+    state.player.joinedChallenges = state.player.joinedChallenges.filter(function(i) { return i !== id; });
+    btn.className = 'ch-join-btn';
+    btn.textContent = '⚡ Join Challenge';
+    if (!c.isCustom) {
+      var fill = btn.previousElementSibling && btn.previousElementSibling.querySelector && btn.previousElementSibling.querySelector('.ch-bar-fill');
+      if (fill) fill.style.width = '0%';
+    }
+    showToast('👋 Left Challenge', c.name, 'streak');
+    save();
+    renderDashChallenges();
+    return;
+  }
+  // Join
+  state.player.joinedChallenges.push(id);
   btn.className = 'ch-join-btn joined';
-  btn.textContent = '✓ Joined';
-  if (!c.isCustom && btn.previousElementSibling && btn.previousElementSibling.querySelector) {
-    var fill = btn.previousElementSibling.querySelector('.ch-bar-fill');
-    if (fill) fill.style.width = c.progress + '%';
+  btn.textContent = '✓ Joined — Quit?';
+  if (!c.isCustom) {
+    var fill2 = btn.previousElementSibling && btn.previousElementSibling.querySelector && btn.previousElementSibling.querySelector('.ch-bar-fill');
+    if (fill2) fill2.style.width = c.progress + '%';
   }
   showToast('⚡ Challenge Joined!', c.name + ' — good luck!', 'streak');
   save();
+  renderDashChallenges();
 }
 
 function renderLeaderboard() {
