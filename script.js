@@ -697,6 +697,8 @@ window._setState = function(remoteState) {
   if (remoteState.player)         state.player         = { ...state.player, ...remoteState.player };
   if (remoteState.habits)         state.habits         = remoteState.habits;
   if (remoteState.todayCompleted) state.todayCompleted = remoteState.todayCompleted;
+  // Persist to localStorage so data survives page refresh without waiting for Firestore
+  try { localStorage.setItem('hqd_v1', JSON.stringify(state)); } catch(e) {}
   renderAll();
 };
 
