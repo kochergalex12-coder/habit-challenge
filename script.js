@@ -1325,6 +1325,8 @@ window._setState = function(remoteState) {
   if (remoteState.challengeLog)     state.challengeLog     = remoteState.challengeLog;
   if (remoteState.challengeTimes)   state.challengeTimes   = remoteState.challengeTimes;
   renderAll();
+  // Re-run after renderAll so group habits (managed by Firebase, not _setState) are included
+  renderDashChallenges();
 };
 
 // Group functions — implementation lives in the Firebase module (index.html),
@@ -1354,6 +1356,7 @@ goPage = function(page, btn) {
   if (page === 'worldmap') {
     document.getElementById('topbar-title').innerHTML = '🗺️ <span style="color:var(--teal)">World Map</span>';
   }
+  if (page === 'quests')     renderDashChallenges();
   if (page === 'group')      renderGroupPage();
   if (page === 'profile')    renderProfilePage();
   if (page === 'social')     renderSocialPage();
