@@ -336,13 +336,20 @@
             <div id="d-dash-challenges"></div>
           </div>
           <div class="right-col">
-            <div class="char-panel">
-              <div class="char-panel-avatar" id="d-avatar" title="Click to change">🧙</div>
-              <div class="char-panel-name" id="d-name">Novice Hero</div>
-              <div class="char-panel-class" id="d-class">⚔️ Discipline Apprentice</div>
-              <div class="cp-xp-label"><span>Experience</span><span id="d-xp-label">0 / 100</span></div>
-              <div class="cp-xp-track"><div class="cp-xp-fill" id="d-xp-bar" style="width:0%"></div></div>
-              <div class="cp-level">
+            <div class="char-panel" id="char-panel">
+              <button class="cp-cust-btn" onclick="openCardCustomizer()" title="Customize card">⚙</button>
+              <div id="cp-sec-avatar">
+                <div class="char-panel-avatar" id="d-avatar" title="Click to change">🧙</div>
+              </div>
+              <div id="cp-sec-name">
+                <div class="char-panel-name" id="d-name">Novice Hero</div>
+                <div class="char-panel-class" id="d-class"></div>
+              </div>
+              <div id="cp-sec-xp">
+                <div class="cp-xp-label"><span>Experience</span><span id="d-xp-label">0 / 100</span></div>
+                <div class="cp-xp-track"><div class="cp-xp-fill" id="d-xp-bar" style="width:0%"></div></div>
+              </div>
+              <div id="cp-sec-level" class="cp-level">
                 <div class="level-ring">
                   <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border2)" stroke-width="4"/>
@@ -353,11 +360,8 @@
                 </div>
                 <div class="level-lbl">Level</div>
               </div>
-              <div class="cp-stats">
-                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--rose)" id="d-cp-streak">0</div><div class="cp-stat-lbl">Streak</div></div>
-                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--teal)" id="d-cp-quests">0</div><div class="cp-stat-lbl">Quests</div></div>
-                <div class="cp-stat"><div class="cp-stat-val" style="color:var(--green)" id="d-cp-today">0</div><div class="cp-stat-lbl">Today</div></div>
-              </div>
+              <div id="cp-sec-stats" class="cp-stats"></div>
+              <div id="cp-sec-ach" class="cp-ach-row" style="display:none"></div>
             </div>
             <div class="mini-lb">
               <div class="mini-lb-hdr">🏆 Friends</div>
@@ -1719,5 +1723,25 @@
     }
   });
 </script>
+
+<!-- Card Customizer Modal -->
+<div class="modal-overlay" id="cp-modal" onclick="if(event.target===this)closeCardCustomizer()">
+  <div class="modal" style="max-width:440px;max-height:82vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeCardCustomizer()">✕</button>
+    <div class="modal-title">✨ Customize Card</div>
+    <div class="cust-sec-lbl">Background</div>
+    <div class="cp-bg-grid" id="cp-bg-grid"></div>
+    <div class="cust-sec-lbl" style="margin-top:18px">Show / Hide Sections</div>
+    <div id="cp-toggle-list"></div>
+    <div class="cust-sec-lbl" style="margin-top:18px">Progress Stats <span style="color:var(--muted);font-size:.7rem;font-weight:400">(max 3)</span></div>
+    <div class="cp-pill-grid" id="cp-stat-grid"></div>
+    <div class="cust-sec-lbl" style="margin-top:18px">Pinned Achievements <span style="color:var(--muted);font-size:.7rem;font-weight:400">(max 3, unlocked only)</span></div>
+    <div class="cp-pill-grid" id="cp-ach-picker"></div>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn-secondary" onclick="closeCardCustomizer()">Cancel</button>
+      <button class="btn-primary" onclick="saveCardConfig()">Save</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

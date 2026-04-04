@@ -2,8 +2,29 @@
 let state = {
   player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[], groupId:null },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all',
-  customChallenges: [], challengeLog: {}, challengeTimes: {}
+  customChallenges: [], challengeLog: {}, challengeTimes: {},
+  cardConfig: { bg:'default', showAvatar:true, showName:true, showXP:true, showLevel:true, showStats:true, stats:['streak','totalCompleted','todayDone'], showAch:false, achs:[] }
 };
+
+const CARD_BG_PRESETS = [
+  { id:'default', label:'Dark',   bg:'' },
+  { id:'purple',  label:'Violet', bg:'linear-gradient(135deg,#2d1b69,#11052c)' },
+  { id:'ocean',   label:'Ocean',  bg:'linear-gradient(135deg,#0f2027,#2c5364)' },
+  { id:'sunset',  label:'Sunset', bg:'linear-gradient(135deg,#c94b4b,#4b134f)' },
+  { id:'forest',  label:'Forest', bg:'linear-gradient(135deg,#134e5e,#71b280)' },
+  { id:'gold',    label:'Gold',   bg:'linear-gradient(135deg,#7a5200,#c9820a)' },
+  { id:'night',   label:'Night',  bg:'linear-gradient(135deg,#0f0c29,#302b63)' },
+  { id:'rose',    label:'Rose',   bg:'linear-gradient(135deg,#7b1a4b,#c4374a)' },
+];
+
+const CARD_STAT_OPTIONS = [
+  { id:'streak',         label:'Streak',      color:'var(--rose)',  get:function(p,s){ return p.streak; } },
+  { id:'bestStreak',     label:'Best Streak', color:'#f59e0b',      get:function(p,s){ return p.bestStreak; } },
+  { id:'totalXP',        label:'Total XP',    color:'var(--teal)',  get:function(p,s){ return p.totalXP.toLocaleString(); } },
+  { id:'totalCompleted', label:'Completed',   color:'var(--green)', get:function(p,s){ return p.totalCompleted; } },
+  { id:'level',          label:'Level',       color:'#a78bfa',      get:function(p,s){ return p.level; } },
+  { id:'todayDone',      label:'Today',       color:'var(--green)', get:function(p,s){ return Object.values(s.todayCompleted||{}).filter(Boolean).length; } },
+];
 
 const ICONS = ['🏃','🧘','📚','💪','💧','🥗','😴','🧠','✍️','🎯','🎨','🎸','🏊','🚴','🌿','🌅','💻','📖','🏋️','🎭','🗣️','🧩','🌱','⚡','🔥','💎','🎪','🌍'];
 const COLORS = ['#0d8a7f','#c4374a','#6d3dbd','#1a8a5a','#c9820a','#c47028','#e05252','#00a8cc','#8b5cf6','#059669','#f472b6','#d97706'];
@@ -301,9 +322,7 @@ function renderAll() {
   document.getElementById('d-level').textContent    = p.level;
   const circ = 163.4;
   document.getElementById('d-level-arc').setAttribute('stroke-dashoffset', circ - (pct / 100) * circ);
-  document.getElementById('d-cp-streak').textContent = p.streak;
-  document.getElementById('d-cp-quests').textContent = total;
-  document.getElementById('d-cp-today').textContent  = todayDone;
+  renderCharPanel();
 
   // Stats
   document.getElementById('d-total-xp').textContent  = p.totalXP.toLocaleString();
@@ -597,6 +616,143 @@ function renderAchievements() {
       <div class="ach-desc">${a.desc}</div>
       <div class="ach-xp">+${a.xpReward} XP</div>
     </div>`).join('');
+}
+
+/* ════ CARD CUSTOMIZER ════ */
+
+function renderCharPanel() {
+  var cfg = state.cardConfig || {};
+  var p   = state.player;
+  var panel = document.getElementById('char-panel');
+  if (!panel) return;
+
+  // Background
+  var bgPreset = CARD_BG_PRESETS.find(function(b) { return b.id === (cfg.bg || 'default'); });
+  panel.style.background = (bgPreset && bgPreset.bg) ? bgPreset.bg : '';
+
+  // Show/hide sections
+  function sec(id, show) { var el = document.getElementById(id); if (el) el.style.display = (show === false) ? 'none' : ''; }
+  sec('cp-sec-avatar', cfg.showAvatar !== false);
+  sec('cp-sec-name',   cfg.showName   !== false);
+  sec('cp-sec-xp',     cfg.showXP     !== false);
+  sec('cp-sec-level',  cfg.showLevel  !== false);
+  sec('cp-sec-stats',  cfg.showStats  !== false);
+
+  // Dynamic stats row
+  var statsEl = document.getElementById('cp-sec-stats');
+  if (statsEl) {
+    var statIds = (cfg.stats && cfg.stats.length) ? cfg.stats : ['streak','totalCompleted','todayDone'];
+    statsEl.innerHTML = statIds.map(function(id) {
+      var opt = CARD_STAT_OPTIONS.find(function(o) { return o.id === id; });
+      if (!opt) return '';
+      return '<div class="cp-stat"><div class="cp-stat-val" style="color:' + opt.color + '">' +
+        opt.get(p, state) + '</div><div class="cp-stat-lbl">' + opt.label + '</div></div>';
+    }).join('');
+  }
+
+  // Pinned achievements row
+  var achEl = document.getElementById('cp-sec-ach');
+  if (achEl) {
+    var pinned = (cfg.showAch && cfg.achs && cfg.achs.length) ?
+      cfg.achs.map(function(id) { return ACHIEVEMENTS.find(function(a) { return a.id === id && a.unlocked; }); }).filter(Boolean) : [];
+    achEl.style.display = pinned.length ? '' : 'none';
+    achEl.innerHTML = pinned.map(function(a) {
+      return '<div class="cp-ach-badge" title="' + a.name + '"><span>' + a.icon + '</span><span class="cp-ach-name">' + a.name + '</span></div>';
+    }).join('');
+  }
+}
+
+var _cpDraft = {};
+
+function openCardCustomizer() {
+  _cpDraft = JSON.parse(JSON.stringify(state.cardConfig || {}));
+  if (!_cpDraft.bg)    _cpDraft.bg    = 'default';
+  if (!_cpDraft.stats) _cpDraft.stats = ['streak','totalCompleted','todayDone'];
+  if (!_cpDraft.achs)  _cpDraft.achs  = [];
+
+  // Backgrounds
+  document.getElementById('cp-bg-grid').innerHTML = CARD_BG_PRESETS.map(function(b, i) {
+    return '<div class="cp-bg-swatch' + (_cpDraft.bg === b.id ? ' cp-bg-sel' : '') + '" ' +
+      'style="background:' + (b.bg || 'var(--surface)') + ';border-color:' + (b.bg ? 'transparent' : 'var(--border2)') + '" ' +
+      'onclick="cpSetBg(\'' + b.id + '\')" title="' + b.label + '"><span class="cp-bg-lbl">' + b.label + '</span></div>';
+  }).join('');
+
+  // Show/hide toggles
+  var sections = [
+    { key:'showAvatar', label:'Avatar' },
+    { key:'showName',   label:'Name' },
+    { key:'showXP',     label:'XP Bar' },
+    { key:'showLevel',  label:'Level Ring' },
+    { key:'showStats',  label:'Stats Row' },
+    { key:'showAch',    label:'Achievements Row' },
+  ];
+  document.getElementById('cp-toggle-list').innerHTML = sections.map(function(s) {
+    var on = _cpDraft[s.key] !== false;
+    return '<label class="cp-toggle-row"><span>' + s.label + '</span>' +
+      '<input type="checkbox"' + (on ? ' checked' : '') + ' onchange="cpToggle(\'' + s.key + '\',this.checked)"></label>';
+  }).join('');
+
+  // Stat pills
+  document.getElementById('cp-stat-grid').innerHTML = CARD_STAT_OPTIONS.map(function(o) {
+    var sel = (_cpDraft.stats || []).indexOf(o.id) !== -1;
+    return '<div class="cp-pill' + (sel ? ' cp-pill-sel' : '') + '" onclick="cpToggleStat(\'' + o.id + '\')">' + o.label + '</div>';
+  }).join('');
+
+  // Achievement pills
+  var unlocked = ACHIEVEMENTS.filter(function(a) { return a.unlocked; });
+  var achPicker = document.getElementById('cp-ach-picker');
+  if (!unlocked.length) {
+    achPicker.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Unlock achievements first to pin them here.</div>';
+  } else {
+    achPicker.innerHTML = unlocked.map(function(a) {
+      var sel = (_cpDraft.achs || []).indexOf(a.id) !== -1;
+      return '<div class="cp-pill' + (sel ? ' cp-pill-sel' : '') + '" onclick="cpToggleAch(\'' + a.id + '\')">' + a.icon + ' ' + a.name + '</div>';
+    }).join('');
+  }
+
+  document.getElementById('cp-modal').classList.add('show');
+}
+
+function closeCardCustomizer() { document.getElementById('cp-modal').classList.remove('show'); }
+
+function cpSetBg(id) {
+  _cpDraft.bg = id;
+  document.querySelectorAll('#cp-bg-grid .cp-bg-swatch').forEach(function(el, i) {
+    el.classList.toggle('cp-bg-sel', CARD_BG_PRESETS[i].id === id);
+  });
+}
+
+function cpToggle(key, val) { _cpDraft[key] = val; }
+
+function cpToggleStat(id) {
+  var arr = _cpDraft.stats || [];
+  var idx = arr.indexOf(id);
+  if (idx !== -1) { arr.splice(idx, 1); }
+  else { if (arr.length >= 3) { showToast('⚠️ Max 3', 'Select up to 3 stats', 'streak'); return; } arr.push(id); }
+  _cpDraft.stats = arr;
+  document.querySelectorAll('#cp-stat-grid .cp-pill').forEach(function(el, i) {
+    el.classList.toggle('cp-pill-sel', arr.indexOf(CARD_STAT_OPTIONS[i].id) !== -1);
+  });
+}
+
+function cpToggleAch(id) {
+  var arr = _cpDraft.achs || [];
+  var idx = arr.indexOf(id);
+  if (idx !== -1) { arr.splice(idx, 1); }
+  else { if (arr.length >= 3) { showToast('⚠️ Max 3', 'Select up to 3 achievements', 'streak'); return; } arr.push(id); }
+  _cpDraft.achs = arr;
+  var unlocked = ACHIEVEMENTS.filter(function(a) { return a.unlocked; });
+  document.querySelectorAll('#cp-ach-picker .cp-pill').forEach(function(el, i) {
+    if (unlocked[i]) el.classList.toggle('cp-pill-sel', arr.indexOf(unlocked[i].id) !== -1);
+  });
+}
+
+function saveCardConfig() {
+  state.cardConfig = _cpDraft;
+  save();
+  renderCharPanel();
+  closeCardCustomizer();
+  showToast('✨ Card saved!', 'Your card has been updated', 'xp-gain');
 }
 
 function renderMiniLB() {

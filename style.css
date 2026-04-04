@@ -409,6 +409,29 @@ html, body {
 .cp-stat-val { font-family: var(--ff-mono); font-size: .82rem; font-weight: 700; color: var(--ink); }
 .cp-stat-lbl { font-size: .6rem; color: var(--muted); margin-top: 1px; }
 
+/* ── Card customizer button ── */
+.cp-cust-btn { position:absolute; top:10px; right:10px; z-index:2; width:26px; height:26px; border-radius:50%; background:var(--bg); border:1px solid var(--border2); color:var(--muted); font-size:.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all var(--t); padding:0; line-height:1; }
+.cp-cust-btn:hover { color:var(--teal); border-color:var(--teal-br); background:var(--teal-bg); }
+
+/* ── Pinned achievements in card ── */
+.cp-ach-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.cp-ach-badge { display:flex; align-items:center; gap:5px; padding:5px 10px; background:var(--bg); border:1px solid var(--border2); border-radius:20px; font-size:.72rem; }
+.cp-ach-name { color:var(--muted); }
+
+/* ── Card customizer modal content ── */
+.cust-sec-lbl { font-family:var(--ff-mono); font-size:.65rem; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
+.cp-bg-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.cp-bg-swatch { height:44px; border-radius:10px; border:2px solid transparent; cursor:pointer; display:flex; align-items:flex-end; padding:4px 6px; transition:all var(--t); }
+.cp-bg-swatch:hover { transform:scale(1.06); }
+.cp-bg-sel { border-color:var(--teal) !important; box-shadow:0 0 0 2px var(--teal-bg); }
+.cp-bg-lbl { font-size:.58rem; color:rgba(255,255,255,.7); font-family:var(--ff-mono); }
+.cp-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:.86rem; cursor:pointer; }
+.cp-toggle-row input[type=checkbox] { width:16px; height:16px; cursor:pointer; accent-color:var(--teal); }
+.cp-pill-grid { display:flex; flex-wrap:wrap; gap:7px; }
+.cp-pill { padding:5px 12px; border-radius:20px; background:var(--bg); border:1.5px solid var(--border2); font-size:.78rem; cursor:pointer; transition:all var(--t); user-select:none; }
+.cp-pill:hover { border-color:var(--teal-br); color:var(--teal); }
+.cp-pill-sel { background:var(--teal-bg); border-color:var(--teal); color:var(--teal); font-weight:600; }
+
 .mini-lb { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
 .mini-lb-hdr { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: var(--ff-title); font-size: .9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .mini-lb-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); transition: background var(--t); }
