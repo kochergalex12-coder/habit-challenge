@@ -61,6 +61,7 @@ body.dark {
   --green-br:   rgba(26,138,90,0.28);
   --sh:    0 1px 4px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.28);
   --sh-md: 0 4px 20px rgba(0,0,0,0.45), 0 8px 32px rgba(0,0,0,0.30);
+  --topbar-bg: rgba(10,9,6,0.95);
 }
 /* Illustrated challenge cards have inline gradient bg — darken with overlay */
 body.dark .ch-card-illustrated::before {
@@ -260,7 +261,7 @@ html, body {
   height: 58px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 28px;
-  background: rgba(240,237,232,0.95);
+  background: var(--topbar-bg, rgba(240,237,232,0.95));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
