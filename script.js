@@ -158,6 +158,43 @@ function save() {
   if (window._fbSave) window._fbSave(state);
 }
 
+/* ════ ONBOARDING SLIDES ════ */
+var _obCurrentSlide = 0;
+var _OB_TOTAL_SLIDES = 4;
+
+function nextObSlide() {
+  _obCurrentSlide++;
+  if (_obCurrentSlide >= _OB_TOTAL_SLIDES) {
+    skipToObForm();
+    return;
+  }
+  var track = document.getElementById('ob-slides-track');
+  if (track) track.style.transform = 'translateX(-' + (_obCurrentSlide * 100) + '%)';
+  // Update dots
+  document.querySelectorAll('.ob-dot').forEach(function(d, i) {
+    d.classList.toggle('ob-dot-active', i === _obCurrentSlide);
+  });
+  // Change button text on last slide
+  var btn = document.getElementById('ob-next-btn');
+  if (btn) btn.textContent = _obCurrentSlide === _OB_TOTAL_SLIDES - 1 ? "Let's Go →" : 'Next →';
+}
+
+function skipToObForm() {
+  var slidesWrap = document.getElementById('ob-slides-wrap');
+  var formCard   = document.getElementById('ob-form-card');
+  if (slidesWrap) {
+    slidesWrap.style.opacity = '0';
+    slidesWrap.style.transition = 'opacity .3s';
+    setTimeout(function() { slidesWrap.style.display = 'none'; }, 300);
+  }
+  if (formCard) {
+    formCard.style.display = 'block';
+    formCard.classList.add('ob-form-enter');
+  }
+}
+window.nextObSlide  = nextObSlide;
+window.skipToObForm = skipToObForm;
+
 /* ════ DARK MODE ════ */
 function toggleDarkMode(on) {
   document.body.classList.toggle('dark', on);
