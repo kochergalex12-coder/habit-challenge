@@ -1,6 +1,6 @@
 /* ════ STATE ════ */
 let state = {
-  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[] },
+  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[], groupId:null },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all',
   customChallenges: [], challengeLog: {}, challengeTimes: {}
 };
@@ -1505,6 +1505,17 @@ window._setState = function(remoteState) {
   renderAll();
   // Re-run after renderAll so group habits (managed by Firebase, not _setState) are included
   renderDashChallenges();
+  // Restore group subscription when Firestore user doc loads and has a saved groupId
+  if (state.player.groupId && !window.activeGroup && window._subscribeToGroupFull) {
+    window._subscribeToGroupFull(state.player.groupId);
+  }
+};
+
+// Called by the Firebase module to write groupId into state and persist it.
+// This is the bridge between the ES module scope and the script.js state object.
+window._setGroupId = function(gid) {
+  state.player.groupId = gid || null;
+  save();
 };
 
 // Group functions — implementation lives in the Firebase module (index.html),
@@ -1685,11 +1696,29 @@ function renderGroupPage() {
   signinEl.style.display = 'none';
 
   if (!window.activeGroup) {
-    // Signed in, no group — show create/join panel
+    // If we have a saved groupId, we're still waiting for the Firestore snapshot.
+    // Show nothing (keep whatever is visible) and trigger re-subscription if needed.
+    var savedGid = null;
+    try { savedGid = localStorage.getItem('hqd_groupId'); } catch(e) {}
+    if (savedGid) {
+      // Hide both panels while snapshot loads — grp-setup is visible by default in HTML
+      setupEl.style.display  = 'none';
+      activeEl.style.display = 'none';
+      if (!window._groupSubPending) {
+        window._groupSubPending = true;
+        if (window._subscribeToGroupFull) window._subscribeToGroupFull(savedGid);
+      }
+      return;
+    }
+    // No saved group — show create/join panel
+    window._groupSubPending = false;
     setupEl.style.display  = 'block';
     activeEl.style.display = 'none';
     return;
   }
+
+  // Group is loaded — clear the pending flag
+  window._groupSubPending = false;
 
   // Inside a group — show the active group panel
   setupEl.style.display  = 'none';

@@ -1367,6 +1367,9 @@
       members: arrayRemove(window.currentUser.uid)
     }).then(function() {
       window.activeGroup = null;
+      window._groupSubPending = false;
+      try { localStorage.removeItem('hqd_groupId'); } catch(e) {}
+      if (window._setGroupId) window._setGroupId(null);
       if (window.renderGroupPage) renderGroupPage();
       showToast('👋 Left Group', 'You have left the group', 'streak');
     });
@@ -1398,11 +1401,17 @@
     onSnapshot(doc(db, 'groups', groupId), function(groupSnap) {
       if (!groupSnap.exists()) {
         window.activeGroup = null;
+        // Do NOT clear hqd_groupId here — snapshot can fire before Firestore
+        // confirms auth, giving a false "not found". Only _leaveGroup clears it.
         if (window.renderGroupPage) renderGroupPage();
         return;
       }
 
       window.activeGroup = { id: groupId, ...groupSnap.data() };
+      // Persist groupId via both Firestore (state.player) and localStorage so it
+      // survives page refresh regardless of which restore path runs first.
+      try { localStorage.setItem('hqd_groupId', groupId); } catch(e) {}
+      if (window._setGroupId) window._setGroupId(groupId);
       if (window.renderGroupPage) renderGroupPage();
 
       // Fetch each member's global user profile for avatar/XP/level/streak
@@ -1666,6 +1675,26 @@
         var gid = window._pendingGroupId;
         window._pendingGroupId = null;
         if (window._checkAndJoinGroup) window._checkAndJoinGroup(gid);
+      } else {
+        // Restore group on every page refresh.
+        // Path 1: localStorage (fast, works for any session after first join)
+        // Path 2: Firestore query (fallback — handles first load or cleared storage)
+        var savedGroupId = null;
+        try { savedGroupId = localStorage.getItem('hqd_groupId'); } catch(e) {}
+        if (savedGroupId) {
+          subscribeToGroupFull(savedGroupId);
+        } else {
+          // Query Firestore for any group this user belongs to
+          getDocs(query(collection(db, 'groups'), where('members', 'array-contains', user.uid)))
+            .then(function(snap) {
+              if (!snap.empty) {
+                var foundId = snap.docs[0].id;
+                try { localStorage.setItem('hqd_groupId', foundId); } catch(e) {}
+                subscribeToGroupFull(foundId);
+              }
+            })
+            .catch(function(e) { console.warn('group restore query failed', e); });
+        }
       }
 
     } else {
