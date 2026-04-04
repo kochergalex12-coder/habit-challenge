@@ -1077,11 +1077,13 @@ html, body {
 .ob-slide-skip:hover { background: rgba(255,255,255,.25); }
 .ob-slides-track {
   flex: 1; display: flex;
+  /* NO overflow:hidden here — wrap clips it; hidden on the track would erase slides 2-4 */
   transition: transform .42s cubic-bezier(.4,0,.2,1);
-  overflow: hidden;
+  will-change: transform;
 }
 .ob-slide {
   flex: 0 0 100%;
+  min-width: 100%;   /* ensures percentage resolves to wrap width */
   display: flex; flex-direction: column;
   align-items: center; text-align: center;
   padding: 52px 32px 16px;
