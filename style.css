@@ -462,6 +462,28 @@ html, body {
 .cp-pill:hover { border-color:var(--teal-br); color:var(--teal); }
 .cp-pill-sel { background:var(--teal-bg); border-color:var(--teal); color:var(--teal); font-weight:600; }
 
+/* ── Friend Profile Card Modal ── */
+.fpc-wrap { position:relative; display:flex; flex-direction:column; align-items:center; }
+.fpc-close { position:absolute; top:-14px; right:-14px; z-index:10; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.15); color:#fff; font-size:.85rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all var(--t); backdrop-filter:blur(6px); }
+.fpc-close:hover { background:var(--rose); border-color:var(--rose); }
+.fpc-card { width:min(340px,88vw); border-radius:22px; padding:32px 24px 24px; display:flex; flex-direction:column; align-items:center; gap:0; box-shadow:0 24px 60px rgba(0,0,0,.55); position:relative; overflow:hidden; }
+.fpc-card::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,.18); pointer-events:none; }
+.fpc-avatar-wrap { margin-bottom:16px; }
+.fpc-avatar { width:88px; height:88px; border-radius:50%; border:3px solid rgba(255,255,255,.35); background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 0 0 6px rgba(255,255,255,.1); }
+.fpc-name { font-family:var(--ff-title); font-size:1.7rem; font-weight:800; color:#fff; margin-bottom:18px; text-align:center; position:relative; text-shadow:0 2px 8px rgba(0,0,0,.4); }
+.fpc-xp-row { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:6px; position:relative; }
+.fpc-xp-lbl { font-size:.72rem; color:rgba(255,255,255,.55); font-family:var(--ff-mono); }
+.fpc-xp-nums { font-size:.72rem; color:rgba(255,255,255,.55); font-family:var(--ff-mono); }
+.fpc-xp-bar { width:100%; height:7px; background:rgba(0,0,0,.35); border-radius:6px; overflow:hidden; margin-bottom:20px; position:relative; }
+.fpc-xp-fill { height:100%; background:linear-gradient(90deg,#8b5cf6,#c4374a); border-radius:6px; transition:width .6s ease; }
+.fpc-ring-wrap { position:relative; display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.fpc-ring-level { position:absolute; font-family:var(--ff-title); font-size:1.5rem; font-weight:800; color:#ffd700; text-shadow:0 2px 8px rgba(0,0,0,.5); }
+.fpc-ring-lbl { font-family:var(--ff-mono); font-size:.65rem; letter-spacing:.14em; color:rgba(255,255,255,.5); margin-bottom:20px; position:relative; }
+.fpc-stats-row { display:flex; gap:10px; width:100%; position:relative; }
+.fpc-stat { flex:1; background:rgba(0,0,0,.4); border-radius:14px; padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:4px; border:1px solid rgba(255,255,255,.07); }
+.fpc-stat-val { font-family:var(--ff-title); font-size:1.25rem; font-weight:800; }
+.fpc-stat-lbl { font-size:.62rem; color:rgba(255,255,255,.5); font-family:var(--ff-mono); }
+
 .mini-lb { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
 .mini-lb-hdr { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: var(--ff-title); font-size: .9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .mini-lb-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); transition: background var(--t); }

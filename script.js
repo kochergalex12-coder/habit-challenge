@@ -2564,14 +2564,18 @@ function renderSocialPage() {
 
   if (!window._loadFriendProfiles) return;
   window._loadFriendProfiles(friends).then(function(snaps) {
-    var rows = snaps.map(function(snap) {
+    window._friendProfiles = [];
+    var rows = snaps.map(function(snap, idx) {
       if (!snap.exists()) return '';
-      var p  = snap.data().player || {};
+      var data = snap.data();
+      var p  = data.player || {};
+      var cfg = data.cardConfig || {};
+      window._friendProfiles.push({ p: p, cfg: cfg });
       var av = p.avatar || '🧙';
       var avHtml = (av.startsWith && av.startsWith('http'))
         ? '<img src="' + av + '">'
         : av;
-      return '<div class="soc-friend-row">' +
+      return '<div class="soc-friend-row" style="cursor:pointer" onclick="openFriendCard(' + (window._friendProfiles.length - 1) + ')">' +
         '<div class="soc-friend-av">' + avHtml + '</div>' +
         '<div class="soc-friend-info">' +
           '<div class="soc-friend-name">' + (p.name || 'Unknown') + '</div>' +
@@ -2583,6 +2587,74 @@ function renderSocialPage() {
     list.innerHTML = rows || '<div class="soc-empty"><div class="soc-empty-icon">👥</div>No friends yet.</div>';
     countEl.textContent = snaps.filter(function(s) { return s.exists(); }).length;
   });
+}
+
+function openFriendCard(idx) {
+  var entry = (window._friendProfiles || [])[idx];
+  if (!entry) return;
+  var p   = entry.p;
+  var cfg = entry.cfg || {};
+
+  // Resolve background
+  var bgPreset = CARD_BG_PRESETS.find(function(b) { return b.id === (cfg.bg || 'default'); });
+  var bgStyle  = (bgPreset && bgPreset.bg) ? bgPreset.bg : 'linear-gradient(135deg,#1a1a2e,#16213e)';
+
+  // Avatar
+  var av = p.avatar || '🧙';
+  var avHtml = (av.startsWith && av.startsWith('http'))
+    ? '<img src="' + av + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+    : '<span style="font-size:3rem;line-height:1">' + av + '</span>';
+
+  // XP bar
+  var xp       = p.xp       || 0;
+  var xpToNext = p.xpToNext || 100;
+  var xpPct    = Math.min(100, Math.round(xp / xpToNext * 100));
+
+  // Level ring arc
+  var level    = p.level || 1;
+  var r = 44, circ = 2 * Math.PI * r;
+  var arc  = circ * (xpPct / 100);
+  var nameColor = cfg.nameColor || '';
+
+  // Stats row
+  var statIds = (cfg.stats && cfg.stats.length) ? cfg.stats : ['level','totalXP','streak'];
+  var STAT_MAP = {
+    streak:         { label:'Streak',      color:'var(--rose)',  val: p.streak || 0 },
+    bestStreak:     { label:'Best Streak', color:'#f59e0b',      val: p.bestStreak || 0 },
+    totalXP:        { label:'Total XP',    color:'var(--teal)',  val: (p.totalXP || 0).toLocaleString() },
+    totalCompleted: { label:'Completed',   color:'var(--green)', val: p.totalCompleted || 0 },
+    level:          { label:'Level',       color:'#a78bfa',      val: level },
+    todayDone:      { label:'Today',       color:'var(--green)', val: 0 },
+  };
+  var statsHtml = statIds.map(function(id) {
+    var s = STAT_MAP[id]; if (!s) return '';
+    return '<div class="fpc-stat"><div class="fpc-stat-val" style="color:' + s.color + '">' + s.val + '</div><div class="fpc-stat-lbl">' + s.label + '</div></div>';
+  }).join('');
+
+  var modal = document.getElementById('friend-card-modal');
+  var card  = document.getElementById('friend-card-inner');
+  card.style.background = bgStyle;
+  card.innerHTML =
+    '<div class="fpc-avatar-wrap"><div class="fpc-avatar">' + avHtml + '</div></div>' +
+    '<div class="fpc-name"' + (nameColor ? ' style="color:' + nameColor + '"' : '') + '>' + (p.name || 'Friend') + '</div>' +
+    '<div class="fpc-xp-row"><span class="fpc-xp-lbl">Experience</span><span class="fpc-xp-nums">' + xp + ' / ' + xpToNext + '</span></div>' +
+    '<div class="fpc-xp-bar"><div class="fpc-xp-fill" style="width:' + xpPct + '%"></div></div>' +
+    '<div class="fpc-ring-wrap">' +
+      '<svg width="110" height="110" viewBox="0 0 110 110">' +
+        '<circle cx="55" cy="55" r="' + r + '" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>' +
+        '<circle cx="55" cy="55" r="' + r + '" fill="none" stroke="var(--rose)" stroke-width="8" stroke-linecap="round" ' +
+          'stroke-dasharray="' + arc + ' ' + circ + '" transform="rotate(-90 55 55)"/>' +
+      '</svg>' +
+      '<div class="fpc-ring-level">' + level + '</div>' +
+    '</div>' +
+    '<div class="fpc-ring-lbl">LEVEL</div>' +
+    '<div class="fpc-stats-row">' + statsHtml + '</div>';
+
+  modal.classList.add('show');
+}
+
+function closeFriendCard() {
+  document.getElementById('friend-card-modal').classList.remove('show');
 }
 
 function acceptRequest(fromUid, fromName) {
