@@ -433,6 +433,23 @@ html, body {
 .cp-color-swatch { width:28px; height:28px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all var(--t); }
 .cp-color-swatch:hover { transform:scale(1.15); }
 .cp-color-sel { border-color:var(--teal) !important; box-shadow:0 0 0 3px var(--teal-bg); transform:scale(1.1); }
+/* Achievement slot circles */
+.cp-ach-slots-row { display:flex; gap:16px; justify-content:center; padding:10px 0 4px; }
+.cp-ach-slot { width:64px; height:64px; border-radius:50%; border:2px solid var(--border2); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:all var(--t); position:relative; }
+.cp-ach-slot-empty { border-style:dashed; border-color:var(--teal-br); }
+.cp-ach-slot-empty:hover { background:var(--teal-bg); border-color:var(--teal); }
+.cp-slot-plus { font-size:1.8rem; line-height:1; color:var(--teal); font-weight:300; }
+.cp-ach-slot-active { border-color:var(--teal) !important; box-shadow:0 0 0 3px var(--teal-bg); }
+.cp-ach-slot-filled { border-color:var(--teal); background:var(--teal-bg); }
+.cp-ach-slot-filled:hover { border-color:var(--rose); background:rgba(196,55,74,.08); }
+.cp-slot-icon { font-size:1.7rem; line-height:1; }
+.cp-slot-x { display:none; position:absolute; top:-3px; right:-3px; width:18px; height:18px; background:var(--rose); border-radius:50%; font-size:.6rem; color:#fff; align-items:center; justify-content:center; }
+.cp-ach-slot-filled:hover .cp-slot-x { display:flex; }
+.cp-ach-slot-locked { background:var(--surface); border-color:var(--border); gap:2px; }
+.cp-ach-slot-locked:hover { border-color:#c9820a; background:rgba(201,130,10,.08); }
+.cp-slot-lock { font-size:1.1rem; line-height:1; }
+.cp-slot-crown { font-size:.65rem; line-height:1; opacity:.8; }
+.cp-ach-opt-used { opacity:.35; cursor:default; pointer-events:none; }
 /* Pro badges & upgrade links in customizer */
 .cp-pro-badge { background:linear-gradient(90deg,#c9820a,#ffd700); color:#000; font-size:.65rem; font-weight:700; padding:1px 6px; border-radius:8px; vertical-align:middle; }
 .cp-upgrade-link { color:var(--teal); cursor:pointer; text-decoration:underline; font-weight:600; }

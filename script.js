@@ -721,22 +721,10 @@ function openCardCustomizer() {
     return '<div class="cp-pill' + (sel ? ' cp-pill-sel' : '') + '" onclick="cpToggleStat(\'' + o.id + '\')">' + o.label + '</div>';
   }).join('');
 
-  // Achievement pills — limit: 1 free, 3 pro
-  var achMax = isPro ? 3 : 1;
-  var unlocked = ACHIEVEMENTS.filter(function(a) { return a.unlocked; });
-  var achPicker = document.getElementById('cp-ach-picker');
-  var achLimitEl = document.getElementById('cp-ach-limit');
-  if (achLimitEl) achLimitEl.innerHTML = isPro
-    ? '<span class="cp-pro-badge">👑 Pro</span> Pin up to 3 achievements'
-    : 'Pin up to 1 achievement &nbsp;<a onclick="goPage(\'subscription\',null)" class="cp-upgrade-link">👑 Upgrade for 3</a>';
-  if (!unlocked.length) {
-    achPicker.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Unlock achievements first to pin them here.</div>';
-  } else {
-    achPicker.innerHTML = unlocked.map(function(a) {
-      var sel = (_cpDraft.achs || []).indexOf(a.id) !== -1;
-      return '<div class="cp-pill' + (sel ? ' cp-pill-sel' : '') + '" onclick="cpToggleAch(\'' + a.id + '\')">' + a.icon + ' ' + a.name + '</div>';
-    }).join('');
-  }
+  // Achievement slots
+  _cpActiveSlot = -1;
+  cpRenderSlots();
+  document.getElementById('cp-ach-options').style.display = 'none';
 
   // Name color picker (pro only)
   var colorSec = document.getElementById('cp-name-color-sec');
@@ -803,23 +791,71 @@ function cpToggleStat(id) {
   });
 }
 
-function cpToggleAch(id) {
-  var achMax = state.player.isPro ? 3 : 1;
+var _cpActiveSlot = -1;
+
+function cpRenderSlots() {
+  var isPro = state.player.isPro;
+  var maxSlots = isPro ? 3 : 1;
   var arr = _cpDraft.achs || [];
-  var idx = arr.indexOf(id);
-  if (idx !== -1) { arr.splice(idx, 1); }
-  else {
-    if (arr.length >= achMax) {
-      showToast('⚠️ Limit reached', state.player.isPro ? 'Max 3 achievements' : 'Free plan: max 1. Upgrade to Pro for 3!', 'streak');
-      return;
+  var html = '';
+  for (var i = 0; i < 3; i++) {
+    var locked = i >= maxSlots;
+    var achId  = arr[i];
+    var ach    = achId ? ACHIEVEMENTS.find(function(a) { return a.id === achId; }) : null;
+    var active = _cpActiveSlot === i;
+    if (locked) {
+      html += '<div class="cp-ach-slot cp-ach-slot-locked" onclick="cpProPrompt()" title="Pro only">' +
+        '<span class="cp-slot-lock">🔒</span><span class="cp-slot-crown">👑</span></div>';
+    } else if (ach) {
+      html += '<div class="cp-ach-slot cp-ach-slot-filled' + (active ? ' cp-ach-slot-active' : '') + '" onclick="cpRemoveSlot(' + i + ')" title="Remove ' + ach.name + '">' +
+        '<span class="cp-slot-icon">' + ach.icon + '</span>' +
+        '<span class="cp-slot-x">✕</span></div>';
+    } else {
+      html += '<div class="cp-ach-slot cp-ach-slot-empty' + (active ? ' cp-ach-slot-active' : '') + '" onclick="cpPickSlot(' + i + ')" title="Add achievement">' +
+        '<span class="cp-slot-plus">+</span></div>';
     }
-    arr.push(id);
   }
-  _cpDraft.achs = arr;
+  document.getElementById('cp-ach-slots').innerHTML = html;
+}
+
+function cpPickSlot(i) {
+  _cpActiveSlot = i;
+  cpRenderSlots();
+  var arr = _cpDraft.achs || [];
   var unlocked = ACHIEVEMENTS.filter(function(a) { return a.unlocked; });
-  document.querySelectorAll('#cp-ach-picker .cp-pill').forEach(function(el, i) {
-    if (unlocked[i]) el.classList.toggle('cp-pill-sel', arr.indexOf(unlocked[i].id) !== -1);
-  });
+  var optEl = document.getElementById('cp-ach-options');
+  if (!unlocked.length) {
+    optEl.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Unlock achievements first to pin them here.</div>';
+  } else {
+    optEl.innerHTML = '<div class="cp-pill-grid">' + unlocked.map(function(a) {
+      var usedIdx = arr.indexOf(a.id);
+      var usedOther = usedIdx !== -1 && usedIdx !== i;
+      return '<div class="cp-pill' + (usedOther ? ' cp-ach-opt-used' : '') + '" ' +
+        (usedOther ? '' : 'onclick="cpSelectAchForSlot(\'' + a.id + '\')"') + '>' + a.icon + ' ' + a.name + '</div>';
+    }).join('') + '</div>';
+  }
+  optEl.style.display = '';
+}
+
+function cpRemoveSlot(i) {
+  var arr = _cpDraft.achs || [];
+  arr.splice(i, 1);
+  _cpDraft.achs = arr;
+  _cpActiveSlot = -1;
+  cpRenderSlots();
+  document.getElementById('cp-ach-options').style.display = 'none';
+}
+
+function cpSelectAchForSlot(achId) {
+  var arr = _cpDraft.achs || [];
+  var existingIdx = arr.indexOf(achId);
+  if (existingIdx !== -1) arr.splice(existingIdx, 1);
+  arr.splice(_cpActiveSlot, 0, achId);
+  if (arr.length > 3) arr = arr.slice(0, 3);
+  _cpDraft.achs = arr;
+  _cpActiveSlot = -1;
+  cpRenderSlots();
+  document.getElementById('cp-ach-options').style.display = 'none';
 }
 
 function saveCardConfig() {
