@@ -280,7 +280,7 @@ function renderAll() {
   // Sidebar
   renderAvatarEl(document.getElementById('sb-avatar'), p.avatar);
   document.getElementById('sb-name').textContent      = p.name;
-  document.getElementById('sb-class').textContent     = `${cls.prefix} ${cls.name}`;
+  document.getElementById('sb-class').textContent     = '';
   document.getElementById('sb-xp-bar').style.width    = pct + '%';
   document.getElementById('sb-xp-label').textContent  = `${p.xp} / ${p.xpToNext}`;
   document.getElementById('sb-level').textContent     = p.level;
@@ -295,7 +295,7 @@ function renderAll() {
   // Char panel
   renderAvatarEl(document.getElementById('d-avatar'), p.avatar);
   document.getElementById('d-name').textContent     = p.name;
-  document.getElementById('d-class').textContent    = `${cls.prefix} ${cls.name}`;
+  document.getElementById('d-class').textContent    = '';
   document.getElementById('d-xp-bar').style.width   = pct + '%';
   document.getElementById('d-xp-label').textContent = `${p.xp} / ${p.xpToNext}`;
   document.getElementById('d-level').textContent    = p.level;
@@ -2072,7 +2072,7 @@ function renderProfilePage() {
 
   renderAvatarEl(document.getElementById('pf-avatar'), p.avatar);
   document.getElementById('pf-name').textContent      = p.name;
-  document.getElementById('pf-class').textContent     = cls.prefix + ' ' + cls.name;
+  document.getElementById('pf-class').textContent     = '';
   document.getElementById('pf-level').textContent     = p.level;
   document.getElementById('pf-streak').textContent    = p.streak;
   document.getElementById('pf-completed').textContent = p.totalCompleted;
