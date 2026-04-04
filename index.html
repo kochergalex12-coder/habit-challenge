@@ -14,7 +14,6 @@
 
   <!-- ── INTRO SLIDES (shown before name/avatar form) ── -->
   <div id="ob-slides-wrap" class="ob-slides-wrap">
-    <button class="ob-slide-skip" onclick="skipToObForm()">Skip</button>
 
     <div class="ob-slides-track" id="ob-slides-track">
 
@@ -96,12 +95,13 @@
             <rect x="18" y="8" width="224" height="176" rx="18" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
             <!-- Header -->
             <text x="34" y="36" font-size="15" font-weight="800" fill="white" font-family="DM Sans,sans-serif">My Progress</text>
-            <!-- Streak badge (SVG flame, no emoji) -->
-            <rect x="170" y="20" width="58" height="24" rx="12" fill="rgba(239,68,68,.4)" stroke="rgba(239,68,68,.6)" stroke-width="1"/>
-            <!-- SVG flame icon -->
-            <path d="M182 36 Q180 30 184 26 Q184 32 188 30 Q186 34 190 32 Q189 38 184 40 Q180 39 182 36Z" fill="#FF8C42"/>
-            <path d="M183 36 Q182 32 185 29 Q185 33 187 32 Q186 35 188 33 Q188 37 184 39 Q181 38 183 36Z" fill="#FFD166"/>
-            <text x="216" y="35" font-size="10" fill="white" font-family="DM Sans,sans-serif" font-weight="700" text-anchor="middle">7 days</text>
+            <!-- Streak badge (SVG flame, no emoji) — wider so text fits -->
+            <rect x="158" y="20" width="70" height="24" rx="12" fill="rgba(239,68,68,.4)" stroke="rgba(239,68,68,.6)" stroke-width="1"/>
+            <!-- Flame icon: pointed tip, rounded base, inner glow -->
+            <path d="M172 38 Q169 29 175 23 Q175 30 179 27 Q177 32 181 29 Q180 37 175 40 Q172 39 172 38Z" fill="#FF6B2B"/>
+            <path d="M173 37 Q171 30 176 25 Q176 31 179 29 Q178 33 180 31 Q179 37 175 39 Q173 38 173 37Z" fill="#FFD166"/>
+            <!-- "7 days" centred in right portion of badge -->
+            <text x="208" y="35" font-size="10" fill="white" font-family="DM Sans,sans-serif" font-weight="700" text-anchor="middle">7 days</text>
             <!-- XP label -->
             <text x="34" y="58" font-size="9" fill="rgba(255,255,255,.75)" font-family="DM Sans,sans-serif">Level 5 · 1,240 / 1,500 XP</text>
             <!-- XP bar -->
@@ -135,43 +135,53 @@
       <div class="ob-slide">
         <div class="ob-slide-art">
           <svg viewBox="0 0 260 195" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Connection lines between avatars (behind circles) -->
-            <line x1="96" y1="80" x2="134" y2="72" stroke="rgba(77,240,224,.4)" stroke-width="2" stroke-dasharray="5 4"/>
-            <line x1="166" y1="72" x2="204" y2="80" stroke="rgba(77,240,224,.4)" stroke-width="2" stroke-dasharray="5 4"/>
-            <!-- LEFT person avatar circle -->
-            <circle cx="70" cy="82" r="28" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="2"/>
-            <!-- SVG person icon: head + shoulders -->
-            <circle cx="70" cy="72" r="9" fill="rgba(255,255,255,.75)"/>
-            <path d="M52 96 Q52 84 70 84 Q88 84 88 96" fill="rgba(255,255,255,.75)"/>
-            <rect x="46" y="114" width="48" height="14" rx="7" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
-            <text x="70" y="124" font-size="8" fill="rgba(255,255,255,.85)" font-family="DM Sans,sans-serif" text-anchor="middle">Lv 12</text>
-            <!-- CENTRE person avatar circle (YOU — teal highlight) -->
-            <circle cx="130" cy="70" r="34" fill="rgba(77,240,224,.22)" stroke="rgba(77,240,224,.6)" stroke-width="2.5"/>
-            <!-- SVG person icon: head + shoulders (larger) -->
-            <circle cx="130" cy="59" r="11" fill="rgba(77,240,224,.9)"/>
-            <path d="M110 86 Q110 72 130 72 Q150 72 150 86" fill="rgba(77,240,224,.9)"/>
-            <rect x="102" y="110" width="56" height="16" rx="8" fill="rgba(77,240,224,.32)" stroke="rgba(77,240,224,.6)" stroke-width="1"/>
-            <text x="130" y="121" font-size="8.5" fill="white" font-family="DM Sans,sans-serif" font-weight="700" text-anchor="middle">YOU · Lv 1</text>
-            <!-- RIGHT person avatar circle -->
-            <circle cx="190" cy="82" r="28" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="2"/>
-            <!-- SVG person icon: head + shoulders -->
-            <circle cx="190" cy="72" r="9" fill="rgba(255,255,255,.75)"/>
-            <path d="M172 96 Q172 84 190 84 Q208 84 208 96" fill="rgba(255,255,255,.75)"/>
-            <rect x="166" y="114" width="48" height="14" rx="7" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
-            <text x="190" y="124" font-size="8" fill="rgba(255,255,255,.85)" font-family="DM Sans,sans-serif" text-anchor="middle">Lv 8</text>
-            <!-- Leaderboard card with SVG trophy -->
-            <rect x="62" y="138" width="136" height="48" rx="14" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
-            <!-- SVG trophy icon -->
-            <rect x="75" y="152" width="14" height="4" rx="2" fill="rgba(255,220,50,.8)"/>
-            <rect x="79" y="148" width="6" height="6" rx="1" fill="rgba(255,220,50,.8)"/>
-            <path d="M74 143 Q74 138 82 138 Q90 138 90 143 L88 150 Q82 153 76 150Z" fill="rgba(255,220,50,.85)"/>
-            <line x1="76" y1="145" x2="74" y2="141" stroke="rgba(255,220,50,.6)" stroke-width="1.5"/>
-            <line x1="88" y1="145" x2="90" y2="141" stroke="rgba(255,220,50,.6)" stroke-width="1.5"/>
-            <text x="130" y="153" font-size="9" font-weight="800" fill="white" font-family="DM Sans,sans-serif" text-anchor="middle">Group Leaderboard</text>
-            <text x="130" y="167" font-size="8" fill="rgba(255,255,255,.65)" font-family="DM Sans,sans-serif" text-anchor="middle">Compete &amp; climb together</text>
+            <!-- Connection lines (drawn first, behind avatars) -->
+            <line x1="80" y1="68" x2="96" y2="60" stroke="rgba(77,240,224,.45)" stroke-width="2" stroke-dasharray="5 4"/>
+            <line x1="164" y1="60" x2="180" y2="68" stroke="rgba(77,240,224,.45)" stroke-width="2" stroke-dasharray="5 4"/>
+
+            <!-- LEFT avatar: GymNinja — purple circle with initials -->
+            <circle cx="52" cy="68" r="28" fill="#6D28D9"/>
+            <circle cx="52" cy="68" r="28" fill="rgba(0,0,0,.18)"/>
+            <text x="52" y="75" font-size="17" fill="white" font-family="DM Sans,sans-serif" font-weight="900" text-anchor="middle">GN</text>
+            <rect x="22" y="100" width="60" height="16" rx="8" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+            <text x="52" y="111" font-size="7.5" fill="rgba(255,255,255,.9)" font-family="DM Sans,sans-serif" font-weight="600" text-anchor="middle">GymNinja</text>
+
+            <!-- CENTRE avatar: YOU — teal, person silhouette -->
+            <circle cx="130" cy="58" r="34" fill="rgba(77,240,224,.2)" stroke="rgba(77,240,224,.65)" stroke-width="2.5"/>
+            <circle cx="130" cy="47" r="11" fill="rgba(77,240,224,.9)"/>
+            <path d="M111 74 Q111 61 130 61 Q149 61 149 74" fill="rgba(77,240,224,.9)"/>
+            <rect x="100" y="97" width="60" height="18" rx="9" fill="rgba(77,240,224,.3)" stroke="rgba(77,240,224,.65)" stroke-width="1"/>
+            <text x="130" y="109" font-size="8.5" fill="white" font-family="DM Sans,sans-serif" font-weight="800" text-anchor="middle">YOU</text>
+
+            <!-- RIGHT avatar: SleepZilla — orange circle with initials -->
+            <circle cx="208" cy="68" r="28" fill="#EA580C"/>
+            <circle cx="208" cy="68" r="28" fill="rgba(0,0,0,.15)"/>
+            <text x="208" y="75" font-size="17" fill="white" font-family="DM Sans,sans-serif" font-weight="900" text-anchor="middle">SZ</text>
+            <rect x="178" y="100" width="60" height="16" rx="8" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+            <text x="208" y="111" font-size="7.5" fill="rgba(255,255,255,.9)" font-family="DM Sans,sans-serif" font-weight="600" text-anchor="middle">SleepZilla</text>
+
+            <!-- Leaderboard card — trophy centred above text -->
+            <rect x="52" y="124" width="156" height="66" rx="14" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
+            <!-- Trophy centred at x=130 -->
+            <!-- Cup body -->
+            <rect x="118" y="131" width="24" height="16" rx="7" fill="#F0C030"/>
+            <rect x="122" y="134" width="8" height="10" rx="4" fill="rgba(255,255,255,.28)"/>
+            <!-- Handles -->
+            <rect x="108" y="135" width="11" height="4" rx="2" fill="#D4A020"/>
+            <rect x="141" y="135" width="11" height="4" rx="2" fill="#D4A020"/>
+            <!-- Stem -->
+            <rect x="128" y="147" width="4" height="5" fill="#D4A020"/>
+            <!-- Base -->
+            <rect x="120" y="152" width="20" height="4" rx="2" fill="#F0C030"/>
+            <!-- Star on cup -->
+            <text x="130" y="144" font-size="10" fill="rgba(255,255,255,.6)" text-anchor="middle">&#9733;</text>
+            <!-- Card labels below trophy -->
+            <text x="130" y="168" font-size="9.5" font-weight="800" fill="white" font-family="DM Sans,sans-serif" text-anchor="middle">Group Leaderboard</text>
+            <text x="130" y="182" font-size="8" fill="rgba(255,255,255,.65)" font-family="DM Sans,sans-serif" text-anchor="middle">Compete &amp; climb together</text>
+
             <!-- Sparkles -->
-            <path d="M22 50 L23.5 45 L25 50 L30 51.5 L25 53 L23.5 58 L22 53 L17 51.5Z" fill="rgba(255,255,255,.42)"/>
-            <path d="M236 42 L237.5 37 L239 42 L244 43.5 L239 45 L237.5 50 L236 45 L231 43.5Z" fill="rgba(255,255,255,.38)"/>
+            <path d="M18 42 L19.5 37 L21 42 L26 43.5 L21 45 L19.5 50 L18 45 L13 43.5Z" fill="rgba(255,255,255,.42)"/>
+            <path d="M240 36 L241.5 31 L243 36 L248 37.5 L243 39 L241.5 44 L240 39 L235 37.5Z" fill="rgba(255,255,255,.38)"/>
           </svg>
         </div>
         <h2 class="ob-slide-title">Better <span>Together</span></h2>
