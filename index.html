@@ -471,7 +471,9 @@
                   <li><span class="fy">✓</span> Up to 6 quests</li>
                   <li><span class="fy">✓</span> Basic streak tracking</li>
                   <li><span class="fy">✓</span> Leaderboard access</li>
-                  <li><span class="fn">✗</span> Unlimited quests</li>
+                  <li><span class="fy">✓</span> 1 pinned achievement</li>
+                  <li><span class="fn">✗</span> Epic card backgrounds</li>
+                  <li><span class="fn">✗</span> Custom name color</li>
                   <li><span class="fn">✗</span> Advanced analytics</li>
                 </ul>
                 <button class="plan-btn-d" disabled style="opacity:.5;cursor:default">Current Plan</button>
@@ -485,10 +487,12 @@
                   <li><span class="fy">✓</span> <strong>Unlimited</strong> quests</li>
                   <li><span class="fy">✓</span> Advanced analytics</li>
                   <li><span class="fy">✓</span> All epic challenges</li>
-                  <li><span class="fy">✓</span> Custom categories</li>
+                  <li><span class="fy">✓</span> 8 epic card backgrounds</li>
+                  <li><span class="fy">✓</span> Custom name color</li>
+                  <li><span class="fy">✓</span> Pin 3 achievements on card</li>
                   <li><span class="fy">✓</span> Priority support</li>
                 </ul>
-                <a class="plan-btn-d primary" href="https://buy.stripe.com/test_3cIdR95jua18a8qdwcaVa00" target="_blank" rel="noopener">Choose Pro →</a>
+                <a class="plan-btn-d primary" href="https://buy.stripe.com/test_3cIdR95jua18a8qdwcaVa00" target="_blank" rel="noopener" onclick="activatePro()">Choose Pro →</a>
               </div>
               <div class="plan-card" data-plan="annual">
                 <div class="plan-name-d">Annual</div>
@@ -1735,8 +1739,10 @@
     <div id="cp-toggle-list"></div>
     <div class="cust-sec-lbl" style="margin-top:18px">Progress Stats <span style="color:var(--muted);font-size:.7rem;font-weight:400">(max 3)</span></div>
     <div class="cp-pill-grid" id="cp-stat-grid"></div>
-    <div class="cust-sec-lbl" style="margin-top:18px">Pinned Achievements <span style="color:var(--muted);font-size:.7rem;font-weight:400">(max 3, unlocked only)</span></div>
+    <div class="cust-sec-lbl" style="margin-top:18px">Pinned Achievements <span id="cp-ach-limit" style="color:var(--muted);font-size:.7rem;font-weight:400;text-transform:none;letter-spacing:0"></span></div>
     <div class="cp-pill-grid" id="cp-ach-picker"></div>
+    <div class="cust-sec-lbl" style="margin-top:18px">Name Color</div>
+    <div id="cp-name-color-sec"></div>
     <div class="modal-actions" style="margin-top:20px">
       <button class="btn-secondary" onclick="closeCardCustomizer()">Cancel</button>
       <button class="btn-primary" onclick="saveCardConfig()">Save</button>

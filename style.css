@@ -421,10 +421,23 @@ html, body {
 /* ── Card customizer modal content ── */
 .cust-sec-lbl { font-family:var(--ff-mono); font-size:.65rem; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
 .cp-bg-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-.cp-bg-swatch { height:44px; border-radius:10px; border:2px solid transparent; cursor:pointer; display:flex; align-items:flex-end; padding:4px 6px; transition:all var(--t); }
+.cp-bg-swatch { height:44px; border-radius:10px; border:2px solid transparent; cursor:pointer; display:flex; align-items:flex-end; justify-content:space-between; padding:4px 6px; transition:all var(--t); position:relative; overflow:hidden; }
 .cp-bg-swatch:hover { transform:scale(1.06); }
 .cp-bg-sel { border-color:var(--teal) !important; box-shadow:0 0 0 2px var(--teal-bg); }
 .cp-bg-lbl { font-size:.58rem; color:rgba(255,255,255,.7); font-family:var(--ff-mono); }
+.cp-bg-locked { opacity:.65; }
+.cp-bg-locked::after { content:''; position:absolute; inset:0; background:rgba(0,0,0,.35); border-radius:8px; }
+.cp-bg-pro-lock { font-size:.75rem; position:absolute; top:4px; right:5px; z-index:1; }
+/* Name color picker */
+.cp-color-grid { display:flex; flex-wrap:wrap; gap:8px; padding:4px 0; }
+.cp-color-swatch { width:28px; height:28px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:all var(--t); }
+.cp-color-swatch:hover { transform:scale(1.15); }
+.cp-color-sel { border-color:var(--teal) !important; box-shadow:0 0 0 3px var(--teal-bg); transform:scale(1.1); }
+/* Pro badges & upgrade links in customizer */
+.cp-pro-badge { background:linear-gradient(90deg,#c9820a,#ffd700); color:#000; font-size:.65rem; font-weight:700; padding:1px 6px; border-radius:8px; vertical-align:middle; }
+.cp-upgrade-link { color:var(--teal); cursor:pointer; text-decoration:underline; font-weight:600; }
+.cp-upgrade-link:hover { color:#ffd700; }
+.cp-pro-locked-row { color:var(--muted); font-size:.82rem; padding:6px 0; }
 .cp-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:.86rem; cursor:pointer; }
 .cp-toggle-row input[type=checkbox] { width:16px; height:16px; cursor:pointer; accent-color:var(--teal); }
 .cp-pill-grid { display:flex; flex-wrap:wrap; gap:7px; }

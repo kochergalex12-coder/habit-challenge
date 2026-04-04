@@ -1,20 +1,29 @@
 /* ════ STATE ════ */
 let state = {
-  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[], groupId:null },
+  player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[], groupId:null, isPro:false },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all',
   customChallenges: [], challengeLog: {}, challengeTimes: {},
-  cardConfig: { bg:'default', showAvatar:true, showName:true, showXP:true, showLevel:true, showStats:true, stats:['streak','totalCompleted','todayDone'], showAch:false, achs:[] }
+  cardConfig: { bg:'default', showAvatar:true, showName:true, showXP:true, showLevel:true, showStats:true, stats:['streak','totalCompleted','todayDone'], showAch:false, achs:[], nameColor:'' }
 };
 
 const CARD_BG_PRESETS = [
-  { id:'default', label:'Dark',   bg:'' },
-  { id:'purple',  label:'Violet', bg:'linear-gradient(135deg,#2d1b69,#11052c)' },
-  { id:'ocean',   label:'Ocean',  bg:'linear-gradient(135deg,#0f2027,#2c5364)' },
-  { id:'sunset',  label:'Sunset', bg:'linear-gradient(135deg,#c94b4b,#4b134f)' },
-  { id:'forest',  label:'Forest', bg:'linear-gradient(135deg,#134e5e,#71b280)' },
-  { id:'gold',    label:'Gold',   bg:'linear-gradient(135deg,#7a5200,#c9820a)' },
-  { id:'night',   label:'Night',  bg:'linear-gradient(135deg,#0f0c29,#302b63)' },
-  { id:'rose',    label:'Rose',   bg:'linear-gradient(135deg,#7b1a4b,#c4374a)' },
+  { id:'default', label:'Dark',        bg:'' },
+  { id:'purple',  label:'Violet',      bg:'linear-gradient(135deg,#2d1b69,#11052c)' },
+  { id:'ocean',   label:'Ocean',       bg:'linear-gradient(135deg,#0f2027,#2c5364)' },
+  { id:'sunset',  label:'Sunset',      bg:'linear-gradient(135deg,#c94b4b,#4b134f)' },
+  { id:'forest',  label:'Forest',      bg:'linear-gradient(135deg,#134e5e,#71b280)' },
+  { id:'gold',    label:'Gold',        bg:'linear-gradient(135deg,#7a5200,#c9820a)' },
+  { id:'night',   label:'Night',       bg:'linear-gradient(135deg,#0f0c29,#302b63)' },
+  { id:'rose',    label:'Rose',        bg:'linear-gradient(135deg,#7b1a4b,#c4374a)' },
+  // Pro-only
+  { id:'aurora',  label:'Aurora',      bg:'linear-gradient(135deg,#0d324d,#7f5a83,#00b4d8)', pro:true },
+  { id:'inferno', label:'Inferno',     bg:'linear-gradient(135deg,#200122,#6f0000,#ff4e00)', pro:true },
+  { id:'galaxy',  label:'Galaxy',      bg:'linear-gradient(135deg,#0a001f,#3d0066,#7700cc,#00d4ff)', pro:true },
+  { id:'emerald', label:'Emerald',     bg:'linear-gradient(135deg,#003d1a,#007a3d,#00e676)', pro:true },
+  { id:'cyber',   label:'Cyber',       bg:'linear-gradient(135deg,#0a0a0a,#00f5ff,#7b2fff,#0a0a0a)', pro:true },
+  { id:'lava',    label:'Lava',        bg:'linear-gradient(135deg,#1a0000,#8b0000,#ff6600,#ffd700)', pro:true },
+  { id:'arcane',  label:'Arcane',      bg:'linear-gradient(135deg,#12002e,#3d0099,#9b00ff,#ff00aa)', pro:true },
+  { id:'titanium',label:'Titanium',    bg:'linear-gradient(135deg,#0d0d0d,#1a1a2e,#16213e,#4a4a8a)', pro:true },
 ];
 
 const CARD_STAT_OPTIONS = [
@@ -626,9 +635,15 @@ function renderCharPanel() {
   var panel = document.getElementById('char-panel');
   if (!panel) return;
 
-  // Background
+  // Background (pro backgrounds only apply if user isPro)
+  var isPro = state.player.isPro;
   var bgPreset = CARD_BG_PRESETS.find(function(b) { return b.id === (cfg.bg || 'default'); });
+  if (bgPreset && bgPreset.pro && !isPro) bgPreset = CARD_BG_PRESETS[0]; // fallback to default
   panel.style.background = (bgPreset && bgPreset.bg) ? bgPreset.bg : '';
+
+  // Name color (pro only)
+  var nameEl = document.getElementById('d-name');
+  if (nameEl) nameEl.style.color = (isPro && cfg.nameColor) ? cfg.nameColor : '';
 
   // Show/hide sections
   function sec(id, show) { var el = document.getElementById(id); if (el) el.style.display = (show === false) ? 'none' : ''; }
@@ -669,12 +684,20 @@ function openCardCustomizer() {
   if (!_cpDraft.bg)    _cpDraft.bg    = 'default';
   if (!_cpDraft.stats) _cpDraft.stats = ['streak','totalCompleted','todayDone'];
   if (!_cpDraft.achs)  _cpDraft.achs  = [];
+  if (!_cpDraft.nameColor) _cpDraft.nameColor = '';
 
-  // Backgrounds
-  document.getElementById('cp-bg-grid').innerHTML = CARD_BG_PRESETS.map(function(b, i) {
-    return '<div class="cp-bg-swatch' + (_cpDraft.bg === b.id ? ' cp-bg-sel' : '') + '" ' +
+  var isPro = state.player.isPro;
+
+  // Backgrounds (8 free + 8 pro)
+  document.getElementById('cp-bg-grid').innerHTML = CARD_BG_PRESETS.map(function(b) {
+    var locked = b.pro && !isPro;
+    var sel = !locked && _cpDraft.bg === b.id;
+    return '<div class="cp-bg-swatch' + (sel ? ' cp-bg-sel' : '') + (locked ? ' cp-bg-locked' : '') + '" ' +
       'style="background:' + (b.bg || 'var(--surface)') + ';border-color:' + (b.bg ? 'transparent' : 'var(--border2)') + '" ' +
-      'onclick="cpSetBg(\'' + b.id + '\')" title="' + b.label + '"><span class="cp-bg-lbl">' + b.label + '</span></div>';
+      (locked ? 'onclick="cpProPrompt()" title="' + b.label + ' — Pro only"' : 'onclick="cpSetBg(\'' + b.id + '\')" title="' + b.label + '"') +
+      '><span class="cp-bg-lbl">' + b.label + '</span>' +
+      (locked ? '<span class="cp-bg-pro-lock">👑</span>' : '') +
+      '</div>';
   }).join('');
 
   // Show/hide toggles
@@ -698,9 +721,14 @@ function openCardCustomizer() {
     return '<div class="cp-pill' + (sel ? ' cp-pill-sel' : '') + '" onclick="cpToggleStat(\'' + o.id + '\')">' + o.label + '</div>';
   }).join('');
 
-  // Achievement pills
+  // Achievement pills — limit: 1 free, 3 pro
+  var achMax = isPro ? 3 : 1;
   var unlocked = ACHIEVEMENTS.filter(function(a) { return a.unlocked; });
   var achPicker = document.getElementById('cp-ach-picker');
+  var achLimitEl = document.getElementById('cp-ach-limit');
+  if (achLimitEl) achLimitEl.innerHTML = isPro
+    ? '<span class="cp-pro-badge">👑 Pro</span> Pin up to 3 achievements'
+    : 'Pin up to 1 achievement &nbsp;<a onclick="goPage(\'subscription\',null)" class="cp-upgrade-link">👑 Upgrade for 3</a>';
   if (!unlocked.length) {
     achPicker.innerHTML = '<div style="color:var(--muted);font-size:.82rem;padding:4px 0">Unlock achievements first to pin them here.</div>';
   } else {
@@ -710,15 +738,55 @@ function openCardCustomizer() {
     }).join('');
   }
 
+  // Name color picker (pro only)
+  var colorSec = document.getElementById('cp-name-color-sec');
+  if (colorSec) {
+    if (!isPro) {
+      colorSec.innerHTML = '<div class="cp-pro-locked-row">🔒 Name color is a <a onclick="goPage(\'subscription\',null)" class="cp-upgrade-link">👑 Pro feature</a></div>';
+    } else {
+      var NAME_COLORS = [
+        { id:'',        label:'Default', hex:'' },
+        { id:'#ffd700', label:'Gold',    hex:'#ffd700' },
+        { id:'#00d4ff', label:'Cyan',    hex:'#00d4ff' },
+        { id:'#a78bfa', label:'Violet',  hex:'#a78bfa' },
+        { id:'#f472b6', label:'Pink',    hex:'#f472b6' },
+        { id:'#34d399', label:'Mint',    hex:'#34d399' },
+        { id:'#fb923c', label:'Orange',  hex:'#fb923c' },
+        { id:'#f87171', label:'Red',     hex:'#f87171' },
+        { id:'#ffffff', label:'White',   hex:'#ffffff' },
+      ];
+      colorSec.innerHTML = '<div class="cp-color-grid">' + NAME_COLORS.map(function(c) {
+        var sel = _cpDraft.nameColor === c.id;
+        return '<div class="cp-color-swatch' + (sel ? ' cp-color-sel' : '') + '" ' +
+          'style="background:' + (c.hex || 'var(--fg)') + '" ' +
+          'onclick="cpSetNameColor(\'' + c.id + '\')" title="' + c.label + '"></div>';
+      }).join('') + '</div>';
+    }
+  }
+
   document.getElementById('cp-modal').classList.add('show');
 }
 
 function closeCardCustomizer() { document.getElementById('cp-modal').classList.remove('show'); }
 
+function cpProPrompt() {
+  showToast('👑 Pro Only', 'Upgrade to Pro to unlock epic backgrounds!', 'streak');
+}
+
 function cpSetBg(id) {
+  var preset = CARD_BG_PRESETS.find(function(b) { return b.id === id; });
+  if (preset && preset.pro && !state.player.isPro) { cpProPrompt(); return; }
   _cpDraft.bg = id;
   document.querySelectorAll('#cp-bg-grid .cp-bg-swatch').forEach(function(el, i) {
-    el.classList.toggle('cp-bg-sel', CARD_BG_PRESETS[i].id === id);
+    el.classList.toggle('cp-bg-sel', !CARD_BG_PRESETS[i].pro && CARD_BG_PRESETS[i].id === id);
+  });
+}
+
+function cpSetNameColor(color) {
+  _cpDraft.nameColor = color;
+  document.querySelectorAll('.cp-color-swatch').forEach(function(el) {
+    var c = el.getAttribute('onclick').match(/'([^']*)'/);
+    el.classList.toggle('cp-color-sel', c && c[1] === color);
   });
 }
 
@@ -736,10 +804,17 @@ function cpToggleStat(id) {
 }
 
 function cpToggleAch(id) {
+  var achMax = state.player.isPro ? 3 : 1;
   var arr = _cpDraft.achs || [];
   var idx = arr.indexOf(id);
   if (idx !== -1) { arr.splice(idx, 1); }
-  else { if (arr.length >= 3) { showToast('⚠️ Max 3', 'Select up to 3 achievements', 'streak'); return; } arr.push(id); }
+  else {
+    if (arr.length >= achMax) {
+      showToast('⚠️ Limit reached', state.player.isPro ? 'Max 3 achievements' : 'Free plan: max 1. Upgrade to Pro for 3!', 'streak');
+      return;
+    }
+    arr.push(id);
+  }
   _cpDraft.achs = arr;
   var unlocked = ACHIEVEMENTS.filter(function(a) { return a.unlocked; });
   document.querySelectorAll('#cp-ach-picker .cp-pill').forEach(function(el, i) {
@@ -753,6 +828,12 @@ function saveCardConfig() {
   renderCharPanel();
   closeCardCustomizer();
   showToast('✨ Card saved!', 'Your card has been updated', 'xp-gain');
+}
+
+function activatePro() {
+  state.player.isPro = true;
+  save();
+  showToast('👑 Pro Activated!', 'Welcome to HabitQuest Pro — enjoy your perks!', 'level-up');
 }
 
 function renderMiniLB() {
