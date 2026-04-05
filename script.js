@@ -3,7 +3,8 @@ let state = {
   player: { name:'Novice Hero', avatar:'🧙', level:1, xp:0, xpToNext:100, totalXP:0, streak:0, bestStreak:0, totalCompleted:0, joinedChallenges:[], lastActiveDate:null, joinDate:null, xpLog:[], hasOnboarded:false, friendCode:null, friends:[], groupId:null, isPro:false },
   habits: [], todayCompleted: {}, selectedIcon:'🏃', selectedColor:'#0d8a7f', currentCat:'all',
   customChallenges: [], challengeLog: {}, challengeTimes: {},
-  cardConfig: { bg:'default', showAvatar:true, showName:true, showXP:true, showLevel:true, showStats:true, stats:['streak','totalCompleted','todayDone'], showAch:false, achs:[], nameColor:'' }
+  cardConfig: { bg:'default', showAvatar:true, showName:true, showXP:true, showLevel:true, showStats:true, stats:['streak','totalCompleted','todayDone'], showAch:false, achs:[], nameColor:'' },
+  unlockedAchs: []
 };
 
 const CARD_BG_PRESETS = [
@@ -309,6 +310,12 @@ function load() {
   }
   _loadDarkMode();
   checkDayReset();
+  restoreAchievements();
+}
+
+function restoreAchievements() {
+  var ids = state.unlockedAchs || [];
+  ACHIEVEMENTS.forEach(function(a) { a.unlocked = ids.indexOf(a.id) !== -1; });
 }
 
 function checkDayReset() {
@@ -649,10 +656,12 @@ function grantXP(amount, e) {
 }
 
 function checkAchievements() {
+  if (!state.unlockedAchs) state.unlockedAchs = [];
   ACHIEVEMENTS.forEach(function(a) {
     if (a.unlocked || !a.getProgress) return;
     if (a.getProgress(state.player, state) >= a.target) {
       a.unlocked = true;
+      state.unlockedAchs.push(a.id);
       grantXP(a.xpReward);
       showToast('🎖 Achievement!', '"' + a.name + '" — +' + a.xpReward + ' XP', 'level-up');
     }
@@ -660,6 +669,8 @@ function checkAchievements() {
 }
 
 function renderAchievements() {
+  checkAchievements();
+  save();
   var total = ACHIEVEMENTS.length;
   var unl   = ACHIEVEMENTS.filter(function(a){ return a.unlocked; }).length;
   document.getElementById('d-ach-unlocked').textContent = unl;
@@ -771,7 +782,8 @@ function renderCharPanel() {
   // Pinned achievements row
   var achEl = document.getElementById('cp-sec-ach');
   if (achEl) {
-    var pinned = (cfg.showAch && cfg.achs && cfg.achs.length) ?
+    // Show pinned achievements if any are selected (showAch flag optional — auto-show if achs selected)
+    var pinned = (cfg.achs && cfg.achs.length) ?
       cfg.achs.map(function(id) { return ACHIEVEMENTS.find(function(a) { return a.id === id && a.unlocked; }); }).filter(Boolean) : [];
     achEl.style.display = pinned.length ? '' : 'none';
     achEl.innerHTML = pinned.map(function(a) {
@@ -1878,6 +1890,9 @@ window._setState = function(remoteState) {
   if (remoteState.customChallenges) state.customChallenges = remoteState.customChallenges;
   if (remoteState.challengeLog)     state.challengeLog     = remoteState.challengeLog;
   if (remoteState.challengeTimes)   state.challengeTimes   = remoteState.challengeTimes;
+  if (remoteState.unlockedAchs)     state.unlockedAchs     = remoteState.unlockedAchs;
+  restoreAchievements();
+  checkAchievements();
   renderAll();
   // Re-run after renderAll so group habits (managed by Firebase, not _setState) are included
   renderDashChallenges();
