@@ -26,9 +26,9 @@
   --green-bg: rgba(26,138,90,0.09);
   --green-br: rgba(26,138,90,0.25);
 
-  --ff-title: 'Playfair Display', serif;
-  --ff-body: 'DM Sans', sans-serif;
-  --ff-mono: 'DM Mono', monospace;
+  --ff-title: 'Inter', sans-serif;
+  --ff-body: 'Inter', sans-serif;
+  --ff-mono: 'Inter', sans-serif;
   --r: 14px;
   --t: 0.2s cubic-bezier(.4,0,.2,1);
   --sh: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
