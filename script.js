@@ -666,10 +666,10 @@ function renderAchievements() {
   document.getElementById('d-ach-locked').textContent   = total - unl;
 
   var RARITY = {
-    common:    { label:'Common',    bg:'linear-gradient(135deg,#475569,#94a3b8)', color:'#94a3b8', glow:'rgba(148,163,184,.45)' },
-    rare:      { label:'Rare',      bg:'linear-gradient(135deg,#1d4ed8,#60a5fa)', color:'#60a5fa', glow:'rgba(96,165,250,.55)'  },
-    epic:      { label:'Epic',      bg:'linear-gradient(135deg,#6d28d9,#a78bfa)', color:'#a78bfa', glow:'rgba(167,139,250,.6)'  },
-    legendary: { label:'Legendary', bg:'linear-gradient(135deg,#b45309,#fbbf24)', color:'#fbbf24', glow:'rgba(251,191,36,.7)'   },
+    common:    { label:'Common',    badgeBg:'linear-gradient(135deg,#334155,#64748b)',     color:'#64748b', vivid:'#94a3b8', glow:'rgba(100,116,139,.75)', tagBg:'#475569',  tagColor:'#e2e8f0', cardStripe:'#64748b', cardTint:'rgba(100,116,139,.07)', hdrColor:'#475569' },
+    rare:      { label:'Rare',      badgeBg:'linear-gradient(135deg,#1e3a8a,#3b82f6)',     color:'#2563eb', vivid:'#60a5fa', glow:'rgba(59,130,246,.8)',   tagBg:'#1d4ed8',  tagColor:'#dbeafe', cardStripe:'#3b82f6', cardTint:'rgba(59,130,246,.07)',  hdrColor:'#1d4ed8' },
+    epic:      { label:'Epic',      badgeBg:'linear-gradient(135deg,#4c1d95,#7c3aed)',     color:'#6d28d9', vivid:'#a78bfa', glow:'rgba(109,40,217,.8)',   tagBg:'#5b21b6',  tagColor:'#ede9fe', cardStripe:'#7c3aed', cardTint:'rgba(109,40,217,.08)', hdrColor:'#5b21b6' },
+    legendary: { label:'Legendary', badgeBg:'linear-gradient(135deg,#78350f,#d97706,#fbbf24)', color:'#b45309', vivid:'#fbbf24', glow:'rgba(251,191,36,.9)', tagBg:'linear-gradient(90deg,#b45309,#f59e0b)', tagColor:'#000', cardStripe:'#f59e0b', cardTint:'rgba(245,158,11,.1)', hdrColor:'#b45309' },
   };
   var ORDER = ['common','rare','epic','legendary'];
 
@@ -678,34 +678,48 @@ function renderAchievements() {
     var group = ACHIEVEMENTS.filter(function(a){ return a.rarity === rarity; });
     if (!group.length) return;
     var rc = RARITY[rarity];
+    var unlockedCount = group.filter(function(a){ return a.unlocked; }).length;
     html += '<div class="ach-section">' +
-      '<div class="ach-section-hdr">' +
-        '<span class="ach-section-dot" style="background:' + rc.color + ';box-shadow:0 0 6px ' + rc.glow + '"></span>' +
-        '<span class="ach-section-lbl" style="color:' + rc.color + '">' + rc.label + '</span>' +
-        '<span class="ach-section-count">' + group.filter(function(a){return a.unlocked;}).length + ' / ' + group.length + '</span>' +
+      '<div class="ach-section-hdr" style="border-bottom:2px solid ' + rc.cardStripe + '33">' +
+        '<span class="ach-section-dot" style="background:' + rc.vivid + ';box-shadow:0 0 8px ' + rc.glow + ';width:11px;height:11px"></span>' +
+        '<span class="ach-section-lbl" style="color:' + rc.hdrColor + ';font-size:.72rem">' + rc.label + '</span>' +
+        '<span class="ach-section-count" style="background:' + rc.cardStripe + '22;color:' + rc.hdrColor + ';padding:2px 10px;border-radius:20px;border:1px solid ' + rc.cardStripe + '44">' + unlockedCount + ' / ' + group.length + '</span>' +
       '</div>';
     html += group.map(function(a) {
-      var prog  = a.getProgress ? a.getProgress(state.player, state) : 0;
-      var pct   = Math.min(100, Math.round(prog / a.target * 100));
+      var prog   = a.getProgress ? a.getProgress(state.player, state) : 0;
+      var pct    = Math.min(100, Math.round(prog / a.target * 100));
       var locked = !a.unlocked;
-      return '<div class="ach-card-h' + (locked ? ' ach-locked' : ' ach-unlocked') + '">' +
-        '<div class="ach-badge-ico" style="' +
-          (locked ? 'background:var(--bg);border:2px solid var(--border)' : 'background:' + rc.bg + ';box-shadow:0 0 18px ' + rc.glow) + '">' +
+      var progLabel = a.target >= 1000
+        ? (prog >= 1000 ? (prog/1000).toFixed(1)+'k' : prog) + ' / ' + (a.target/1000)+'k'
+        : prog + ' / ' + a.target;
+      var cardStyle = locked
+        ? 'border:1px solid var(--border);background:var(--surface)'
+        : 'border:1px solid ' + rc.cardStripe + '55;border-left:4px solid ' + rc.cardStripe + ';background:linear-gradient(135deg,' + rc.cardTint + ' 0%,var(--surface) 65%);box-shadow:0 2px 12px ' + rc.glow.replace('.8','0.12').replace('.9','0.12').replace('.75','0.1')+'';
+      var badgeStyle = locked
+        ? 'background:linear-gradient(135deg,var(--bg),var(--surface));border:2px dashed var(--border2)'
+        : 'background:' + rc.badgeBg + ';box-shadow:0 0 22px ' + rc.glow;
+      var fillStyle = locked
+        ? 'width:' + pct + '%;background:var(--border2)'
+        : 'width:' + pct + '%;background:linear-gradient(90deg,' + rc.color + ',' + rc.vivid + ')';
+      var trackStyle = locked ? '' : 'background:' + rc.cardStripe + '22';
+      var tagStyle = 'color:' + rc.tagColor + ';background:' + rc.tagBg + ';border:none;font-weight:800;letter-spacing:.08em';
+      return '<div class="ach-card-h ach-r-' + rarity + (locked ? ' ach-locked' : ' ach-unlocked') + '" style="' + cardStyle + '">' +
+        '<div class="ach-badge-ico" style="' + badgeStyle + '">' +
           a.svg +
         '</div>' +
         '<div class="ach-body">' +
           '<div class="ach-head-row">' +
             '<span class="ach-name-h">' + a.name + '</span>' +
-            '<span class="ach-rarity-tag" style="color:' + rc.color + ';border-color:' + rc.color + '88;background:' + rc.color + '18">' + rc.label + '</span>' +
+            '<span class="ach-rarity-tag" style="' + tagStyle + '">' + rc.label + '</span>' +
           '</div>' +
           '<div class="ach-desc-h">' + a.desc + '</div>' +
           '<div class="ach-prog-wrap">' +
-            '<div class="ach-prog-track"><div class="ach-prog-fill" style="width:' + pct + '%;background:' + (locked ? 'var(--muted)' : rc.color) + '"></div></div>' +
-            '<span class="ach-prog-num">' + (a.target >= 1000 ? (prog >= 1000 ? (prog/1000).toFixed(1)+'k' : prog) + '/' + (a.target/1000)+'k' : prog + '/' + a.target) + '</span>' +
+            '<div class="ach-prog-track" style="' + trackStyle + '"><div class="ach-prog-fill" style="' + fillStyle + '"></div></div>' +
+            '<span class="ach-prog-num">' + progLabel + '</span>' +
           '</div>' +
           '<div class="ach-foot-row">' +
-            (a.unlocked ? '<span class="ach-done-badge">✓ Unlocked</span>' : '<span class="ach-pct-lbl">' + pct + '% complete</span>') +
-            '<span class="ach-xp-tag">+' + a.xpReward.toLocaleString() + ' XP</span>' +
+            (a.unlocked ? '<span class="ach-done-badge" style="color:' + rc.vivid + '">✓ Unlocked</span>' : '<span class="ach-pct-lbl">' + pct + '% complete</span>') +
+            '<span class="ach-xp-tag" style="color:' + rc.vivid + ';border-color:' + rc.cardStripe + '55;background:' + rc.cardTint + '">+' + a.xpReward.toLocaleString() + ' XP</span>' +
           '</div>' +
         '</div>' +
       '</div>';
