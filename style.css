@@ -415,8 +415,10 @@ html, body {
 
 /* ── Pinned achievements in card ── */
 .cp-ach-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-.cp-ach-badge { display:flex; align-items:center; gap:5px; padding:5px 10px; background:var(--bg); border:1px solid var(--border2); border-radius:20px; font-size:.72rem; }
-.cp-ach-name { color:var(--muted); }
+.cp-ach-badge { display:flex; align-items:center; gap:7px; padding:4px 10px 4px 5px; border:1px solid; border-radius:20px; font-size:.72rem; }
+.cp-ach-badge-ico { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.cp-ach-badge-ico svg { width:14px; height:14px; }
+.cp-ach-name { font-weight:600; font-size:.7rem; }
 
 /* ── Card customizer modal content ── */
 .cust-sec-lbl { font-family:var(--ff-mono); font-size:.65rem; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }

@@ -27,6 +27,13 @@ const CARD_BG_PRESETS = [
   { id:'titanium',label:'Titanium',    bg:'linear-gradient(135deg,#0d0d0d,#1a1a2e,#16213e,#4a4a8a)', pro:true },
 ];
 
+const ACH_RARITY_CFG = {
+  common:    { badgeBg:'linear-gradient(135deg,#334155,#64748b)', border:'#64748b', glow:'rgba(100,116,139,.8)'  },
+  rare:      { badgeBg:'linear-gradient(135deg,#1e3a8a,#3b82f6)', border:'#3b82f6', glow:'rgba(59,130,246,.85)' },
+  epic:      { badgeBg:'linear-gradient(135deg,#4c1d95,#7c3aed)', border:'#7c3aed', glow:'rgba(109,40,217,.85)' },
+  legendary: { badgeBg:'linear-gradient(135deg,#78350f,#d97706,#fbbf24)', border:'#f59e0b', glow:'rgba(251,191,36,.9)' },
+};
+
 const CARD_STAT_OPTIONS = [
   { id:'streak',         label:'Streak',      color:'var(--rose)',  get:function(p,s){ return p.streak; } },
   { id:'bestStreak',     label:'Best Streak', color:'#f59e0b',      get:function(p,s){ return p.bestStreak; } },
@@ -787,7 +794,13 @@ function renderCharPanel() {
       cfg.achs.map(function(id) { return ACHIEVEMENTS.find(function(a) { return a.id === id && a.unlocked; }); }).filter(Boolean) : [];
     achEl.style.display = pinned.length ? '' : 'none';
     achEl.innerHTML = pinned.map(function(a) {
-      return '<div class="cp-ach-badge" title="' + a.name + '"><span>' + a.icon + '</span><span class="cp-ach-name">' + a.name + '</span></div>';
+      var rc = ACH_RARITY_CFG[a.rarity] || ACH_RARITY_CFG.common;
+      return '<div class="cp-ach-badge" title="' + a.name + '" style="border-color:' + rc.border + '66;background:' + rc.badgeBg.replace('linear-gradient','linear-gradient').split(')')[0] + ')20">' +
+        '<span class="cp-ach-badge-ico" style="background:' + rc.badgeBg + ';box-shadow:0 0 8px ' + rc.glow + '">' +
+          '<span style="display:flex;align-items:center;justify-content:center;width:18px;height:18px">' + a.svg + '</span>' +
+        '</span>' +
+        '<span class="cp-ach-name" style="color:' + rc.border + '">' + a.name + '</span>' +
+      '</div>';
     }).join('');
   }
 }
@@ -922,8 +935,11 @@ function cpRenderSlots() {
       html += '<div class="cp-ach-slot cp-ach-slot-locked" onclick="cpProPrompt()" title="Pro only">' +
         '<span class="cp-slot-lock">🔒</span><span class="cp-slot-crown">👑</span></div>';
     } else if (ach) {
-      html += '<div class="cp-ach-slot cp-ach-slot-filled' + (active ? ' cp-ach-slot-active' : '') + '" onclick="cpRemoveSlot(' + i + ')" title="Remove ' + ach.name + '">' +
-        '<span class="cp-slot-icon">' + ach.icon + '</span>' +
+      var rc = ACH_RARITY_CFG[ach.rarity] || ACH_RARITY_CFG.common;
+      html += '<div class="cp-ach-slot cp-ach-slot-filled' + (active ? ' cp-ach-slot-active' : '') + '" ' +
+        'style="background:' + rc.badgeBg + ';border:2.5px solid ' + rc.border + ';box-shadow:0 0 16px ' + rc.glow + '" ' +
+        'onclick="cpRemoveSlot(' + i + ')" title="Remove ' + ach.name + '">' +
+        '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center">' + ach.svg + '</div>' +
         '<span class="cp-slot-x">✕</span></div>';
     } else {
       html += '<div class="cp-ach-slot cp-ach-slot-empty' + (active ? ' cp-ach-slot-active' : '') + '" onclick="cpPickSlot(' + i + ')" title="Add achievement">' +
@@ -945,8 +961,12 @@ function cpPickSlot(i) {
     optEl.innerHTML = '<div class="cp-pill-grid">' + unlocked.map(function(a) {
       var usedIdx = arr.indexOf(a.id);
       var usedOther = usedIdx !== -1 && usedIdx !== i;
+      var rc = ACH_RARITY_CFG[a.rarity] || ACH_RARITY_CFG.common;
+      var dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + rc.border + ';margin-right:6px;flex-shrink:0;box-shadow:0 0 5px ' + rc.glow + '"></span>';
       return '<div class="cp-pill' + (usedOther ? ' cp-ach-opt-used' : '') + '" ' +
-        (usedOther ? '' : 'onclick="cpSelectAchForSlot(\'' + a.id + '\')"') + '>' + a.icon + ' ' + a.name + '</div>';
+        'style="display:flex;align-items:center' + (usedOther ? '' : ';border-color:' + rc.border + '66') + '" ' +
+        (usedOther ? '' : 'onclick="cpSelectAchForSlot(\'' + a.id + '\')"') + '>' +
+        dot + a.name + '</div>';
     }).join('') + '</div>';
   }
   optEl.style.display = '';
