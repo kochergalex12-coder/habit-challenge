@@ -677,12 +677,11 @@ function checkAchievements() {
 
 function achFrame(rarity) {
   /*
-   * Badge circle: 60×60 px, centered in a 70×70 wrapper.
-   * SVG is absolutely positioned with inset:-22px → rendered at 114×114 px.
-   * ViewBox 0 0 114 114 → 1 unit = 1 px, no scaling surprises.
-   * Badge centre in SVG coords: (57, 57). Ring centre offset down to (57,64)
-   * so the crown sticks up above the badge naturally.
-   * Ring radius 32 → ring sits 2px outside the 30px badge radius.
+   * Badge: 60×60 px circle, centred in a 70×70 wrapper.
+   * SVG: inset:-22px → rendered at 114×114 px, viewBox 0 0 114 114 (1u=1px).
+   * Badge centre in SVG coords = (57, 57).  Ring centred there, r=32.
+   * Ring top = y=25, ring bottom = y=89, sides = x=25 / x=89.
+   * Crown sits from y≈6 to y≈25 — fully inside the 22 px top inset band.
    */
   var S = 'position:absolute;inset:-22px;width:calc(100% + 44px);height:calc(100% + 44px);pointer-events:none;z-index:3;overflow:visible';
   var VB = 'viewBox="0 0 114 114" fill="none" xmlns="http://www.w3.org/2000/svg"';
@@ -693,22 +692,22 @@ function achFrame(rarity) {
       '<radialGradient id="Alg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fde68a"/><stop offset="100%" stop-color="#b45309"/></radialGradient>' +
       '<linearGradient id="Alg2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/></linearGradient>' +
     '</defs>' +
-    /* outer glow */ '<circle cx="57" cy="64" r="36" stroke="#fbbf24" stroke-width="1" fill="none" opacity=".4"/>' +
-    /* main ring */ '<circle cx="57" cy="64" r="32" stroke="url(#Alg)" stroke-width="7.5" fill="none"/>' +
-    /* inner shine */ '<circle cx="57" cy="64" r="28" stroke="#fde68a" stroke-width="1.2" fill="none" opacity=".3"/>' +
-    /* flames L */ '<path d="M18 56 Q10 46 16 37 Q19 47 18 56Z" fill="#f59e0b" opacity=".85"/><path d="M20 59 Q13 50 18 43 Q21 51 20 59Z" fill="#fbbf24" opacity=".55"/>' +
-    /* flames R */ '<path d="M96 56 Q104 46 98 37 Q95 47 96 56Z" fill="#f59e0b" opacity=".85"/><path d="M94 59 Q101 50 96 43 Q93 51 94 59Z" fill="#fbbf24" opacity=".55"/>' +
-    /* side studs */ '<circle cx="25" cy="64" r="5" fill="#fbbf24" stroke="#92400e" stroke-width="1"/><circle cx="25" cy="64" r="2" fill="#fde68a"/>' +
-    '<circle cx="89" cy="64" r="5" fill="#fbbf24" stroke="#92400e" stroke-width="1"/><circle cx="89" cy="64" r="2" fill="#fde68a"/>' +
-    /* bottom gem */ '<circle cx="57" cy="97" r="4.5" fill="#fbbf24" stroke="#92400e" stroke-width="1.2"/><circle cx="57" cy="97" r="1.8" fill="#fde68a"/>' +
-    /* crown base */ '<rect x="35" y="30" width="44" height="5" rx="2.5" fill="#b45309"/><rect x="35" y="29" width="44" height="2" rx="1" fill="#fbbf24" opacity=".5"/>' +
-    /* 5-spire crown */ '<path d="M35 30 L39 13 L48 23 L57 7 L66 23 L75 13 L79 30Z" fill="url(#Alg2)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/>' +
-    /* center ruby */ '<circle cx="57" cy="9" r="5.5" fill="#ef4444" stroke="#fbbf24" stroke-width="1.2"/>' +
-    /* side crown gems */ '<circle cx="39" cy="15" r="4" fill="#fbbf24" stroke="#92400e" stroke-width=".8"/>' +
-    '<circle cx="75" cy="15" r="4" fill="#fbbf24" stroke="#92400e" stroke-width=".8"/>' +
-    '<ellipse cx="48" cy="22" rx="3" ry="3.5" fill="#fde68a" opacity=".9"/>' +
-    '<ellipse cx="66" cy="22" rx="3" ry="3.5" fill="#fde68a" opacity=".9"/>' +
-    /* sparkles */ '<path d="M7 41 L8.5 37 L10 41 L8.5 45Z" fill="#fde68a" opacity=".8"/><path d="M104 41 L105.5 37 L107 41 L105.5 45Z" fill="#fde68a" opacity=".8"/>' +
+    /* outer glow ring */ '<circle cx="57" cy="57" r="36" stroke="#fbbf24" stroke-width="1" fill="none" opacity=".4"/>' +
+    /* main ring      */ '<circle cx="57" cy="57" r="32" stroke="url(#Alg)" stroke-width="7.5" fill="none"/>' +
+    /* inner shine    */ '<circle cx="57" cy="57" r="28" stroke="#fde68a" stroke-width="1.2" fill="none" opacity=".3"/>' +
+    /* flames L */ '<path d="M18 49 Q10 39 16 30 Q19 40 18 49Z" fill="#f59e0b" opacity=".85"/><path d="M20 52 Q13 43 18 36 Q21 44 20 52Z" fill="#fbbf24" opacity=".55"/>' +
+    /* flames R */ '<path d="M96 49 Q104 39 98 30 Q95 40 96 49Z" fill="#f59e0b" opacity=".85"/><path d="M94 52 Q101 43 96 36 Q93 44 94 52Z" fill="#fbbf24" opacity=".55"/>' +
+    /* side studs  */ '<circle cx="25" cy="57" r="5" fill="#fbbf24" stroke="#92400e" stroke-width="1"/><circle cx="25" cy="57" r="2" fill="#fde68a"/>' +
+    '<circle cx="89" cy="57" r="5" fill="#fbbf24" stroke="#92400e" stroke-width="1"/><circle cx="89" cy="57" r="2" fill="#fde68a"/>' +
+    /* bottom gem  */ '<circle cx="57" cy="90" r="4.5" fill="#fbbf24" stroke="#92400e" stroke-width="1.2"/><circle cx="57" cy="90" r="1.8" fill="#fde68a"/>' +
+    /* crown base  */ '<rect x="35" y="23" width="44" height="5" rx="2.5" fill="#b45309"/><rect x="35" y="22" width="44" height="2" rx="1" fill="#fbbf24" opacity=".5"/>' +
+    /* 5-spire crown */ '<path d="M35 23 L39 6 L48 16 L57 0 L66 16 L75 6 L79 23Z" fill="url(#Alg2)" stroke="#92400e" stroke-width="1.2" stroke-linejoin="round"/>' +
+    /* center ruby   */ '<circle cx="57" cy="2" r="5.5" fill="#ef4444" stroke="#fbbf24" stroke-width="1.2"/>' +
+    /* side gems     */ '<circle cx="39" cy="8" r="4" fill="#fbbf24" stroke="#92400e" stroke-width=".8"/>' +
+    '<circle cx="75" cy="8" r="4" fill="#fbbf24" stroke="#92400e" stroke-width=".8"/>' +
+    '<ellipse cx="48" cy="15" rx="3" ry="3.5" fill="#fde68a" opacity=".9"/>' +
+    '<ellipse cx="66" cy="15" rx="3" ry="3.5" fill="#fde68a" opacity=".9"/>' +
+    /* sparkles */ '<path d="M7 34 L8.5 30 L10 34 L8.5 38Z" fill="#fde68a" opacity=".8"/><path d="M104 34 L105.5 30 L107 34 L105.5 38Z" fill="#fde68a" opacity=".8"/>' +
     '</svg>'
   );
   if (rarity === 'epic') return (
@@ -717,45 +716,45 @@ function achFrame(rarity) {
       '<linearGradient id="Aep" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4c1d95"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>' +
       '<linearGradient id="Aep2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#d97706"/></linearGradient>' +
     '</defs>' +
-    '<circle cx="57" cy="64" r="36" stroke="#a78bfa" stroke-width="1" fill="none" opacity=".35"/>' +
-    '<circle cx="57" cy="64" r="32" stroke="url(#Aep)" stroke-width="6.5" fill="none"/>' +
-    '<circle cx="57" cy="64" r="28" stroke="#c4b5fd" stroke-width="1" fill="none" opacity=".25"/>' +
-    /* side gems */ '<circle cx="25" cy="64" r="5.5" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.2"/><circle cx="25" cy="64" r="2.5" fill="#c4b5fd"/>' +
-    '<circle cx="89" cy="64" r="5.5" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.2"/><circle cx="89" cy="64" r="2.5" fill="#c4b5fd"/>' +
-    /* bottom gem */ '<polygon points="57,96 60,102 57,105 54,102" fill="#a78bfa"/>' +
-    /* sparkles */ '<path d="M12 50 L13.5 46 L15 50 L13.5 54Z" fill="#a78bfa" opacity=".7"/><path d="M99 50 L100.5 46 L102 50 L100.5 54Z" fill="#a78bfa" opacity=".7"/>' +
-    /* crown base */ '<rect x="39" y="31" width="36" height="5" rx="2.5" fill="#92400e"/><rect x="39" y="30" width="36" height="2" rx="1" fill="#fbbf24" opacity=".55"/>' +
-    /* 3-spire crown */ '<path d="M39 31 L43 17 L57 27 L71 17 L75 31Z" fill="url(#Aep2)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/>' +
-    /* crown gems */ '<ellipse cx="57" cy="14" rx="4.5" ry="5.5" fill="#a78bfa"/>' +
-    '<circle cx="43" cy="19" r="4" fill="#7c3aed" stroke="#fbbf24" stroke-width="1"/>' +
-    '<circle cx="71" cy="19" r="4" fill="#7c3aed" stroke="#fbbf24" stroke-width="1"/>' +
+    '<circle cx="57" cy="57" r="36" stroke="#a78bfa" stroke-width="1" fill="none" opacity=".35"/>' +
+    '<circle cx="57" cy="57" r="32" stroke="url(#Aep)" stroke-width="6.5" fill="none"/>' +
+    '<circle cx="57" cy="57" r="28" stroke="#c4b5fd" stroke-width="1" fill="none" opacity=".25"/>' +
+    /* side gems   */ '<circle cx="25" cy="57" r="5.5" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.2"/><circle cx="25" cy="57" r="2.5" fill="#c4b5fd"/>' +
+    '<circle cx="89" cy="57" r="5.5" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.2"/><circle cx="89" cy="57" r="2.5" fill="#c4b5fd"/>' +
+    /* bottom gem  */ '<polygon points="57,89 60,95 57,98 54,95" fill="#a78bfa"/>' +
+    /* sparkles    */ '<path d="M12 43 L13.5 39 L15 43 L13.5 47Z" fill="#a78bfa" opacity=".7"/><path d="M99 43 L100.5 39 L102 43 L100.5 47Z" fill="#a78bfa" opacity=".7"/>' +
+    /* crown base  */ '<rect x="39" y="24" width="36" height="5" rx="2.5" fill="#92400e"/><rect x="39" y="23" width="36" height="2" rx="1" fill="#fbbf24" opacity=".55"/>' +
+    /* 3-spire crown */ '<path d="M39 24 L43 10 L57 20 L71 10 L75 24Z" fill="url(#Aep2)" stroke="#78350f" stroke-width="1.2" stroke-linejoin="round"/>' +
+    /* crown gems    */ '<ellipse cx="57" cy="7" rx="4.5" ry="5.5" fill="#a78bfa"/>' +
+    '<circle cx="43" cy="12" r="4" fill="#7c3aed" stroke="#fbbf24" stroke-width="1"/>' +
+    '<circle cx="71" cy="12" r="4" fill="#7c3aed" stroke="#fbbf24" stroke-width="1"/>' +
     '</svg>'
   );
   if (rarity === 'rare') return (
     '<svg ' + VB + ' style="' + S + '">' +
     '<defs><linearGradient id="Arr" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3a8a"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs>' +
-    '<circle cx="57" cy="64" r="36" stroke="#93c5fd" stroke-width="1" fill="none" opacity=".3"/>' +
-    '<circle cx="57" cy="64" r="32" stroke="url(#Arr)" stroke-width="6" fill="none"/>' +
-    '<circle cx="57" cy="64" r="28" stroke="#bfdbfe" stroke-width="1" fill="none" opacity=".2"/>' +
-    /* side studs */ '<circle cx="25" cy="64" r="4.5" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.2"/><circle cx="25" cy="64" r="2" fill="#dbeafe"/>' +
-    '<circle cx="89" cy="64" r="4.5" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.2"/><circle cx="89" cy="64" r="2" fill="#dbeafe"/>' +
-    /* bottom gem */ '<circle cx="57" cy="97" r="3.5" fill="#3b82f6" stroke="#93c5fd" stroke-width="1"/>' +
-    /* crown base */ '<rect x="42" y="32" width="30" height="4" rx="2" fill="#1e40af"/>' +
-    /* 3-point crown */ '<path d="M42 32 L45 19 L57 28 L69 19 L72 32Z" fill="#2563eb" stroke="#93c5fd" stroke-width="1" stroke-linejoin="round"/>' +
-    /* crown gems */ '<polygon points="57,15 60.5,22 57,25 53.5,22" fill="#bfdbfe"/>' +
-    '<circle cx="45" cy="21" r="3.5" fill="#60a5fa" stroke="#1d4ed8" stroke-width=".8"/>' +
-    '<circle cx="69" cy="21" r="3.5" fill="#60a5fa" stroke="#1d4ed8" stroke-width=".8"/>' +
+    '<circle cx="57" cy="57" r="36" stroke="#93c5fd" stroke-width="1" fill="none" opacity=".3"/>' +
+    '<circle cx="57" cy="57" r="32" stroke="url(#Arr)" stroke-width="6" fill="none"/>' +
+    '<circle cx="57" cy="57" r="28" stroke="#bfdbfe" stroke-width="1" fill="none" opacity=".2"/>' +
+    /* side studs  */ '<circle cx="25" cy="57" r="4.5" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.2"/><circle cx="25" cy="57" r="2" fill="#dbeafe"/>' +
+    '<circle cx="89" cy="57" r="4.5" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.2"/><circle cx="89" cy="57" r="2" fill="#dbeafe"/>' +
+    /* bottom gem  */ '<circle cx="57" cy="90" r="3.5" fill="#3b82f6" stroke="#93c5fd" stroke-width="1"/>' +
+    /* crown base  */ '<rect x="42" y="25" width="30" height="4" rx="2" fill="#1e40af"/>' +
+    /* 3-point crown */ '<path d="M42 25 L45 12 L57 21 L69 12 L72 25Z" fill="#2563eb" stroke="#93c5fd" stroke-width="1" stroke-linejoin="round"/>' +
+    /* crown gems    */ '<polygon points="57,8 60.5,15 57,18 53.5,15" fill="#bfdbfe"/>' +
+    '<circle cx="45" cy="14" r="3.5" fill="#60a5fa" stroke="#1d4ed8" stroke-width=".8"/>' +
+    '<circle cx="69" cy="14" r="3.5" fill="#60a5fa" stroke="#1d4ed8" stroke-width=".8"/>' +
     '</svg>'
   );
-  /* common — simple iron ring, 3 rough spikes, no gems */
+  /* common — iron ring, 3 rough spikes */
   return (
     '<svg ' + VB + ' style="' + S + '">' +
-    '<circle cx="57" cy="64" r="36" stroke="#64748b" stroke-width="1" fill="none" opacity=".25"/>' +
-    '<circle cx="57" cy="64" r="32" stroke="#475569" stroke-width="5.5" fill="none"/>' +
-    '<circle cx="57" cy="64" r="28" stroke="#64748b" stroke-width="1" fill="none" opacity=".2"/>' +
-    /* 3 rough spikes */ '<path d="M46 34 L49 21 L57 29 L65 21 L68 34" stroke="#64748b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
-    /* side dots */ '<circle cx="25" cy="64" r="4" fill="#475569"/><circle cx="89" cy="64" r="4" fill="#475569"/>' +
-    /* bottom dot */ '<circle cx="57" cy="97" r="3" fill="#475569" opacity=".65"/>' +
+    '<circle cx="57" cy="57" r="36" stroke="#64748b" stroke-width="1" fill="none" opacity=".25"/>' +
+    '<circle cx="57" cy="57" r="32" stroke="#475569" stroke-width="5.5" fill="none"/>' +
+    '<circle cx="57" cy="57" r="28" stroke="#64748b" stroke-width="1" fill="none" opacity=".2"/>' +
+    /* 3 rough spikes */ '<path d="M46 27 L49 14 L57 22 L65 14 L68 27" stroke="#64748b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+    /* side dots */ '<circle cx="25" cy="57" r="4" fill="#475569"/><circle cx="89" cy="57" r="4" fill="#475569"/>' +
+    /* bottom dot */ '<circle cx="57" cy="90" r="3" fill="#475569" opacity=".65"/>' +
     '</svg>'
   );
 }
