@@ -147,18 +147,70 @@ const LEADERBOARD = [
 ];
 
 const ACHIEVEMENTS = [
-  { id:'a1',  icon:'🌟', name:'First Step',        desc:'Complete your first quest',        xpReward:50,   unlocked:false },
-  { id:'a2',  icon:'🔥', name:'On Fire',            desc:'7-day streak',                     xpReward:100,  unlocked:false },
-  { id:'a3',  icon:'⚔️', name:'Discipline Warrior', desc:'Add 5 quests',                     xpReward:75,   unlocked:false },
-  { id:'a4',  icon:'💎', name:'Diamond Mind',        desc:'Reach level 10',                   xpReward:500,  unlocked:false },
-  { id:'a5',  icon:'🏆', name:'Week Champion',       desc:'Complete all quests 7 days',       xpReward:200,  unlocked:false },
-  { id:'a6',  icon:'🌊', name:'Flow State',          desc:'30-day streak',                    xpReward:1000, unlocked:false },
-  { id:'a7',  icon:'🎯', name:'Sniper',              desc:'100 completed quests',             xpReward:300,  unlocked:false },
-  { id:'a8',  icon:'🧙', name:'Grand Master',        desc:'Reach level 25',                   xpReward:1500, unlocked:false },
-  { id:'a9',  icon:'⚡', name:'Quick Start',         desc:'5 quests in one day',              xpReward:150,  unlocked:false },
-  { id:'a10', icon:'🌅', name:'Early Bird',          desc:'Quest before 8am',                 xpReward:80,   unlocked:false },
-  { id:'a11', icon:'💪', name:'Atlas',               desc:'14-day fitness streak',            xpReward:250,  unlocked:false },
-  { id:'a12', icon:'📚', name:'Bookworm',            desc:'30 reading days in a row',         xpReward:400,  unlocked:false },
+  // ── COMMON ───────────────────────────────────────────────────────────────────
+  { id:'a1',  rarity:'common',    name:'First Step',         desc:'Complete your very first quest',      xpReward:50,
+    target:1,   getProgress:function(p,s){ return Math.min(1,p.totalCompleted||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="18" fill="rgba(255,255,255,.12)"/><path d="M30 42V22" stroke="white" stroke-width="3.5" stroke-linecap="round"/><path d="M22 29l8-8 8 8" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="24" cy="40" rx="5" ry="4" fill="white" opacity=".85"/><ellipse cx="37" cy="36" rx="4" ry="3.5" fill="white" opacity=".6"/></svg>', unlocked:false },
+  { id:'a9',  rarity:'common',    name:'Quick Start',        desc:'Complete 5 quests in a single day',   xpReward:150,
+    target:5,   getProgress:function(p,s){ return Math.min(5,Object.values(s.todayCompleted||{}).filter(Boolean).length); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M34 14L20 31h11l-5 15 15-17H30l4-15z" fill="white" opacity=".9"/></svg>', unlocked:false },
+  { id:'a10', rarity:'common',    name:'Early Bird',         desc:'Complete a quest before 8am',         xpReward:80,
+    target:1,   getProgress:function(p,s){ return p.hadEarlyBird?1:0; },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="11" fill="white" opacity=".9"/><path d="M30 12v5M30 43v5M12 30h5M43 30h5M17.6 17.6l3.5 3.5M38.9 38.9l3.5 3.5M17.6 42.4l3.5-3.5M38.9 21.1l3.5-3.5" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".65"/></svg>', unlocked:false },
+  { id:'a13', rarity:'common',    name:'Habit Starter',      desc:'Create your first habit',             xpReward:30,
+    target:1,   getProgress:function(p,s){ return Math.min(1,(s.habits||[]).length); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><rect x="16" y="16" width="28" height="28" rx="7" fill="rgba(255,255,255,.18)" stroke="white" stroke-width="2.5"/><path d="M21 30l6.5 6.5L39 24" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>', unlocked:false },
+  { id:'a14', rarity:'common',    name:'Social',             desc:'Add your first friend',               xpReward:40,
+    target:1,   getProgress:function(p,s){ return Math.min(1,(p.friends||[]).length); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><circle cx="22" cy="25" r="8" fill="rgba(255,255,255,.85)"/><circle cx="38" cy="25" r="8" fill="rgba(255,255,255,.6)"/><path d="M10 46c0-7 5-11 12-11 3 0 5 .8 6 1.5 1-.7 3.5-1.5 8-1.5 7 0 12 4 12 11" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity=".75"/></svg>', unlocked:false },
+  // ── RARE ─────────────────────────────────────────────────────────────────────
+  { id:'a2',  rarity:'rare',      name:'On Fire',            desc:'Reach a 7-day streak',                xpReward:100,
+    target:7,   getProgress:function(p,s){ return Math.min(7,p.streak||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M30 46c-10 0-16-8-16-16 0-6 2.5-10 6-13-1 5 2 9 2 9 1-7 5-13 11-17-2 6 1 11 1 11 2-4 5-9 5-15 5 5 10 11 10 18 0 9-7 17-19 23z" fill="rgba(255,255,255,.9)"/></svg>', unlocked:false },
+  { id:'a3',  rarity:'rare',      name:'Discipline Warrior', desc:'Create 5 habits',                     xpReward:75,
+    target:5,   getProgress:function(p,s){ return Math.min(5,(s.habits||[]).length); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M18 18l24 24M42 18L18 42" stroke="white" stroke-width="5" stroke-linecap="round"/><circle cx="30" cy="30" r="5" fill="white"/><path d="M16 14h4l2 4M44 14h-4l-2 4M16 46h4l2-4M44 46h-4l-2-4" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>', unlocked:false },
+  { id:'a5',  rarity:'rare',      name:'Week Champion',      desc:'Complete all quests 7 days in a row', xpReward:200,
+    target:7,   getProgress:function(p,s){ return Math.min(7,p.streak||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M18 20h24v16l-12 12L18 36V20z" fill="rgba(255,255,255,.18)" stroke="white" stroke-width="2.5"/><path d="M14 20h4M42 20h4M30 48v4" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="30" cy="31" r="5" fill="white" opacity=".9"/></svg>', unlocked:false },
+  { id:'a11', rarity:'rare',      name:'Ironclad',           desc:'Reach a 14-day streak',               xpReward:250,
+    target:14,  getProgress:function(p,s){ return Math.min(14,p.streak||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M30 13l14 5v13c0 8.5-6 15-14 19-8-4-14-10.5-14-19V18z" fill="rgba(255,255,255,.18)" stroke="white" stroke-width="2.5"/><path d="M23 31l5 5.5 9-9.5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>', unlocked:false },
+  { id:'a15', rarity:'rare',      name:'Centurion',          desc:'Complete 50 quests',                  xpReward:250,
+    target:50,  getProgress:function(p,s){ return Math.min(50,p.totalCompleted||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M30 13l4.5 9.2 10.1 1.5-7.3 7.1 1.7 10.1L30 36l-9 4.9 1.7-10.1-7.3-7.1 10.1-1.5z" fill="white" opacity=".9"/><path d="M22 44l8 4 8-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/></svg>', unlocked:false },
+  { id:'a12', rarity:'rare',      name:'Bookworm',           desc:'Complete 30 quests',                  xpReward:200,
+    target:30,  getProgress:function(p,s){ return Math.min(30,p.totalCompleted||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><rect x="14" y="15" width="14" height="30" rx="2.5" fill="rgba(255,255,255,.85)"/><rect x="30" y="15" width="14" height="30" rx="2.5" fill="rgba(255,255,255,.6)"/><path d="M28 15v30" stroke="white" stroke-width="2"/><path d="M17 23h8M17 29h8M17 35h5M33 23h8M33 29h8M33 35h5" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"/></svg>', unlocked:false },
+  // ── EPIC ─────────────────────────────────────────────────────────────────────
+  { id:'a4',  rarity:'epic',      name:'Diamond Mind',       desc:'Reach level 10',                      xpReward:500,
+    target:10,  getProgress:function(p,s){ return Math.min(10,p.level||1); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M30 13l11 11-11 26-11-26z" fill="rgba(255,255,255,.85)"/><path d="M19 24h22" stroke="rgba(255,255,255,.45)" stroke-width="1.5"/><path d="M19 24l11-11M41 24l-11-11" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/><path d="M19 24l11 26 11-26" fill="rgba(255,255,255,.25)"/></svg>', unlocked:false },
+  { id:'a6',  rarity:'epic',      name:'Flow State',         desc:'Reach a 30-day streak',               xpReward:1000,
+    target:30,  getProgress:function(p,s){ return Math.min(30,p.streak||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M11 26c5-7 10-11 19-11s14 8 19 2" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M11 34c5-7 10-11 19-11s14 8 19 2" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M11 42c5-7 10-11 19-11s14 8 19 2" stroke="white" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".3"/></svg>', unlocked:false },
+  { id:'a7',  rarity:'epic',      name:'Sniper',             desc:'Complete 100 quests',                 xpReward:500,
+    target:100, getProgress:function(p,s){ return Math.min(100,p.totalCompleted||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="16" stroke="white" stroke-width="2.5" fill="none"/><circle cx="30" cy="30" r="9" stroke="white" stroke-width="2" fill="none" opacity=".6"/><circle cx="30" cy="30" r="3.5" fill="white"/><path d="M30 11v7M30 42v7M11 30h7M42 30h7" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".55"/></svg>', unlocked:false },
+  { id:'a16', rarity:'epic',      name:'XP Hoarder',         desc:'Accumulate 10,000 total XP',          xpReward:600,
+    target:10000,getProgress:function(p,s){ return Math.min(10000,p.totalXP||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><polygon points="30,12 36.8,23.6 50,25.6 40.5,34.8 42.7,48 30,41 17.3,48 19.5,34.8 10,25.6 23.2,23.6" fill="rgba(255,255,255,.9)"/></svg>', unlocked:false },
+  { id:'a17', rarity:'epic',      name:'Challenge Seeker',   desc:'Join 10 challenges',                  xpReward:400,
+    target:10,  getProgress:function(p,s){ return Math.min(10,(p.joinedChallenges||[]).length); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="17" stroke="white" stroke-width="2.5" fill="rgba(255,255,255,.12)"/><path d="M22 27c0-4.4 3.6-8 8-8s8 3.6 8 8c0 3-1.5 5.6-4 7.2V37H26v-2.8c-2.5-1.6-4-4.2-4-7.2z" fill="white" opacity=".88"/><rect x="26" y="39" width="8" height="3" rx="1.5" fill="white" opacity=".65"/><rect x="27.5" y="44" width="5" height="2" rx="1" fill="white" opacity=".45"/></svg>', unlocked:false },
+  // ── LEGENDARY ────────────────────────────────────────────────────────────────
+  { id:'a8',  rarity:'legendary', name:'Grand Master',       desc:'Reach level 25',                      xpReward:1500,
+    target:25,  getProgress:function(p,s){ return Math.min(25,p.level||1); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M16 38h28l-4-16-8 8-6-14-6 14-8-8z" fill="rgba(255,255,255,.9)"/><rect x="14" y="40" width="32" height="5" rx="2.5" fill="white" opacity=".65"/><circle cx="14" cy="26" r="4" fill="white" opacity=".8"/><circle cx="46" cy="26" r="4" fill="white" opacity=".8"/><circle cx="30" cy="20" r="4.5" fill="white"/></svg>', unlocked:false },
+  { id:'a18', rarity:'legendary', name:'Iron Will',          desc:'Reach a 100-day streak',              xpReward:2000,
+    target:100, getProgress:function(p,s){ return Math.min(100,p.streak||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M23 44V30l-7-4.5V20l7-5h14l7 5v5.5L37 30v14H23z" fill="rgba(255,255,255,.88)" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M23 30h14M26 36h8M26 41h8" stroke="rgba(0,0,0,.18)" stroke-width="2" stroke-linecap="round"/><path d="M26 16h8" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".5"/></svg>', unlocked:false },
+  { id:'a19', rarity:'legendary', name:'Quest God',          desc:'Complete 500 quests',                 xpReward:3000,
+    target:500, getProgress:function(p,s){ return Math.min(500,p.totalCompleted||0); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M30 11l5 10.5 11.5 1.7-8.3 8 2 11.5L30 37l-10.2 5.7 2-11.5-8.3-8 11.5-1.7z" fill="white" opacity=".9"/><path d="M22 40l8 9 8-9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/></svg>', unlocked:false },
+  { id:'a20', rarity:'legendary', name:'Zenith',             desc:'Reach level 50',                      xpReward:5000,
+    target:50,  getProgress:function(p,s){ return Math.min(50,p.level||1); },
+    svg:'<svg viewBox="0 0 60 60" fill="none"><path d="M30 13l17 31H13z" fill="rgba(255,255,255,.18)" stroke="white" stroke-width="2.5" stroke-linejoin="round"/><path d="M30 17l11 21H19z" fill="rgba(255,255,255,.4)"/><path d="M30 21l6 11H24z" fill="white" opacity=".88"/><path d="M13 44h34" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".4"/></svg>', unlocked:false },
 ];
 
 const CLASSES = [
@@ -597,34 +649,71 @@ function grantXP(amount, e) {
 }
 
 function checkAchievements() {
-  const p = state.player, td = Object.values(state.todayCompleted).filter(Boolean).length;
-  ACHIEVEMENTS.forEach(a => {
-    if (a.unlocked) return;
-    let u = false;
-    if (a.id === 'a1' && p.totalCompleted >= 1)    u = true;
-    if (a.id === 'a2' && p.bestStreak >= 7)         u = true;
-    if (a.id === 'a3' && state.habits.length >= 5)  u = true;
-    if (a.id === 'a4' && p.level >= 10)             u = true;
-    if (a.id === 'a9' && td >= 5)                   u = true;
-    if (u) {
+  ACHIEVEMENTS.forEach(function(a) {
+    if (a.unlocked || !a.getProgress) return;
+    if (a.getProgress(state.player, state) >= a.target) {
       a.unlocked = true;
       grantXP(a.xpReward);
-      showToast('🎖 Achievement!', `"${a.name}" — +${a.xpReward} XP`, 'level-up');
+      showToast('🎖 Achievement!', '"' + a.name + '" — +' + a.xpReward + ' XP', 'level-up');
     }
   });
 }
 
 function renderAchievements() {
-  const unl = ACHIEVEMENTS.filter(a => a.unlocked).length;
+  var total = ACHIEVEMENTS.length;
+  var unl   = ACHIEVEMENTS.filter(function(a){ return a.unlocked; }).length;
   document.getElementById('d-ach-unlocked').textContent = unl;
-  document.getElementById('d-ach-locked').textContent   = 12 - unl;
-  document.getElementById('d-ach-grid').innerHTML = ACHIEVEMENTS.map(a => `
-    <div class="ach-card ${a.unlocked ? 'unlocked' : 'locked'}">
-      <div class="ach-icon">${a.icon}</div>
-      <div class="ach-name">${a.name}</div>
-      <div class="ach-desc">${a.desc}</div>
-      <div class="ach-xp">+${a.xpReward} XP</div>
-    </div>`).join('');
+  document.getElementById('d-ach-locked').textContent   = total - unl;
+
+  var RARITY = {
+    common:    { label:'Common',    bg:'linear-gradient(135deg,#475569,#94a3b8)', color:'#94a3b8', glow:'rgba(148,163,184,.45)' },
+    rare:      { label:'Rare',      bg:'linear-gradient(135deg,#1d4ed8,#60a5fa)', color:'#60a5fa', glow:'rgba(96,165,250,.55)'  },
+    epic:      { label:'Epic',      bg:'linear-gradient(135deg,#6d28d9,#a78bfa)', color:'#a78bfa', glow:'rgba(167,139,250,.6)'  },
+    legendary: { label:'Legendary', bg:'linear-gradient(135deg,#b45309,#fbbf24)', color:'#fbbf24', glow:'rgba(251,191,36,.7)'   },
+  };
+  var ORDER = ['common','rare','epic','legendary'];
+
+  var html = '';
+  ORDER.forEach(function(rarity) {
+    var group = ACHIEVEMENTS.filter(function(a){ return a.rarity === rarity; });
+    if (!group.length) return;
+    var rc = RARITY[rarity];
+    html += '<div class="ach-section">' +
+      '<div class="ach-section-hdr">' +
+        '<span class="ach-section-dot" style="background:' + rc.color + ';box-shadow:0 0 6px ' + rc.glow + '"></span>' +
+        '<span class="ach-section-lbl" style="color:' + rc.color + '">' + rc.label + '</span>' +
+        '<span class="ach-section-count">' + group.filter(function(a){return a.unlocked;}).length + ' / ' + group.length + '</span>' +
+      '</div>';
+    html += group.map(function(a) {
+      var prog  = a.getProgress ? a.getProgress(state.player, state) : 0;
+      var pct   = Math.min(100, Math.round(prog / a.target * 100));
+      var locked = !a.unlocked;
+      return '<div class="ach-card-h' + (locked ? ' ach-locked' : ' ach-unlocked') + '">' +
+        '<div class="ach-badge-ico" style="' +
+          (locked ? 'background:var(--bg);border:2px solid var(--border)' : 'background:' + rc.bg + ';box-shadow:0 0 18px ' + rc.glow) + '">' +
+          a.svg +
+        '</div>' +
+        '<div class="ach-body">' +
+          '<div class="ach-head-row">' +
+            '<span class="ach-name-h">' + a.name + '</span>' +
+            '<span class="ach-rarity-tag" style="color:' + rc.color + ';border-color:' + rc.color + '88;background:' + rc.color + '18">' + rc.label + '</span>' +
+          '</div>' +
+          '<div class="ach-desc-h">' + a.desc + '</div>' +
+          '<div class="ach-prog-wrap">' +
+            '<div class="ach-prog-track"><div class="ach-prog-fill" style="width:' + pct + '%;background:' + (locked ? 'var(--muted)' : rc.color) + '"></div></div>' +
+            '<span class="ach-prog-num">' + (a.target >= 1000 ? (prog >= 1000 ? (prog/1000).toFixed(1)+'k' : prog) + '/' + (a.target/1000)+'k' : prog + '/' + a.target) + '</span>' +
+          '</div>' +
+          '<div class="ach-foot-row">' +
+            (a.unlocked ? '<span class="ach-done-badge">✓ Unlocked</span>' : '<span class="ach-pct-lbl">' + pct + '% complete</span>') +
+            '<span class="ach-xp-tag">+' + a.xpReward.toLocaleString() + ' XP</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    html += '</div>';
+  });
+
+  document.getElementById('d-ach-grid').innerHTML = html;
 }
 
 /* ════ CARD CUSTOMIZER ════ */
